@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import connectDB from "./src/config/db.js";
 import authRoutes from "./src/routes/auth.route.js";
+import jobRoutes from "./src/routes/job.route.js"
 
 connectDB();
 
@@ -11,6 +12,7 @@ const app = express();
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/jobs', jobRoutes);
 
 
 

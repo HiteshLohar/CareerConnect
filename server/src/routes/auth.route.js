@@ -41,14 +41,6 @@ router.get(
     }
 );
 
-
-
-//this is route only work on recruiter
-// router.post('/create-job', verifyToken, authorizeRoles("recruiter"), createJob);
-
-//this is route only work on recruiter and admin
-// router.get('/all-jobs', verifyToken, authorizeRoles("admin", "recruiter"), getAllJobs);
-
 //demo
 router.get("/profile", verifyToken, (req, res) => {
     return res.status(200).json({
