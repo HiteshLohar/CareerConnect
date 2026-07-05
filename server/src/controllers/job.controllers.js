@@ -1,4 +1,5 @@
 import Job from "../models/Job.js";
+import mongoose from 'mongoose';
 
 export const createJob = async (req, res) => {
     try {
@@ -84,4 +85,44 @@ export const getAllJobs = async (req, res) => {
             "message": error.message
         });
     }
+}
+
+export const getJobById = async (req, res) => {
+
+    try {
+        const { id: jobId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(jobId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Job ID"
+            });
+        }
+
+        const job = await Job.findOne({ _id : jobId ,  isActive: true})
+            .select("title company description location salary jobType experience skills vacancies deadline createdAt")
+            .populate("postedBy", "fullName email")
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            "message": "Job fetched successfully",
+            job
+        });
+
+
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false
+        });
+    }
+
 }
