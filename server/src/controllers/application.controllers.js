@@ -107,7 +107,7 @@ export const getMyApplications = async (req, res) => {
         const applications = await Application.find({ student: studentId })
             .select("-student")
             .populate({
-                path: "job", 
+                path: "job",
                 select: "title company location salary jobType createdAt postedBy",
                 populate: {
                     path: "postedBy",
@@ -138,4 +138,71 @@ export const getMyApplications = async (req, res) => {
             message: error.message
         })
     }
-}   
+}
+
+export const updateApplicationStatus = async (req, res) => {
+    try {
+        const { id: applicationId } = req.params;
+        const { status } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(applicationId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Application ID"
+            });
+        }
+
+        const application = await Application.findById(applicationId).populate("job");
+
+        if (!application) {
+            return res.status(404).json({
+                success: false,
+                message: "Application not found"
+            });
+        }
+
+        if (req.user.userId !== application.job.postedBy.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to update this application"
+            });
+        }
+
+        const allowedStatus = ["Pending", "Accepted", "Rejected"];
+
+        if (!allowedStatus.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid status"
+            });
+        }
+
+        if (application.status.toLowerCase() === status.toLowerCase()) {
+            return res.status(400).json({
+                success: false,
+                message: "Application already has this status"
+            });
+        }
+
+        application.status = status;
+
+        await application.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Application status updated successfully",
+            application: {
+                _id: application._id,
+                status: application.status,
+                updatedAt: application.updatedAt
+            }
+        });
+
+    }
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
