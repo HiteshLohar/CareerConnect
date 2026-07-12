@@ -1,10 +1,36 @@
 import Job from "../models/Job.js";
+import Company from "../models/Company.js";
 import mongoose from 'mongoose';
 
 export const createJob = async (req, res) => {
     try {
         const { title, company, description, location, salary, jobType, experience, skills, vacancies, deadline } = req.body;
         const postedBy = req.user.userId;
+
+        if (!mongoose.Types.ObjectId.isValid(company)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Company ID"
+            });
+        }
+
+        const companyExists = await Company.findById(company);
+
+        if (!companyExists) {
+            return res.status(404).json({
+                success: false,
+                message: "Company not found"
+            });
+        }
+
+        if (companyExists.owner.toString() !== postedBy) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to create jobs for this company"
+            });
+        }
+
+
 
         if (
             !title ||
@@ -60,6 +86,7 @@ export const getAllJobs = async (req, res) => {
 
         const jobs = await Job.find({ isActive: true })
             .select("title company location salary jobType createdAt")
+            .populate("company", "name logo location")
             .populate("postedBy", "fullName email")
             .sort({ createdAt: -1 })
             .lean();
@@ -102,6 +129,7 @@ export const getJobById = async (req, res) => {
         const job = await Job.findOne({ _id: jobId, isActive: true })
             .select("title company description location salary jobType experience skills vacancies deadline createdAt")
             .populate("postedBy", "fullName email")
+            .populate("company", "name description website location logo");
 
         if (!job) {
             return res.status(404).json({
@@ -131,13 +159,11 @@ export const updateJob = async (req, res) => {
     try {
         const { id: jobId } = req.params;
 
-
-
         if (!mongoose.Types.ObjectId.isValid(jobId)) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid Job Id"
-            })
+                message: "Invalid Job ID"
+            });
         }
 
         const job = await Job.findById(jobId);
@@ -145,18 +171,16 @@ export const updateJob = async (req, res) => {
         if (!job) {
             return res.status(404).json({
                 success: false,
-                message: "Job Not Found"
+                message: "Job not found"
             });
         }
 
-        if (!(req.user.userId === job.postedBy.toString())) {
+        if (req.user.userId !== job.postedBy.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "You are not authorized to update this job"
             });
         }
-
-
 
         const {
             title,
@@ -171,20 +195,50 @@ export const updateJob = async (req, res) => {
             deadline
         } = req.body;
 
+        // Validate company if recruiter wants to change it
+        if (company !== undefined) {
+
+            if (!mongoose.Types.ObjectId.isValid(company)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid Company ID"
+                });
+            }
+
+            const companyExists = await Company.findById(company);
+
+            if (!companyExists) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Company not found"
+                });
+            }
+
+            if (companyExists.owner.toString() !== req.user.userId) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to use this company"
+                });
+            }
+        }
+
+        // Only update fields that are provided
+        const updateData = {};
+
+        if (title !== undefined) updateData.title = title;
+        if (company !== undefined) updateData.company = company;
+        if (description !== undefined) updateData.description = description;
+        if (location !== undefined) updateData.location = location;
+        if (salary !== undefined) updateData.salary = salary;
+        if (jobType !== undefined) updateData.jobType = jobType;
+        if (experience !== undefined) updateData.experience = experience;
+        if (skills !== undefined) updateData.skills = skills;
+        if (vacancies !== undefined) updateData.vacancies = vacancies;
+        if (deadline !== undefined) updateData.deadline = deadline;
+
         const updatedJob = await Job.findByIdAndUpdate(
             jobId,
-            {
-                title,
-                company,
-                description,
-                location,
-                salary,
-                jobType,
-                experience,
-                skills,
-                vacancies,
-                deadline
-            },
+            updateData,
             {
                 new: true,
                 runValidators: true
@@ -197,14 +251,13 @@ export const updateJob = async (req, res) => {
             job: updatedJob
         });
 
-    }
-    catch (error) {
+    } catch (error) {
         return res.status(500).json({
             success: false,
             message: error.message
         });
     }
-}
+};
 
 export const deleteJob = async (req, res) => {
     try {
@@ -215,7 +268,8 @@ export const deleteJob = async (req, res) => {
                 message: "Invalid Job Id"
             })
         }
-        const job = await Job.findById(jobId);
+        const job = await Job.findById(jobId)
+
         if (!job) {
             return res.status(404).json({
                 success: false,

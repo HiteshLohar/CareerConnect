@@ -1,10 +1,13 @@
 import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
+
+
 import connectDB from "./src/config/db.js";
 import authRoutes from "./src/routes/auth.route.js";
 import jobRoutes from "./src/routes/job.route.js"
 import applicationRoutes from "./src/routes/application.routes.js";
+import companyRoutes from "./src/routes/company.routes.js";
 
 connectDB();
 
@@ -17,6 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use("/api/applications", applicationRoutes);
+app.use("/api/companies", companyRoutes);
+
 
 
 app.get("/",(req,res)=>{

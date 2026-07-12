@@ -4,12 +4,12 @@ const jobSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
-            trim: true
+        trim: true
     },
     company: {
-        type: String,
-        required: true,
-            trim: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Company",
+        required: true
     },
     description: {
         type: String,
@@ -52,11 +52,11 @@ const jobSchema = new mongoose.Schema({
     postedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required : true
+        required: true
     },
     isActive: {
         type: Boolean,
-        default : true
+        default: true
     }
 
 }, { timestamps: true });
