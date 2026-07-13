@@ -84,17 +84,93 @@ export const getAllJobs = async (req, res) => {
 
     try {
 
-        const jobs = await Job.find({ isActive: true })
+        const { keyword, location, jobType, page = 1, limit = 5, sort, experience, minSalary, maxSalary, company } = req.query;
+        const filter = { isActive: true };
+
+        if (keyword) {
+            filter.title = {
+                $regex: keyword,
+                $options: "i"
+            }
+        }
+
+        if (location) {
+            filter.location = {
+                $regex: location,
+                $options: "i"
+            }
+        }
+
+        if (jobType) {
+            filter.jobType = {
+                $regex: jobType,
+            }
+        }
+
+        if (experience) {
+            filter.experience = {
+                $gte: Number(experience)
+            };
+        }
+
+        if (minSalary || maxSalary) {
+            filter.salary = {};
+
+            if (minSalary) {
+                filter.salary.$gte = Number(minSalary);
+            }
+
+            if (maxSalary) {
+                filter.salary.$lte = Number(maxSalary);
+            }
+        }
+
+        if (company) {
+            if (!mongoose.Types.ObjectId.isValid(company)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid Company ID"
+                });
+            }
+            filter.company = company;
+        }
+
+        const sortOption = {};
+        if (sort === "latest") {
+            sortOption.createdAt = -1;
+        } else if (sort === "oldest") {
+            sortOption.createdAt = 1;
+        } else if (sort === "salary_asc") {
+            sortOption.salary = 1;
+        } else if (sort === "salary_desc") {
+            sortOption.salary = -1;
+        } else {
+            sortOption.createdAt = -1;
+        }
+
+        const skip = (Number(page) - 1) * Number(limit);
+
+        const totalJobs = await Job.countDocuments(filter);
+
+        const totalPages = Math.ceil(totalJobs / Number(limit));
+
+
+        const jobs = await Job.find(filter)
             .select("title company location salary jobType createdAt")
             .populate("company", "name logo location")
             .populate("postedBy", "fullName email")
-            .sort({ createdAt: -1 })
+            .sort(sortOption)
+            .skip(skip)
             .lean();
 
         if (jobs.length === 0) {
             return res.status(200).json({
                 success: true,
-                message: "No jobs available",
+                message: "No jobs found",
+                count: 0,
+                currantPage: Number(page),
+                totalPages,
+                totalJobs,
                 jobs: []
             });
         }
@@ -103,6 +179,9 @@ export const getAllJobs = async (req, res) => {
             "success": true,
             "message": "Jobs fetched successfully",
             "count": jobs.length,
+            currentPage: Number(page),
+            totalPages,
+            totalJobs,
             jobs
         });
     }
