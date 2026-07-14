@@ -23,6 +23,13 @@ export const applyJob = async (req, res) => {
             });
         }
 
+        if (!job.isActive) {
+            return res.status(400).json({
+                success: false,
+                message: "This job is no longer active"
+            });
+        }
+
         const existingApplication = await Application.findOne({
             job: jobId,
             student: studentId

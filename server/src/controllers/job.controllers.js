@@ -361,11 +361,22 @@ export const deleteJob = async (req, res) => {
                 message: "You are not authorized to delete this job"
             });
         }
-        await Job.findByIdAndDelete(jobId);
+
+        if (!job.isActive) {
+            return res.status(400).json({
+                success: false,
+                message: "Job is already deleted"
+            });
+        }
+
+        job.isActive = false;
+        await job.save();
+
         return res.status(200).json({
             success: true,
             message: "Job deleted successfully"
         });
+
     }
     catch (error) {
         return res.status(500).json({

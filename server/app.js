@@ -8,7 +8,7 @@ import authRoutes from "./src/routes/auth.route.js";
 import jobRoutes from "./src/routes/job.route.js"
 import applicationRoutes from "./src/routes/application.routes.js";
 import companyRoutes from "./src/routes/company.routes.js";
-import dashboardRoutes from "./src/routes/dashboardRoutes.js"
+import dashboardRoutes from "./src/routes/dashboard.routes.js"
 
 connectDB();
 
