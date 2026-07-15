@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import bcrypt from "bcrypt";
 import { deleteFromCloudinary } from '../utils/cloudinary.js';
 
 
@@ -88,6 +89,68 @@ export const updateProfile = async (req, res) => {
             user
         });
 
+    }
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+export const updatePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword, confirmPassword  } = req.body;
+
+        if(!currentPassword || !newPassword || !confirmPassword){
+            return res.status(400).json({
+                success : false,
+                message : "All fields are required"
+            });
+        }
+
+        const user = await User.findById(req.user.userId);
+
+        if(!user){
+            return res.status(404).json({
+                success : false,
+                message : "User not found"
+            });
+        }
+
+        const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
+
+        if (!isPasswordMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Current password is incorrect"
+            });
+        }
+
+        if(newPassword !== confirmPassword){
+            return res.status(400).json({
+                success : false,
+                message : "New Password and confirm password do not match"
+            });
+        }
+
+        if(currentPassword === newPassword){
+            return res.status(400).json({
+                success : false,
+                message : "New password cannot be same as current password"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+        user.password = hashedPassword;
+
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Password updated successfully"
+        });
     }
     catch (error) {
         return res.status(500).json({

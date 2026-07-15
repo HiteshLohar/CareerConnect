@@ -1,6 +1,7 @@
 import Job from "../models/Job.js";
 import Company from "../models/Company.js";
 import mongoose from 'mongoose';
+import User from "../models/User.js";
 
 export const createJob = async (req, res) => {
     try {
@@ -379,6 +380,136 @@ export const deleteJob = async (req, res) => {
 
     }
     catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+export const saveJob = async (req, res) => {
+    try {
+        const { id: jobID } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(jobID)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Job ID"
+            });
+        }
+
+        const job = await Job.findById(jobID);
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                message: "Job Not Found"
+            })
+        }
+
+        const user = await User.findById(req.user.userId);
+
+        const alreadySaved = user.savedJobs.some(
+            id => id.toString() === jobID
+        );
+
+        if (alreadySaved) {
+            return res.status(400).json({
+                success: false,
+                message: "Job already saved"
+            });
+        }
+
+        user.savedJobs.push(jobID);
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Job saved succesfully",
+            savedJob: jobID
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+export const removeSavedJob = async (req, res) => {
+    try {
+        const { id: jobID } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(jobID)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid job ID"
+            });
+        }
+
+        const job = await Job.findById(jobID);
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found"
+            });
+        }
+
+        const user = await User.findById(req.user.userId);
+
+        const isSaved = user.savedJobs.some(
+            id => id.toString() === jobID
+        );
+
+        if (!isSaved) {
+            return res.status(400).json({
+                success: false,
+                message: "Job is not saved"
+            });
+        }
+
+        user.savedJobs = user.savedJobs.filter(
+            id => id.toString() !== jobID
+        );
+
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Saved job removed successfully"
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+export const getSavedJobs = async (req, res) => {
+    try {
+
+        const user = await User.findById(req.user.userId)
+            .populate({
+                path: "savedJobs",
+                select: "title company location salary jobType isActive createdAt",
+                populate: {
+                    path: "company",
+                    select: "name logo location"
+                }
+            });
+
+        return res.status(200).json({
+            success: true,
+            message: "Saved jobs fetched successfully",
+            count: user.savedJobs.length,
+            savedJobs: user.savedJobs
+        });
+
+    } catch (error) {
         return res.status(500).json({
             success: false,
             message: error.message
