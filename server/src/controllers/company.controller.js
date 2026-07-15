@@ -58,7 +58,6 @@ export const createCompany = async (req, res) => {
     }
 };
 
-
 export const getAllCompanies = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -166,8 +165,7 @@ export const updateCompany = async (req, res) => {
             name,
             description,
             website,
-            location,
-            logo
+            location
         } = req.body;
 
         // Check duplicate company name only if recruiter wants to change it
@@ -189,6 +187,10 @@ export const updateCompany = async (req, res) => {
         // Only update fields that are provided
         const updateData = {};
 
+        if(req.file) {
+            updateData.logo = req.file.path;
+        }
+
         if (name !== undefined) {
             updateData.name = name.trim();
         }
@@ -203,10 +205,6 @@ export const updateCompany = async (req, res) => {
 
         if (location !== undefined) {
             updateData.location = location;
-        }
-
-        if (logo !== undefined) {
-            updateData.logo = logo;
         }
 
         const updatedCompany = await Company.findByIdAndUpdate(
