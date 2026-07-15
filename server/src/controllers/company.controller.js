@@ -1,5 +1,6 @@
 import Company from "../models/Company.js";
 import mongoose from "mongoose";
+import { deleteFromCloudinary } from "../utils/cloudinary.js";
 
 export const createCompany = async (req, res) => {
     try {
@@ -187,7 +188,12 @@ export const updateCompany = async (req, res) => {
         // Only update fields that are provided
         const updateData = {};
 
-        if(req.file) {
+        if (req.file) {
+
+            if (company.logo) {
+                await deleteFromCloudinary(company.logo);
+            }
+
             updateData.logo = req.file.path;
         }
 

@@ -6,10 +6,11 @@ import "./src/config/cloudinary.js"
 
 import connectDB from "./src/config/db.js";
 import authRoutes from "./src/routes/auth.route.js";
-import jobRoutes from "./src/routes/job.route.js"
+import jobRoutes from "./src/routes/job.route.js";
 import applicationRoutes from "./src/routes/application.routes.js";
 import companyRoutes from "./src/routes/company.routes.js";
-import dashboardRoutes from "./src/routes/dashboard.routes.js"
+import dashboardRoutes from "./src/routes/dashboard.routes.js";
+import userRoutes from "./src/routes/user.route.js";
 
 connectDB();
 
@@ -24,6 +25,7 @@ app.use('/api/jobs', jobRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/users", userRoutes);
 
 
 
