@@ -1,5 +1,6 @@
+import mongoose from "mongoose";
 import Company from "../models/Company.js"
-import Application from "../models/Application.js"
+import Application from "../models/Application.js";
 import Job from "../models/Job.js";
 import { populate } from "dotenv";
 
@@ -149,3 +150,193 @@ export const getStudentDashboard = async (req, res) => {
         });
     }
 };
+
+export const getRecruiterAnalytics = async (req, res) => {
+    try {
+        const recruiterId = new mongoose.Types.ObjectId(req.user.userId);
+
+        const applicationStatus = await Application.aggregate([
+            {
+                $lookup: {
+                    from: "jobs",
+                    localField: "job",
+                    foreignField: "_id",
+                    as: "job"
+                }
+            },
+            {
+                $unwind: "$job"
+            },
+            {
+                $match: {
+                    "job.postedBy": recruiterId
+                }
+            },
+            {
+                $group: {
+                    _id: "$status",
+                    count: {
+                        $sum: 1
+                    }
+                }
+            }
+        ]);
+        const statusSummary = { pending: 0, accepted: 0, rejected: 0 };
+        applicationStatus.forEach(status => {
+            switch (status._id) {
+                case "Pending":
+                    statusSummary.pending = status.count;
+                    break;
+
+                case "Accepted":
+                    statusSummary.accepted = status.count;
+                    break;
+
+                case "Rejected":
+                    statusSummary.rejected = status.count;
+                    break;
+            }
+        });
+        const totalApplications = statusSummary.pending + statusSummary.accepted + statusSummary.rejected;
+
+        const acceptanceRate = totalApplications === 0 ? 0 : Number(
+            ((statusSummary.accepted / totalApplications) * 100).toFixed(2)
+        );
+
+        const rejectionRate = totalApplications === 0 ? 0 : Number(
+            ((statusSummary.rejected / totalApplications) * 100).toFixed(2)
+        );
+
+
+        const topJobs = await Application.aggregate([
+            {
+                $lookup: {
+                    from: "jobs",
+                    localField: "job",
+                    foreignField: "_id",
+                    as: "job"
+                }
+            },
+            {
+                $unwind: "$job"
+            },
+            {
+                $match: {
+                    "job.postedBy": recruiterId
+                }
+            },
+            {
+                $group: {
+                    _id: "$job._id",
+                    title: {
+                        $first: "$job.title"
+                    },
+                    applications: {
+                        $sum: 1
+                    }
+                }
+            },
+            {
+                $sort: {
+                    applications: -1
+                }
+            },
+            {
+                $limit: 5
+            }
+        ]);
+
+        const monthlyApplications = await Application.aggregate([
+            {
+                $lookup: {
+                    from: "jobs",
+                    localField: "job",
+                    foreignField: "_id",
+                    as: "job"
+                }
+            },
+            {
+                $unwind: "$job"
+            },
+            {
+                $match: {
+                    "job.postedBy": recruiterId
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" }
+                    },
+                    applications: {
+                        $sum: 1
+                    }
+                }
+            },
+            {
+                $sort: {
+                    "_id.year": 1,
+                    "_id.month": 1
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    applications: 1
+                }
+            }
+        ]);
+
+        const monthlyJobs = await Job.aggregate([
+            {
+                $match: {
+                    postedBy: recruiterId
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" }
+                    },
+                    jobs: {
+                        $sum: 1
+                    }
+                }
+            },
+            {
+                $sort: {
+                    "_id.year": 1,
+                    "_id.month": 1
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    jobs: 1
+                }
+            }
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            applicationStatus: statusSummary,
+            acceptanceRate,
+            rejectionRate,
+            topJobs,
+            monthlyApplications,
+            monthlyJobs
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
