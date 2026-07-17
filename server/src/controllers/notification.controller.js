@@ -1,155 +1,102 @@
 import mongoose from "mongoose";
 import Notification from "../models/Notification.js";
+import asyncHandler from '../utils/asyncHandler.js';
+import ApiError from '../utils/ApiError.js';
 
-export const getNotifications = async (req, res) => {
-    try {
-        const notifications = await Notification.find({
-            recipient: req.user.userId
-        })
-            .populate("sender", "fullName profilePhoto")
-            .sort({ createdAt: -1 });
+export const getNotifications = asyncHandler(async (req, res) => {
 
-        return res.status(200).json({
-            success: true,
-            count: notifications.length,
-            notifications
-        });
+    const notifications = await Notification.find({
+        recipient: req.user.userId
+    })
+        .populate("sender", "fullName profilePhoto")
+        .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+        success: true,
+        count: notifications.length,
+        notifications
+    });
+});
+
+export const markNotificationAsRead = asyncHandler(async (req, res) => {
+
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(400, "Invalid Notification ID");
     }
-    catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
+
+    const notification = await Notification.findById(id);
+
+    if (!notification) {
+        throw new ApiError(404, "Notification not found");
     }
-}
 
-export const markNotificationAsRead = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid Notification ID"
-            });
-        }
-
-        const notification = await Notification.findById(id);
-
-        if (!notification) {
-            return res.status(404).json({
-                success: false,
-                message: "Notification not found"
-            });
-        }
-
-        if (notification.recipient.toString() !== req.user.userId) {
-            return res.status(403).json({
-                success: false,
-                message: "Unauthorized"
-            });
-        }
-
-        notification.isRead = true;
-        await notification.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Notification marked as read",
-            notification
-        });
+    if (notification.recipient.toString() !== req.user.userId) {
+        throw new ApiError(403, "Unauthorized");
     }
-    catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
+
+    notification.isRead = true;
+    await notification.save();
+
+    return res.status(200).json({
+        success: true,
+        message: "Notification marked as read",
+        notification
+    });
+});
+
+export const deleteNotification = asyncHandler(async (req, res) => {
+
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(400, "Invalid Notification ID");
     }
-}
 
-export const deleteNotification = async (req, res) => {
-    try {
-        const { id } = req.params;
+    const notification = await Notification.findById(id);
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid Notification ID"
-            });
-        }
-
-        const notification = await Notification.findById(id);
-
-        if (!notification) {
-            return res.status(404).json({
-                success: false,
-                message: "Notification not found"
-            });
-        }
-
-        if (notification.recipient.toString() !== req.user.userId) {
-            return res.status(403).json({
-                success: false,
-                message: "Unauthorized"
-            });
-        }
-
-        await Notification.findByIdAndDelete(id);
-
-        return res.status(200).json({
-            success: true,
-            message: "Notification deleted successfully"
-        });
+    if (!notification) {
+        throw new ApiError(400, "Notification not found");
     }
-    catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
+
+    if (notification.recipient.toString() !== req.user.userId) {
+        throw new ApiError(403, "Unauthorized");
     }
-}
 
-export const updateApplicationStatus = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status } = req.body;
+    await Notification.findByIdAndDelete(id);
 
-        if(!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid Application ID"
-            });
-        }
+    return res.status(200).json({
+        success: true,
+        message: "Notification deleted successfully"
+    });
+});
 
-        const notification = await Notification.findById(id);
+export const updateApplicationStatus = asyncHandler(async (req, res) => {
 
-        if(!notification) {
-            return res.status(404).json({
-                success: false,
-                message: "Notification not found"
-            });
-        }
-        
-        if(notification.recipient.toString() !== req.user.userId) {
-            return res.status(403).json({
-                success: false,
-                message: "Unauthorized"
-            });
-        }
+    const { id } = req.params;
+    const { status } = req.body;
 
-        notification.status = status;
-        await notification.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Application status updated successfully",
-            notification
-        });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(400, "Invalid Application ID");
     }
-    catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
+
+    const notification = await Notification.findById(id);
+
+    if (!notification) {
+        throw new ApiError(404, "Notification not found");
     }
-}
+
+    if (notification.recipient.toString() !== req.user.userId) {
+        throw new ApiError(403, "Unauthorized");
+    }
+
+    notification.status = status;
+    await notification.save();
+
+    return res.status(200).json({
+        success: true,
+        message: "Application status updated successfully",
+        notification
+    });
+});

@@ -1,9 +1,14 @@
+import http from "http";
+import { Server } from "socket.io";
+import { initializeSocket } from "./socket.js";
+
 import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
 import "./src/config/cloudinary.js"
 
 
+import errorHandler from "./src/middleware/errorMiddleware.js";
 import connectDB from "./src/config/db.js";
 import authRoutes from "./src/routes/auth.route.js";
 import jobRoutes from "./src/routes/job.route.js";
@@ -31,12 +36,23 @@ app.use("/api/notifications", notificationRoutes);
 
 
 
-app.get("/",(req,res)=>{
+app.get("/", (req, res) => {
     res.send("CareerConnect API Running");
 });
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT,()=>{
+
+
+const server = http.createServer(app);
+
+initializeSocket(server);
+
+app.use(errorHandler);
+server.listen(PORT, () => {
     console.log(`CareerConnect API Running on port ${PORT}`);
-})
+});
+
+// app.listen(PORT, () => {
+//     console.log(`CareerConnect API Running on port ${PORT}`);
+// })

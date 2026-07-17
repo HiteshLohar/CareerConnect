@@ -1,239 +1,181 @@
 import Company from "../models/Company.js";
 import mongoose from "mongoose";
 import { deleteFromCloudinary } from "../utils/cloudinary.js";
+import asyncHandler from '../utils/asyncHandler.js';
+import ApiError from '../utils/ApiError.js';
 
-export const createCompany = async (req, res) => {
-    try {
-        const owner = req.user.userId;
+export const createCompany = asyncHandler(async (req, res) => {
 
-        const {
-            name,
-            description,
-            website,
-            location,
-            logo
-        } = req.body;
+    const owner = req.user.userId;
 
-        // Validate company name
-        if (!name || name.trim() === "") {
-            return res.status(400).json({
-                success: false,
-                message: "Company name is required"
-            });
-        }
+    const {
+        name,
+        description,
+        website,
+        location,
+        logo
+    } = req.body;
 
-        // Check duplicate company (case-insensitive)
-        const companyExists = await Company.findOne({
-            name: {
-                $regex: new RegExp(`^${name.trim()}$`, "i")
-            }
-        });
-
-        if (companyExists) {
-            return res.status(400).json({
-                success: false,
-                message: "Company already exists"
-            });
-        }
-
-        const company = await Company.create({
-            name: name.trim(),
-            description: description?.trim() || "",
-            website: website?.trim() || "",
-            location: location?.trim() || "",
-            logo: logo?.trim() || "",
-            owner
-        });
-
-        return res.status(201).json({
-            success: true,
-            message: "Company created successfully",
-            company
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
+    // Validate company name
+    if (!name || name.trim() === "") {
+        throw new ApiError(400, "Company name is required");
     }
-};
 
-export const getAllCompanies = async (req, res) => {
-    try {
-        const userId = req.user.userId;
-
-        const companies = await Company.find({ owner: userId }).sort({ createdAt: -1 });
-
-        if (companies.length === 0) {
-            return res.status(200).json({
-                success: true,
-                message: "No companies found",
-                count: 0,
-                companies: []
-            });
+    // Check duplicate company (case-insensitive)
+    const companyExists = await Company.findOne({
+        name: {
+            $regex: new RegExp(`^${name.trim()}$`, "i")
         }
+    });
 
+    if (companyExists) {
+        throw new ApiError(400, "Company already exists");
+    }
+
+    const company = await Company.create({
+        name: name.trim(),
+        description: description?.trim() || "",
+        website: website?.trim() || "",
+        location: location?.trim() || "",
+        logo: logo?.trim() || "",
+        owner
+    });
+
+    return res.status(201).json({
+        success: true,
+        message: "Company created successfully",
+        company
+    });
+});
+
+export const getAllCompanies = asyncHandler(async (req, res) => {
+
+    const userId = req.user.userId;
+
+    const companies = await Company.find({ owner: userId }).sort({ createdAt: -1 });
+
+    if (companies.length === 0) {
         return res.status(200).json({
             success: true,
-            message: "Companies fetched successfully",
-            count: companies.length,
-            companies
-        });
-
-
-    }
-    catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        })
-    }
-}
-
-export const getCompanyById = async (req, res) => {
-    try {
-        const { id: companyId } = req.params;
-
-        if (!mongoose.Types.ObjectId.isValid(companyId)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid Company ID"
-            });
-        }
-
-        const company = await Company.findById({ _id: companyId });
-
-        if (!company) {
-            return res.status(404).json({
-                success: false,
-                message: "Company not found"
-            });
-        }
-
-        if (req.user.userId !== company.owner.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: "You are not authorized to view this company"
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Company fetched successfully",
-            company
-        });
-
-    }
-    catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
+            message: "No companies found",
+            count: 0,
+            companies: []
         });
     }
-}
 
-export const updateCompany = async (req, res) => {
-    try {
-        const userId = req.user.userId;
-        const { id: companyId } = req.params;
+    return res.status(200).json({
+        success: true,
+        message: "Companies fetched successfully",
+        count: companies.length,
+        companies
+    });
+});
 
+export const getCompanyById = asyncHandler(async (req, res) => {
 
-        if (!mongoose.Types.ObjectId.isValid(companyId)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid Company ID"
-            });
-        }
+    const { id: companyId } = req.params;
 
-        const company = await Company.findById(companyId);
-
-        if (!company) {
-            return res.status(404).json({
-                success: false,
-                message: "Company not found"
-            });
-        }
-
-        if (company.owner.toString() !== userId) {
-            return res.status(403).json({
-                success: false,
-                message: "You are not authorized"
-            });
-        }
-
-        const {
-            name,
-            description,
-            website,
-            location
-        } = req.body;
-
-        // Check duplicate company name only if recruiter wants to change it
-        if (name !== undefined) {
-
-            const existingCompany = await Company.findOne({ name: name.trim() });
-
-            if (
-                existingCompany &&
-                existingCompany._id.toString() !== companyId
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Company name already exists"
-                });
-            }
-        }
-
-        // Only update fields that are provided
-        const updateData = {};
-
-        if (req.file) {
-
-            if (company.logo) {
-                await deleteFromCloudinary(company.logo);
-            }
-
-            updateData.logo = req.file.path;
-        }
-
-        if (name !== undefined) {
-            updateData.name = name.trim();
-        }
-
-        if (description !== undefined) {
-            updateData.description = description;
-        }
-
-        if (website !== undefined) {
-            updateData.website = website;
-        }
-
-        if (location !== undefined) {
-            updateData.location = location;
-        }
-
-        const updatedCompany = await Company.findByIdAndUpdate(
-            companyId,
-            updateData,
-            {
-                returnDocument: "after",
-                runValidators: true
-            }
-        );
-
-        return res.status(200).json({
-            success: true,
-            message: "Company updated successfully",
-            company: updatedCompany
-        });
-
-
+    if (!mongoose.Types.ObjectId.isValid(companyId)) {
+        throw new ApiError(400, "Invalid Company ID");
     }
-    catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
+
+    const company = await Company.findById({ _id: companyId });
+
+    if (!company) {
+        throw new ApiError(404, "Company not found");
     }
-}
+
+    if (req.user.userId !== company.owner.toString()) {
+        throw new ApiError(403, "You are not authorized to view this company");
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: "Company fetched successfully",
+        company
+    });
+});
+
+export const updateCompany = asyncHandler(async (req, res) => {
+
+    const userId = req.user.userId;
+    const { id: companyId } = req.params;
+
+
+    if (!mongoose.Types.ObjectId.isValid(companyId)) {
+        throw new ApiError(400, "Invalid Company ID");
+    }
+
+    const company = await Company.findById(companyId);
+
+    if (!company) {
+        throw new ApiError(404, "Company not found");
+    }
+
+    if (company.owner.toString() !== userId) {
+        throw new ApiError(403, "You are not authorized to update this company");
+    }
+
+    const {
+        name,
+        description,
+        website,
+        location
+    } = req.body;
+
+    // Check duplicate company name only if recruiter wants to change it
+    if (name !== undefined) {
+
+        const existingCompany = await Company.findOne({ name: name.trim() });
+
+        if (
+            existingCompany &&
+            existingCompany._id.toString() !== companyId
+        ) {
+            throw new ApiError(400, "Company name already exists");
+        }
+    }
+
+    // Only update fields that are provided
+    const updateData = {};
+
+    if (req.file) {
+
+        if (company.logo) {
+            await deleteFromCloudinary(company.logo);
+        }
+
+        updateData.logo = req.file.path;
+    }
+
+    if (name !== undefined) {
+        updateData.name = name.trim();
+    }
+
+    if (description !== undefined) {
+        updateData.description = description;
+    }
+
+    if (website !== undefined) {
+        updateData.website = website;
+    }
+
+    if (location !== undefined) {
+        updateData.location = location;
+    }
+
+    const updatedCompany = await Company.findByIdAndUpdate(
+        companyId,
+        updateData,
+        {
+            returnDocument: "after",
+            runValidators: true
+        }
+    );
+
+    return res.status(200).json({
+        success: true,
+        message: "Company updated successfully",
+        company: updatedCompany
+    });
+});

@@ -42,12 +42,12 @@ router.get(
 );
 
 //demo
-router.get("/profile", verifyToken, (req, res) => {
-    return res.status(200).json({
-        success: true,
-        message: "Protected Route Accessed",
-        user: req.user
-    });
-});
+// router.get("/profile", verifyToken, (req, res) => {
+//     return res.status(200).json({
+//         success: true,
+//         message: "Protected Route Accessed",
+//         user: req.user
+//     });
+// });
 
 export default router;
