@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import Application from "../models/Application.js";
 import Job from "../models/Job.js";
+import User from "../models/User.js";
+import Notification from "../models/Notification.js";
 
 export const applyJob = async (req, res) => {
     try {
@@ -45,6 +47,16 @@ export const applyJob = async (req, res) => {
         const application = await Application.create({
             job: jobId,
             student: studentId
+        });
+
+        const student = await User.findById(studentId);
+
+        const notification = await Notification.create({
+            recipient: job.postedBy,
+            sender: studentId,
+            title: "New Job Application",
+            message: `${student.fullName} applied for ${job.title}.`,
+            type: "NEW_APPLICATION"
         });
 
         return res.status(201).json({
@@ -192,8 +204,17 @@ export const updateApplicationStatus = async (req, res) => {
         }
 
         application.status = status;
-
         await application.save();
+
+        const job = await Job.findById(application.job);
+
+        await Notification.create({
+            recipient: application.student,
+            sender: req.user.userId,
+            title: status === "Accepted" ? "Application Accepted" : "Application Rejected",
+            message: status === "Accepted" ? `Congratulations! Your application for ${job.title} has been accepted.` : `Your application for ${job.title} has been rejected.`,
+            type: status === "Accepted" ? "APPLICATION_ACCEPTED" : "APPLICATION_REJECTED"
+        });
 
         return res.status(200).json({
             success: true,
