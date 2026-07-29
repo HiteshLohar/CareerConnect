@@ -61,7 +61,8 @@ export const login = asyncHandler(async (req, res) => {
 
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+   const user = await User.findOne({ email })
+    .select("_id fullName email role password");
 
     if (!user) {
         throw new ApiError(404, "User not found");
