@@ -3,6 +3,7 @@ import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../redux/slices/authSlice";
+import api from "../../services/api";
 
 function UserMenu() {
 
@@ -13,11 +14,19 @@ function UserMenu() {
         (state) => state.auth
     );
 
-    const handleLogout = () => {
-        dispatch(logout());
-        navigate("/");
+    const handleLogout = async () => {
+        try {
+            await api.post('/auth/logout');
 
-        toast.success("Logged out successfully");
+            dispatch(logout());
+
+            toast.success("Logged out successfully");
+
+            navigate("/login");
+        }
+        catch (error) {
+            toast.error(error.response?.data?.message || "Logout failed");
+        }
     };
 
     return (
@@ -40,11 +49,17 @@ function UserMenu() {
                 ) : (
                     <>
 
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                        <button
+                            onClick={() => navigate("/login")}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                        >
                             Login
                         </button>
 
-                        <button className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg">
+                        <button
+                            onClick={() => navigate("/register")}
+                            className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg"
+                        >
                             Register
                         </button>
 

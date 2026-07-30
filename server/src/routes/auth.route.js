@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, getCurrentUser } from "../controllers/auth.controllers.js";
+import { register, login, logout, getCurrentUser } from "../controllers/auth.controllers.js";
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -7,6 +7,7 @@ const router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
 router.get('/me', verifyToken, getCurrentUser);
+router.post('/logout', verifyToken, logout);
 
 
 // this is test to check the role based access control
