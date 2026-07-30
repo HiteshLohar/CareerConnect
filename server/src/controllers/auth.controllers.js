@@ -61,8 +61,8 @@ export const login = asyncHandler(async (req, res) => {
 
     const { email, password } = req.body;
 
-   const user = await User.findOne({ email })
-    .select("_id fullName email role password");
+    const user = await User.findOne({ email })
+        .select("_id fullName email role password");
 
     if (!user) {
         throw new ApiError(404, "User not found");
@@ -85,13 +85,33 @@ export const login = asyncHandler(async (req, res) => {
         }
     );
 
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
     user.password = undefined;
 
     return res.status(200).json({
         success: true,
         message: "Login successful",
-        token,
         user
     });
 });
 
+export const getCurrentUser = asyncHandler(async (req, res)=>{
+
+    const user = await User.findById(req.user.userId)
+        .select("_id fullName email role");
+
+    if(!user){
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json({
+        success : true,
+        user
+    });
+});
