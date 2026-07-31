@@ -6,7 +6,7 @@ import Home from '../pages/Home';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import NotFound from '../pages/NotFound';
-import Jobs from '../pages/Jobs';
+import Jobs from '../pages/Jobs/Jobs';
 import Profile from '../pages/Profile/Profile';
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
