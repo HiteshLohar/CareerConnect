@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 import {
     FiMapPin,
     FiBriefcase,
@@ -7,6 +9,8 @@ import {
 } from "react-icons/fi";
 
 function JobCard({ job }) {
+
+    const navigate = useNavigate();
 
     const formatSalary = (salary) => {
         return `₹ ${(salary / 100000).toFixed(1)} LPA`;
@@ -127,10 +131,11 @@ function JobCard({ job }) {
 
             <div className="mt-6 flex gap-3">
 
-                <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition duration-300">
-
+                <button
+                    onClick={() => navigate(`/jobs/${job._id}`)}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition duration-300"
+                >
                     View Details
-
                 </button>
 
                 <button className="flex-1 border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 rounded-lg transition duration-300">

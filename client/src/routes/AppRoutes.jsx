@@ -7,6 +7,7 @@ import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import NotFound from '../pages/NotFound';
 import Jobs from '../pages/Jobs/Jobs';
+import JobDetails from "../pages/JobDetails/JobDetails";
 import Profile from '../pages/Profile/Profile';
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
@@ -43,6 +44,7 @@ function AppRoutes() {
                 <Route element={<MainLayout />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/jobs" element={<Jobs />} />
+                    <Route path="/jobs/:id" element={<JobDetails />} />
                     <Route
                         path="/profile"
                         element={

@@ -20,6 +20,8 @@ function Jobs() {
 
     const [location, setLocation] = useState("");
     const [jobType, setJobType] = useState("");
+    const [experience, setExperience] = useState("");
+    const [minSalary, setMinSalary] = useState("");
 
     const [page, setPage] = useState(1);
 
@@ -36,6 +38,8 @@ function Jobs() {
                     keyword,
                     location,
                     jobType,
+                    experience,
+                    minSalary,
                     page,
                     limit: 5,
                 },
@@ -56,7 +60,14 @@ function Jobs() {
 
     useEffect(() => {
         fetchJobs();
-    }, [keyword, page]);
+    }, [
+        keyword,
+        location,
+        jobType,
+        experience,
+        minSalary,
+        page,
+    ]);
 
     const handleSearch = () => {
         if (searchInput.trim() === keyword.trim()) return;
@@ -74,7 +85,16 @@ function Jobs() {
                 onSearch={handleSearch}
             />
 
-            <JobFilters />
+            <JobFilters
+                location={location}
+                setLocation={setLocation}
+                jobType={jobType}
+                setJobType={setJobType}
+                experience={experience}
+                setExperience={setExperience}
+                minSalary={minSalary}
+                setMinSalary={setMinSalary}
+            />
 
             <JobList
                 jobs={jobs}
@@ -84,9 +104,7 @@ function Jobs() {
             <Pagination
                 page={page}
                 setPage={setPage}
-                currentPage={currentPage}
                 totalPages={totalPages}
-                totalJobs={totalJobs}
             />
 
         </div>
