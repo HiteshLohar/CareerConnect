@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import { loginSuccess } from "../../redux/slices/authSlice";
 import api from "../../services/api";
@@ -9,7 +9,10 @@ import { toast } from "react-hot-toast";
 function LoginForm() {
 
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+
+    const [searchParams] = useSearchParams();
+
+    const redirectPath = searchParams.get("redirect") || "/";
 
     const [loading, setLoading] = useState(false);
 
@@ -30,6 +33,7 @@ function LoginForm() {
     };
 
     const handleSubmit = async (e) => {
+
         e.preventDefault();
 
         try {
@@ -38,18 +42,11 @@ function LoginForm() {
 
             const response = await api.post("/auth/login", formData);
 
-            console.log(response.data);
-
             dispatch(loginSuccess(response.data.user));
 
             toast.success(response.data.message);
 
-            // Login ke baad Home Page
-            navigate("/");
-
         } catch (error) {
-
-            console.log(error);
 
             toast.error(
                 error.response?.data?.message || "Something went wrong"
@@ -60,6 +57,7 @@ function LoginForm() {
             setLoading(false);
 
         }
+
     };
 
     return (

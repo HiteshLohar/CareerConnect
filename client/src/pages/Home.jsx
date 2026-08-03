@@ -9,7 +9,6 @@ function Home() {
     );
     const auth = useSelector((state) => state.auth);
 
-    console.log("AUTH STATE:", auth);
 
     return (
         <div className="p-10">

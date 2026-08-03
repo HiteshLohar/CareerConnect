@@ -76,6 +76,27 @@ export const applyJob = asyncHandler(async (req, res) => {
     }
 });
 
+export const checkApplicationStatus = asyncHandler(async (req, res) => {
+
+    const studentId = req.user.userId;
+    const jobId = req.params.id;
+
+    const application = await Application.findOne({
+        student: studentId,
+        job: jobId,
+    });
+
+
+    return res.status(200).json({
+        success: true,
+        message: application
+            ? "Application found"
+            : "Application not found",
+        applied: !!application,
+
+    });
+});
+
 export const getApplicants = asyncHandler(async (req, res) => {
     const { id: jobId } = req.params;
 

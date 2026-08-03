@@ -9,15 +9,20 @@ const api = axios.create({
 });
 
 api.interceptors.response.use(
-    (response) =>{
+    (response) => {
         return response;
     },
-    (error)=>{
-        if(error.response?.status === 401){
+    (error) => {
+
+        if (
+            error.response?.status === 401 &&
+            error.config?.url === "/auth/me"
+        ) {
             store.dispatch(logout());
 
             console.log("Session expired");
         }
+
         return Promise.reject(error);
     }
 );

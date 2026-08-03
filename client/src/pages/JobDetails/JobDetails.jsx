@@ -1,5 +1,9 @@
+import { toast } from "react-hot-toast";
+
+import { useSelector } from "react-redux";
+
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import api from "../../services/api";
 
@@ -7,8 +11,34 @@ function JobDetails() {
 
     const { id } = useParams();
 
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const { isAuthenticated } = useSelector(
+        (state) => state.auth
+    );
+
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const [applying, setApplying] = useState(false);
+    const [applied, setApplied] = useState(false);
+
+    const checkApplicationStatus = async () => {
+
+        try {
+
+            const response = await api.get(`/applications/${id}/status`);
+
+            setApplied(response.data.applied);
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
+    };
 
     const fetchJob = async () => {
 
@@ -35,8 +65,14 @@ function JobDetails() {
     };
 
     useEffect(() => {
+
         fetchJob();
-    }, [id]);
+
+        if (isAuthenticated) {
+            checkApplicationStatus();
+        }
+
+    }, [id, isAuthenticated]);
 
     if (loading) {
         return (
@@ -69,6 +105,44 @@ function JobDetails() {
 
         return `${days} days ago`;
     };
+
+const handleApply = async () => {
+
+    if (!isAuthenticated) {
+
+        toast.error("Please login first");
+
+        navigate(
+            `/login?redirect=${encodeURIComponent(location.pathname)}`
+        );
+
+        return;
+
+    }
+
+    try {
+
+        setApplying(true);
+
+        const response = await api.post(`/applications/${id}/apply`);
+
+        toast.success(response.data.message);
+
+        setApplied(true);
+
+    } catch (error) {
+
+        toast.error(
+            error.response?.data?.message || "Something went wrong"
+        );
+
+    } finally {
+
+        setApplying(false);
+
+    }
+
+};
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-10">
@@ -198,8 +272,19 @@ function JobDetails() {
 
                 <div className="mt-10">
 
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition">
-                        Apply Now
+                    <button
+                        onClick={handleApply}
+                        disabled={applying || applied}
+                        className={`px-8 py-3 rounded-lg text-white transition ${applied
+                            ? "bg-green-600 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400"
+                            }`}
+                    >
+                        {applying
+                            ? "Applying..."
+                            : applied
+                                ? "Applied ✓"
+                                : "Apply Now"}
                     </button>
 
                 </div>
