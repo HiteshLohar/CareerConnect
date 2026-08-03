@@ -4,7 +4,7 @@ import Job from "../models/Job.js";
 import User from "../models/User.js";
 import Notification from "../models/Notification.js";
 import asyncHandler from "../utils/asyncHandler.js";
-
+import ApiError from "../utils/ApiError.js";
 
 export const applyJob = asyncHandler(async (req, res) => {
     try {
@@ -166,37 +166,54 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid Application ID");
     }
 
-    const application = await Application.findById(applicationId).populate("job");
-
-    if (!application) {
-        throw new ApiError(404, "Application not found");
-    }
-
-    if (req.user.userId !== application.job.postedBy.toString()) {
-        throw new ApiError(403, "You are not authorized to update this application");
-    }
-
     const allowedStatus = ["Pending", "Accepted", "Rejected"];
 
     if (!allowedStatus.includes(status)) {
         throw new ApiError(400, "Invalid status");
     }
 
-    if (application.status.toLowerCase() === status.toLowerCase()) {
-        throw new ApiError(400, "Application already has this status");
+    const application = await Application.findById(applicationId)
+        .populate("job");
+
+    if (!application) {
+        throw new ApiError(404, "Application not found");
+    }
+
+    if (req.user.userId !== application.job.postedBy.toString()) {
+        throw new ApiError(
+            403,
+            "You are not authorized to update this application"
+        );
+    }
+
+    if (application.status !== "Pending") {
+        throw new ApiError(
+            409,
+            "Application status has already been updated."
+        );
     }
 
     application.status = status;
-    await application.save();
 
-    const job = await Job.findById(application.job);
+    await application.save();
 
     await Notification.create({
         recipient: application.student,
         sender: req.user.userId,
-        title: status === "Accepted" ? "Application Accepted" : "Application Rejected",
-        message: status === "Accepted" ? `Congratulations! Your application for ${job.title} has been accepted.` : `Your application for ${job.title} has been rejected.`,
-        type: status === "Accepted" ? "APPLICATION_ACCEPTED" : "APPLICATION_REJECTED"
+        title:
+            status === "Accepted"
+                ? "Application Accepted"
+                : "Application Rejected",
+
+        message:
+            status === "Accepted"
+                ? `Congratulations! Your application for ${application.job.title} has been accepted.`
+                : `Your application for ${application.job.title} has been rejected.`,
+
+        type:
+            status === "Accepted"
+                ? "APPLICATION_ACCEPTED"
+                : "APPLICATION_REJECTED"
     });
 
     return res.status(200).json({

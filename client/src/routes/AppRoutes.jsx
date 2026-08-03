@@ -10,6 +10,7 @@ import Jobs from '../pages/Jobs/Jobs';
 import JobDetails from "../pages/JobDetails/JobDetails";
 import Profile from '../pages/Profile/Profile';
 import MyApplications from "../pages/MyApplications/MyApplications";
+import Applicants from "../pages/Applicants/Applicants";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
@@ -62,7 +63,15 @@ function AppRoutes() {
                             </ProtectedRoute>
                         }
                     />
-                    
+                    <Route
+                        path="/jobs/:id/applicants"
+                        element={
+                            <ProtectedRoute>
+                                <Applicants />
+                            </ProtectedRoute>
+                        }
+                    />
+
                 </Route>
 
                 {/* 404 */}
