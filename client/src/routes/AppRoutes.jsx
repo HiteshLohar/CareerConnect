@@ -9,6 +9,7 @@ import NotFound from '../pages/NotFound';
 import Jobs from '../pages/Jobs/Jobs';
 import JobDetails from "../pages/JobDetails/JobDetails";
 import Profile from '../pages/Profile/Profile';
+import MyApplications from "../pages/MyApplications/MyApplications";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
@@ -53,6 +54,15 @@ function AppRoutes() {
                             </ProtectedRoute>
                         }
                     />
+                    <Route
+                        path="/my-applications"
+                        element={
+                            <ProtectedRoute>
+                                <MyApplications />
+                            </ProtectedRoute>
+                        }
+                    />
+                    
                 </Route>
 
                 {/* 404 */}
