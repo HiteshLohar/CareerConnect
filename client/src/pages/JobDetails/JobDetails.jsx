@@ -1,3 +1,5 @@
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+
 import { toast } from "react-hot-toast";
 
 import { useSelector } from "react-redux";
@@ -11,6 +13,9 @@ function JobDetails() {
 
     const { id } = useParams();
 
+
+    console.log("Job ID:", id);
+
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -23,6 +28,9 @@ function JobDetails() {
 
     const [applying, setApplying] = useState(false);
     const [applied, setApplied] = useState(false);
+
+    const [saved, setSaved] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const checkApplicationStatus = async () => {
 
@@ -44,21 +52,152 @@ function JobDetails() {
 
         try {
 
+            console.log("Before API");
+
             setLoading(true);
 
             const response = await api.get(`/jobs/${id}`);
 
+            console.log("After API");
+
+            console.log(response.data);
+
             setJob(response.data.job);
 
-        }
-        catch (error) {
+        } catch (error) {
 
-            console.error(error);
+            console.log("API Error:", error);
 
-        }
-        finally {
+        } finally {
+
+            console.log("Finally");
 
             setLoading(false);
+
+        }
+
+    };
+
+
+    const getPostedTime = (date) => {
+
+        const created = new Date(date);
+        const now = new Date();
+
+        const diff = now - created;
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+        if (days === 0) return "Today";
+
+        if (days === 1) return "1 day ago";
+
+        return `${days} days ago`;
+    };
+
+    const handleApply = async () => {
+
+        if (!isAuthenticated) {
+
+            toast.error("Please login first");
+
+            navigate(
+                `/login?redirect=${encodeURIComponent(location.pathname)}`
+            );
+
+            return;
+
+        }
+
+        try {
+
+            setApplying(true);
+
+            const response = await api.post(`/applications/${id}/apply`);
+
+            toast.success(response.data.message);
+
+            setApplied(true);
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message || "Something went wrong"
+            );
+
+        } finally {
+
+            setApplying(false);
+
+        }
+
+    };
+
+    const checkSavedStatus = async () => {
+
+        try {
+
+            const response = await api.get("/jobs/saved");
+
+            const alreadySaved = response.data.savedJobs.some(
+                (savedJob) => savedJob._id === id
+            );
+
+            setSaved(alreadySaved);
+
+        } catch (error) {
+
+            console.log(error);
+
+        }
+
+    };
+
+    const handleSaveJob = async () => {
+
+        if (!isAuthenticated) {
+
+            toast.error("Please login first");
+
+            navigate(
+                `/login?redirect=${encodeURIComponent(location.pathname)}`
+            );
+
+            return;
+
+        }
+
+        try {
+
+            setSaving(true);
+
+            if (saved) {
+
+                const response = await api.delete(`/jobs/${id}/save`);
+
+                toast.success(response.data.message);
+
+                setSaved(false);
+
+            } else {
+
+                const response = await api.post(`/jobs/${id}/save`);
+
+                toast.success(response.data.message);
+
+                setSaved(true);
+
+            }
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message || "Something went wrong"
+            );
+
+        } finally {
+
+            setSaving(false);
 
         }
 
@@ -70,6 +209,7 @@ function JobDetails() {
 
         if (isAuthenticated) {
             checkApplicationStatus();
+            checkSavedStatus();
         }
 
     }, [id, isAuthenticated]);
@@ -89,60 +229,6 @@ function JobDetails() {
             </div>
         );
     }
-
-    const getPostedTime = (date) => {
-
-        const created = new Date(date);
-        const now = new Date();
-
-        const diff = now - created;
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-        if (days === 0) return "Today";
-
-        if (days === 1) return "1 day ago";
-
-        return `${days} days ago`;
-    };
-
-const handleApply = async () => {
-
-    if (!isAuthenticated) {
-
-        toast.error("Please login first");
-
-        navigate(
-            `/login?redirect=${encodeURIComponent(location.pathname)}`
-        );
-
-        return;
-
-    }
-
-    try {
-
-        setApplying(true);
-
-        const response = await api.post(`/applications/${id}/apply`);
-
-        toast.success(response.data.message);
-
-        setApplied(true);
-
-    } catch (error) {
-
-        toast.error(
-            error.response?.data?.message || "Something went wrong"
-        );
-
-    } finally {
-
-        setApplying(false);
-
-    }
-
-};
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-10">
@@ -270,7 +356,7 @@ const handleApply = async () => {
 
                 {/* Apply Button */}
 
-                <div className="mt-10">
+                <div className="mt-10 flex gap-4">
 
                     <button
                         onClick={handleApply}
@@ -285,6 +371,31 @@ const handleApply = async () => {
                             : applied
                                 ? "Applied ✓"
                                 : "Apply Now"}
+                    </button>
+
+                    <button
+                        onClick={handleSaveJob}
+                        disabled={saving}
+                        className={`px-6 py-3 rounded-lg border transition flex items-center gap-2
+            ${saved
+                                ? "bg-red-50 border-red-500 text-red-600"
+                                : "bg-white border-gray-300 hover:bg-gray-100"
+                            }`}
+                    >
+                        {
+                            saved
+                                ? <FaHeart />
+                                : <FaRegHeart />
+                        }
+
+                        {
+                            saving
+                                ? "Saving..."
+                                : saved
+                                    ? "Saved"
+                                    : "Save Job"
+                        }
+
                     </button>
 
                 </div>

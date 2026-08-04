@@ -16,9 +16,10 @@ router.put("/:id", verifyToken, authorizeRoles("recruiter"), updateJob);
 
 router.delete("/:id", verifyToken, authorizeRoles("recruiter"), deleteJob);
 
-router.post("/:id/save", verifyToken, authorizeRoles("student"), saveJob);
-
 router.delete("/:id/save", verifyToken, authorizeRoles("student"), removeSavedJob);
 
+//SAVEDJOBs
+
+router.post("/:id/save", verifyToken, authorizeRoles("student"), saveJob);
 
 export default router;

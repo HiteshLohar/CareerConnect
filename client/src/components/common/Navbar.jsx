@@ -2,7 +2,8 @@
 import NavLogo from "./NavLogo";
 import NavLinks from "./NavLinks";
 import UserMenu from "./UserMenu";
-    
+import NotificationBell from "../notification/NotificationBell";
+
 
 function Navbar() {
     return (
@@ -12,7 +13,13 @@ function Navbar() {
 
             <NavLinks />
 
-            <UserMenu />
+            <div className="flex items-center gap-5">
+
+                <NotificationBell />
+
+                <UserMenu />
+
+            </div>
 
         </nav>
     );
