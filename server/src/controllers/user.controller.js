@@ -42,11 +42,17 @@ export const updateProfile = asyncHandler(async (req, res) => {
     if (location != undefined) {
         updateData.location = location;
     }
-    if (skills != undefined) {
-        updateData.skills = skills;
+    if (skills !== undefined) {
+        updateData.skills =
+            typeof skills === "string"
+                ? JSON.parse(skills)
+                : skills;
     }
-    if (education != undefined) {
-        updateData.education = education;
+    if (education !== undefined) {
+        updateData.education =
+            typeof education === "string"
+                ? JSON.parse(education)
+                : education;
     }
 
     const userData = await User.findById(req.user.userId);
