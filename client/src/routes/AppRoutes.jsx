@@ -12,6 +12,9 @@ import Profile from '../pages/Profile/Profile';
 import MyApplications from "../pages/MyApplications/MyApplications";
 import Applicants from "../pages/Applicants/Applicants";
 import SavedJobs from "../pages/SavedJobs/SavedJobs";
+import CompanyList from "../pages/Company/CompanyList";
+import CreateCompany from "../pages/Company/CreateCompany";
+import EditCompany from "../pages/Company/EditCompany";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
@@ -77,6 +80,31 @@ function AppRoutes() {
                         element={
                             <ProtectedRoute>
                                 <SavedJobs />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/companies"
+                        element={
+                            <ProtectedRoute>
+                                <CompanyList />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/companies/create"
+                        element={
+                            <ProtectedRoute>
+                                <CreateCompany />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/companies/:id/edit"
+                        element={
+                            <ProtectedRoute>
+                                <EditCompany />
                             </ProtectedRoute>
                         }
                     />

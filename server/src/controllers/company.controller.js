@@ -179,3 +179,43 @@ export const updateCompany = asyncHandler(async (req, res) => {
         company: updatedCompany
     });
 });
+
+export const deleteCompany = asyncHandler(async (req, res) => {
+
+    const userId = req.user.userId;
+    const { id: companyId } = req.params;
+
+    // Validate Company ID
+    if (!mongoose.Types.ObjectId.isValid(companyId)) {
+        throw new ApiError(400, "Invalid Company ID");
+    }
+
+    // Find Company
+    const company = await Company.findById(companyId);
+
+    if (!company) {
+        throw new ApiError(404, "Company not found");
+    }
+
+    // Owner Check
+    if (company.owner.toString() !== userId) {
+        throw new ApiError(
+            403,
+            "You are not authorized to delete this company"
+        );
+    }
+
+    // Delete Logo from Cloudinary
+    if (company.logo) {
+        await deleteFromCloudinary(company.logo);
+    }
+
+    // Delete Company from MongoDB
+    await Company.findByIdAndDelete(companyId);
+
+    return res.status(200).json({
+        success: true,
+        message: "Company deleted successfully"
+    });
+
+});
