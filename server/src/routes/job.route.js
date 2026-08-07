@@ -1,10 +1,16 @@
 import express from "express";
 import { authorizeRoles, verifyToken } from "../middleware/authMiddleware.js";
-import { createJob, getAllJobs, getJobById, updateJob, deleteJob, saveJob, removeSavedJob, getSavedJobs } from "../controllers/job.controller.js";
+import { createJob, getAllJobs, getJobById, updateJob, deleteJob, saveJob, removeSavedJob, getSavedJobs, getRecruiterJobs, getRecruiterJob, updateRecruiterJob } from "../controllers/job.controller.js";
 
 const router = express.Router();
 
 router.post("/", verifyToken, authorizeRoles("recruiter"), createJob);
+
+router.get("/recruiter", verifyToken, authorizeRoles("recruiter"), getRecruiterJobs);
+
+router.get("/recruiter/:id", verifyToken, authorizeRoles("recruiter"), getRecruiterJob);
+
+router.put("/recruiter/:id", verifyToken, authorizeRoles("recruiter"), updateRecruiterJob);
 
 router.get("/", getAllJobs);
 

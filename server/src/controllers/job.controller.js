@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 
+//recruiter jobs
 export const createJob = asyncHandler(async (req, res) => {
 
     const { title, company, description, location, salary, jobType, experience, skills, vacancies, deadline } = req.body;
@@ -62,7 +63,145 @@ export const createJob = asyncHandler(async (req, res) => {
     });
 });
 
+export const getRecruiterJobs = asyncHandler(async (req, res) => {
 
+    const recruiterId = req.user.userId;
+
+    const jobs = await Job.find({
+        postedBy: recruiterId
+    })
+        .populate("company", "name logo")
+        .sort({ createdAt: -1 });
+
+    if (jobs.length === 0) {
+        return res.status(200).json({
+            success: true,
+            message: "No jobs found",
+            count: 0,
+            jobs: []
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: "Jobs fetched successfully",
+        count: jobs.length,
+        jobs
+    });
+
+});
+
+export const updateJob = asyncHandler(async (req, res) => {
+    const { id: jobId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+        throw new ApiError(400, "Invalid Job ID");
+    }
+
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+        throw new ApiError(404, "Job not found");
+    }
+
+    if (req.user.userId !== job.postedBy.toString()) {
+        throw new ApiError(403, "You are not authorized to update this job");
+    }
+
+    const {
+        title,
+        company,
+        description,
+        location,
+        salary,
+        jobType,
+        experience,
+        skills,
+        vacancies,
+        deadline
+    } = req.body;
+
+    if (req.user.userId !== job.postedBy.toString()) {
+        throw new ApiError(403, "You are not authorized to update this job");
+    }
+
+    // Validate company if recruiter wants to change it
+    if (company !== undefined) {
+
+        if (!mongoose.Types.ObjectId.isValid(company)) {
+            throw new ApiError(400, "Invalid Company ID");
+        }
+
+        const companyExists = await Company.findById(company);
+
+        if (!companyExists) {
+            throw new ApiError(404, "Company not found");
+        }
+
+        if (companyExists.owner.toString() !== req.user.userId) {
+            throw new ApiError(403, "You are not authorized to use this company");
+        }
+    }
+
+    // Only update fields that are provided
+    const updateData = {};
+
+    if (title !== undefined) updateData.title = title;
+    if (company !== undefined) updateData.company = company;
+    if (description !== undefined) updateData.description = description;
+    if (location !== undefined) updateData.location = location;
+    if (salary !== undefined) updateData.salary = salary;
+    if (jobType !== undefined) updateData.jobType = jobType;
+    if (experience !== undefined) updateData.experience = experience;
+    if (skills !== undefined) updateData.skills = skills;
+    if (vacancies !== undefined) updateData.vacancies = vacancies;
+    if (deadline !== undefined) updateData.deadline = deadline;
+
+    const updatedJob = await Job.findByIdAndUpdate(
+        jobId,
+        updateData,
+        {
+            new: true,
+            runValidators: true
+        }
+    );
+
+    return res.status(200).json({
+        success: true,
+        message: "Job updated successfully",
+        job: updatedJob
+    });
+});
+
+export const deleteJob = asyncHandler(async (req, res) => {
+
+    const { id: jobId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+        throw new ApiError(400, "Invalid Job Id");
+    }
+    const job = await Job.findById(jobId)
+
+    if (!job) {
+        throw new ApiError(404, "Job Not Found");
+    }
+    if (!(req.user.userId === job.postedBy.toString())) {
+        throw new ApiError(403, "You are not authorized to delete this job");
+    }
+
+    if (!job.isActive) {
+        throw new ApiError(400, "Job is already deleted");
+    }
+
+    job.isActive = false;
+    await job.save();
+
+    return res.status(200).json({
+        success: true,
+        message: "Job deleted successfully"
+    });
+});
+
+//student jobs
 export const getAllJobs = asyncHandler(async (req, res) => {
 
     const { keyword, location, jobType, page = 1, limit = 5, sort, experience, minSalary, maxSalary, company } = req.query;
@@ -190,116 +329,8 @@ export const getJobById = asyncHandler(async (req, res) => {
     });
 });
 
-export const updateJob = asyncHandler(async (req, res) => {
-    const { id: jobId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(jobId)) {
-        throw new ApiError(400, "Invalid Job ID");
-    }
-
-    const job = await Job.findById(jobId);
-
-    if (!job) {
-        throw new ApiError(404, "Job not found");
-    }
-
-    if (req.user.userId !== job.postedBy.toString()) {
-        throw new ApiError(403, "You are not authorized to update this job");
-    }
-
-    const {
-        title,
-        company,
-        description,
-        location,
-        salary,
-        jobType,
-        experience,
-        skills,
-        vacancies,
-        deadline
-    } = req.body;
-
-    if (req.user.userId !== job.postedBy.toString()) {
-        throw new ApiError(403, "You are not authorized to update this job");
-    }
-
-    // Validate company if recruiter wants to change it
-    if (company !== undefined) {
-
-        if (!mongoose.Types.ObjectId.isValid(company)) {
-            throw new ApiError(400, "Invalid Company ID");
-        }
-
-        const companyExists = await Company.findById(company);
-
-        if (!companyExists) {
-            throw new ApiError(404, "Company not found");
-        }
-
-        if (companyExists.owner.toString() !== req.user.userId) {
-            throw new ApiError(403, "You are not authorized to use this company");
-        }
-    }
-
-    // Only update fields that are provided
-    const updateData = {};
-
-    if (title !== undefined) updateData.title = title;
-    if (company !== undefined) updateData.company = company;
-    if (description !== undefined) updateData.description = description;
-    if (location !== undefined) updateData.location = location;
-    if (salary !== undefined) updateData.salary = salary;
-    if (jobType !== undefined) updateData.jobType = jobType;
-    if (experience !== undefined) updateData.experience = experience;
-    if (skills !== undefined) updateData.skills = skills;
-    if (vacancies !== undefined) updateData.vacancies = vacancies;
-    if (deadline !== undefined) updateData.deadline = deadline;
-
-    const updatedJob = await Job.findByIdAndUpdate(
-        jobId,
-        updateData,
-        {
-            new: true,
-            runValidators: true
-        }
-    );
-
-    return res.status(200).json({
-        success: true,
-        message: "Job updated successfully",
-        job: updatedJob
-    });
-});
-
-export const deleteJob = asyncHandler(async (req, res) => {
-
-    const { id: jobId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(jobId)) {
-        throw new ApiError(400, "Invalid Job Id");
-    }
-    const job = await Job.findById(jobId)
-
-    if (!job) {
-        throw new ApiError(404, "Job Not Found");
-    }
-    if (!(req.user.userId === job.postedBy.toString())) {
-        throw new ApiError(403, "You are not authorized to delete this job");
-    }
-
-    if (!job.isActive) {
-        throw new ApiError(400, "Job is already deleted");
-    }
-
-    job.isActive = false;
-    await job.save();
-
-    return res.status(200).json({
-        success: true,
-        message: "Job deleted successfully"
-    });
-});
-
+//student saved jobs
 export const saveJob = asyncHandler(async (req, res) => {
 
     const { id: jobID } = req.params;
@@ -336,56 +367,86 @@ export const saveJob = asyncHandler(async (req, res) => {
 
 export const removeSavedJob = asyncHandler(async (req, res) => {
 
-        const { id: jobID } = req.params;
+    const { id: jobID } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(jobID)) {
-            throw new ApiError(400, "Invalid Job ID");
-        }
+    if (!mongoose.Types.ObjectId.isValid(jobID)) {
+        throw new ApiError(400, "Invalid Job ID");
+    }
 
-        const job = await Job.findById(jobID);
+    const job = await Job.findById(jobID);
 
-        if (!job) {
-            throw new ApiError(404, "Job not found");
-        }
+    if (!job) {
+        throw new ApiError(404, "Job not found");
+    }
 
-        const user = await User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId);
 
-        const isSaved = user.savedJobs.some(
-            id => id.toString() === jobID
-        );
+    const isSaved = user.savedJobs.some(
+        id => id.toString() === jobID
+    );
 
-        if (!isSaved) {
-            throw new ApiError(400, "Job is not saved");
-        }
+    if (!isSaved) {
+        throw new ApiError(400, "Job is not saved");
+    }
 
-        user.savedJobs = user.savedJobs.filter(
-            id => id.toString() !== jobID
-        );
+    user.savedJobs = user.savedJobs.filter(
+        id => id.toString() !== jobID
+    );
 
-        await user.save();
+    await user.save();
 
-        return res.status(200).json({
-            success: true,
-            message: "Saved job removed successfully"
-        });
+    return res.status(200).json({
+        success: true,
+        message: "Saved job removed successfully"
+    });
 });
 
 export const getSavedJobs = asyncHandler(async (req, res) => {
 
-        const user = await User.findById(req.user.userId)
-            .populate({
-                path: "savedJobs",
-                select: "title company location salary jobType isActive createdAt",
-                populate: {
-                    path: "company",
-                    select: "name logo location"
-                }
-            });
-
-        return res.status(200).json({
-            success: true,
-            message: "Saved jobs fetched successfully",
-            count: user.savedJobs.length,
-            savedJobs: user.savedJobs
+    const user = await User.findById(req.user.userId)
+        .populate({
+            path: "savedJobs",
+            select: "title company location salary jobType isActive createdAt",
+            populate: {
+                path: "company",
+                select: "name logo location"
+            }
         });
+
+    return res.status(200).json({
+        success: true,
+        message: "Saved jobs fetched successfully",
+        count: user.savedJobs.length,
+        savedJobs: user.savedJobs
+    });
+});
+
+export const getRecruiterJob = asyncHandler(async (req, res) => {
+
+    const { id: jobId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+        throw new ApiError(400, "Invalid Job ID");
+    }
+
+    const job = await Job.findById(jobId)
+        .populate("company", "name logo");
+
+    if (!job) {
+        throw new ApiError(404, "Job not found");
+    }
+
+    if (job.postedBy.toString() !== req.user.userId) {
+        throw new ApiError(
+            403,
+            "You are not authorized to view this job"
+        );
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: "Job fetched successfully",
+        job
+    });
+
 });
