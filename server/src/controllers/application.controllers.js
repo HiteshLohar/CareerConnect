@@ -115,7 +115,7 @@ export const getApplicants = asyncHandler(async (req, res) => {
     }
 
     const applications = await Application.find({ job: jobId })
-        .populate("student", "fullName email headline skills location");
+        .populate("student", "fullName email headline skills location resumeUrl");
 
     return res.status(200).json({
         success: true,

@@ -1,6 +1,6 @@
 import express from "express";
 import { authorizeRoles, verifyToken } from "../middleware/authMiddleware.js";
-import { createJob, getAllJobs, getJobById, updateJob, deleteJob, saveJob, removeSavedJob, getSavedJobs, getRecruiterJobs, getRecruiterJob, updateRecruiterJob } from "../controllers/job.controller.js";
+import { createJob, getAllJobs, getJobById, updateJob, deleteJob, saveJob, removeSavedJob, getSavedJobs, getRecruiterJobs, getRecruiterJob } from "../controllers/job.controller.js";
 
 const router = express.Router();
 
@@ -10,7 +10,6 @@ router.get("/recruiter", verifyToken, authorizeRoles("recruiter"), getRecruiterJ
 
 router.get("/recruiter/:id", verifyToken, authorizeRoles("recruiter"), getRecruiterJob);
 
-router.put("/recruiter/:id", verifyToken, authorizeRoles("recruiter"), updateRecruiterJob);
 
 router.get("/", getAllJobs);
 

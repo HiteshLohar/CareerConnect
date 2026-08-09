@@ -49,82 +49,107 @@ function MyApplications() {
                 My Applications
             </h1>
 
-            <div className="space-y-6">
+            {applications.length === 0 ? (
 
-                {applications.map((application) => (
+                <div className="text-center py-20">
 
-                    <div
-                        key={application._id}
-                        className="bg-white rounded-2xl shadow-md border hover:shadow-lg transition p-6"
+                    <h2 className="text-2xl font-semibold text-gray-700">
+                        No Applications Yet
+                    </h2>
+
+                    <p className="text-gray-500 mt-2">
+                        You haven't applied for any jobs yet.
+                    </p>
+
+                    <button
+                        onClick={() => navigate("/jobs")}
+                        className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
                     >
+                        Browse Jobs
+                    </button>
 
-                        <div className="flex justify-between items-start">
+                </div>
 
-                            {/* Left Side */}
+            ) : (
 
-                            <div>
+                <div className="space-y-6">
 
-                                <h2 className="text-2xl font-bold">
-                                    {application.job.title}
-                                </h2>
+                    {applications.map((application) => (
 
-                                <p className="text-gray-600 mt-1 text-lg">
-                                    {application.job.company.name}
-                                </p>
+                        <div
+                            key={application._id}
+                            className="bg-white rounded-2xl shadow-md border hover:shadow-lg transition p-6"
+                        >
 
-                                <div className="flex gap-6 mt-4 text-gray-500">
+                            <div className="flex justify-between items-start">
 
-                                    <span>
-                                        📍 {application.job.location}
-                                    </span>
+                                {/* Left Side */}
 
-                                    <span>
-                                        💰 ₹ {(application.job.salary / 100000).toFixed(1)} LPA
-                                    </span>
+                                <div>
+
+                                    <h2 className="text-2xl font-bold">
+                                        {application.job.title}
+                                    </h2>
+
+                                    <p className="text-gray-600 mt-1 text-lg">
+                                        {application.job.company.name}
+                                    </p>
+
+                                    <div className="flex gap-6 mt-4 text-gray-500">
+
+                                        <span>
+                                            📍 {application.job.location}
+                                        </span>
+
+                                        <span>
+                                            💰 ₹ {(application.job.salary / 100000).toFixed(1)} LPA
+                                        </span>
+
+                                    </div>
+
+                                    <p className="mt-4 text-sm text-gray-500">
+                                        Applied on{" "}
+                                        {new Date(application.createdAt).toLocaleDateString()}
+                                    </p>
 
                                 </div>
 
-                                <p className="mt-4 text-sm text-gray-500">
-                                    Applied on{" "}
-                                    {new Date(application.createdAt).toLocaleDateString()}
-                                </p>
+                                {/* Right Side */}
 
-                            </div>
+                                <div className="flex flex-col items-end gap-4">
 
-                            {/* Right Side */}
-
-                            <div className="flex flex-col items-end gap-4">
-
-                                <span
-                                    className={`px-4 py-2 rounded-full text-sm font-semibold text-white
+                                    <span
+                                        className={`px-4 py-2 rounded-full text-sm font-semibold text-white
                         ${application.status === "Accepted"
-                                            ? "bg-green-500"
-                                            : application.status === "Rejected"
-                                                ? "bg-red-500"
-                                                : "bg-yellow-500"
-                                        }`}
-                                >
-                                    {application.status}
-                                </span>
+                                                ? "bg-green-500"
+                                                : application.status === "Rejected"
+                                                    ? "bg-red-500"
+                                                    : "bg-yellow-500"
+                                            }`}
+                                    >
+                                        {application.status}
+                                    </span>
 
-                                <button
-                                    onClick={() =>
-                                        navigate(`/jobs/${application.job._id}`)
-                                    }
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
-                                >
-                                    View Job
-                                </button>
+                                    <button
+                                        onClick={() =>
+                                            navigate(`/jobs/${application.job._id}`)
+                                        }
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
+                                    >
+                                        View Job
+                                    </button>
+
+                                </div>
 
                             </div>
 
                         </div>
 
-                    </div>
+                    ))}
 
-                ))}
+                </div>
 
-            </div>
+            )}
 
         </div>
     );

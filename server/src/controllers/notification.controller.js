@@ -102,22 +102,53 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid Application ID");
     }
 
-    const notification = await Notification.findById(id);
-
-    if (!notification) {
-        throw new ApiError(404, "Notification not found");
+    if (!["Accepted", "Rejected"].includes(status)) {
+        throw new ApiError(400, "Invalid application status");
     }
 
-    if (notification.recipient.toString() !== req.user.userId) {
-        throw new ApiError(403, "Unauthorized");
+    const application = await Application.findById(id);
+
+    if (!application) {
+        throw new ApiError(404, "Application not found");
     }
 
-    notification.status = status;
-    await notification.save();
+    const job = await Job.findById(application.job);
+
+    if (!job) {
+        throw new ApiError(404, "Job not found");
+    }
+
+    if (job.postedBy.toString() !== req.user.userId) {
+        throw new ApiError(
+            403,
+            "You are not authorized to update this application"
+        );
+    }
+
+    application.status = status;
+
+    await application.save();
+
+    await Notification.create({
+        recipient: application.student,
+        sender: req.user.userId,
+        title:
+            status === "Accepted"
+                ? "Application Accepted"
+                : "Application Rejected",
+        message:
+            status === "Accepted"
+                ? `Your application for ${job.title} has been accepted.`
+                : `Your application for ${job.title} has been rejected.`,
+        type:
+            status === "Accepted"
+                ? "APPLICATION_ACCEPTED"
+                : "APPLICATION_REJECTED"
+    });
 
     return res.status(200).json({
         success: true,
-        message: "Application status updated successfully",
-        notification
+        message: `Application ${status.toLowerCase()} successfully`,
+        application
     });
 });

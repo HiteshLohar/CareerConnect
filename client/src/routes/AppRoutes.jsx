@@ -19,6 +19,7 @@ import CreateJob from "../pages/Recruiter/CreateJob";
 import MyJobs from "../pages/Recruiter/MyJobs";
 import EditJob from "../pages/Recruiter/EditJob";
 
+
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
 
