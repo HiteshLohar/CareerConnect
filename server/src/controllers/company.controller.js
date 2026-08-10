@@ -52,7 +52,10 @@ export const getAllCompanies = asyncHandler(async (req, res) => {
 
     const userId = req.user.userId;
 
-    const companies = await Company.find({ owner: userId }).sort({ createdAt: -1 });
+    const companies = await Company.find({
+        owner: userId,
+        accountStatus: "active"
+    }).sort({ createdAt: -1 });
 
     if (companies.length === 0) {
         return res.status(200).json({
@@ -69,6 +72,7 @@ export const getAllCompanies = asyncHandler(async (req, res) => {
         count: companies.length,
         companies
     });
+
 });
 
 export const getCompanyById = asyncHandler(async (req, res) => {
@@ -216,6 +220,57 @@ export const deleteCompany = asyncHandler(async (req, res) => {
     return res.status(200).json({
         success: true,
         message: "Company deleted successfully"
+    });
+
+});
+
+
+//admin operations
+export const getAdminCompanies = asyncHandler(async (req, res) => {
+
+    const companies = await Company.find()
+        .populate("owner", "fullName email")
+        .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+        success: true,
+        message: "Companies fetched successfully",
+        count: companies.length,
+        companies
+    });
+
+});
+
+export const updateCompanyStatus = asyncHandler(async (req, res) => {
+
+    const { id: companyId } = req.params;
+    const { accountStatus } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(companyId)) {
+        throw new ApiError(400, "Invalid Company ID");
+    }
+
+    if (!["active", "suspended"].includes(accountStatus)) {
+        throw new ApiError(
+            400,
+            "Invalid company status"
+        );
+    }
+
+    const company = await Company.findById(companyId);
+
+    if (!company) {
+        throw new ApiError(404, "Company not found");
+    }
+
+    company.accountStatus = accountStatus;
+
+    await company.save();
+
+    return res.status(200).json({
+        success: true,
+        message: `Company ${accountStatus} successfully`,
+        company
     });
 
 });

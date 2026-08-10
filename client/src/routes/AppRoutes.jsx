@@ -23,6 +23,7 @@ import StudentDashboard from "../pages/StudentDashboard/StudentDashboard";
 import RecruiterAnalytics from "../pages/RecruiterAnalytics/RecruiterAnalytics";
 import AdminDashboard from "../pages/AdminDashboard/AdminDashboard";
 import AdminUsers from "../pages/Admin/AdminUsers";
+import AdminCompanies from "../pages/Admin/AdminCompanies";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
@@ -177,6 +178,14 @@ function AppRoutes() {
                         element={
                             <ProtectedRoute>
                                 <AdminUsers />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/companies"
+                        element={
+                            <ProtectedRoute>
+                                <AdminCompanies />
                             </ProtectedRoute>
                         }
                     />
