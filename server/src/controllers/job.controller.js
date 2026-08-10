@@ -450,3 +450,55 @@ export const getRecruiterJob = asyncHandler(async (req, res) => {
     });
 
 });
+
+export const getAdminJobs = asyncHandler(async (req, res) => {
+
+    const jobs = await Job.find()
+        .populate("company", "name logo location")
+        .populate("postedBy", "fullName email")
+        .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+        success: true,
+        message: "Jobs fetched successfully",
+        count: jobs.length,
+        jobs
+    });
+
+});
+
+export const updateJobStatus = asyncHandler(async (req, res) => {
+
+    const { id: jobId } = req.params;
+    const { isActive } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+        throw new ApiError(400, "Invalid Job ID");
+    }
+
+    if (typeof isActive !== "boolean") {
+        throw new ApiError(
+            400,
+            "isActive must be true or false"
+        );
+    }
+
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+        throw new ApiError(404, "Job not found");
+    }
+
+    job.isActive = isActive;
+
+    await job.save();
+
+    return res.status(200).json({
+        success: true,
+        message: isActive
+            ? "Job activated successfully"
+            : "Job deactivated successfully",
+        job
+    });
+
+});

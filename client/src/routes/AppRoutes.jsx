@@ -24,6 +24,7 @@ import RecruiterAnalytics from "../pages/RecruiterAnalytics/RecruiterAnalytics";
 import AdminDashboard from "../pages/AdminDashboard/AdminDashboard";
 import AdminUsers from "../pages/Admin/AdminUsers";
 import AdminCompanies from "../pages/Admin/AdminCompanies";
+import AdminJobs from "../pages/Admin/AdminJobs";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
@@ -186,6 +187,14 @@ function AppRoutes() {
                         element={
                             <ProtectedRoute>
                                 <AdminCompanies />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/jobs"
+                        element={
+                            <ProtectedRoute>
+                                <AdminJobs />
                             </ProtectedRoute>
                         }
                     />

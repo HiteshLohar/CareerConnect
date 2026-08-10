@@ -1,30 +1,113 @@
 import express from "express";
 import { authorizeRoles, verifyToken } from "../middleware/authMiddleware.js";
-import { createJob, getAllJobs, getJobById, updateJob, deleteJob, saveJob, removeSavedJob, getSavedJobs, getRecruiterJobs, getRecruiterJob } from "../controllers/job.controller.js";
+import { createJob, getAllJobs, getJobById, updateJob, deleteJob, saveJob, removeSavedJob, getSavedJobs, getRecruiterJobs, getRecruiterJob, getAdminJobs, updateJobStatus } from "../controllers/job.controller.js";
 
 const router = express.Router();
 
-router.post("/", verifyToken, authorizeRoles("recruiter"), createJob);
 
-router.get("/recruiter", verifyToken, authorizeRoles("recruiter"), getRecruiterJobs);
+// ========================================
+// RECRUITER
+// ========================================
 
-router.get("/recruiter/:id", verifyToken, authorizeRoles("recruiter"), getRecruiterJob);
+router.post(
+    "/",
+    verifyToken,
+    authorizeRoles("recruiter"),
+    createJob
+);
+
+router.get(
+    "/recruiter",
+    verifyToken,
+    authorizeRoles("recruiter"),
+    getRecruiterJobs
+);
+
+router.get(
+    "/recruiter/:id",
+    verifyToken,
+    authorizeRoles("recruiter"),
+    getRecruiterJob
+);
 
 
-router.get("/", getAllJobs);
+// ========================================
+// ADMIN
+// ========================================
 
-router.get("/saved", verifyToken, authorizeRoles("student"), getSavedJobs);
+router.get(
+    "/admin",
+    verifyToken,
+    authorizeRoles("admin"),
+    getAdminJobs
+);
 
-router.get("/:id", getJobById);
+router.patch(
+    "/admin/:id/status",
+    verifyToken,
+    authorizeRoles("admin"),
+    updateJobStatus
+);
 
-router.put("/:id", verifyToken, authorizeRoles("recruiter"), updateJob);
 
-router.delete("/:id", verifyToken, authorizeRoles("recruiter"), deleteJob);
+// ========================================
+// STUDENT / PUBLIC JOBS
+// ========================================
 
-router.delete("/:id/save", verifyToken, authorizeRoles("student"), removeSavedJob);
+router.get(
+    "/",
+    getAllJobs
+);
 
-//SAVEDJOBs
+router.get(
+    "/:id",
+    getJobById
+);
 
-router.post("/:id/save", verifyToken, authorizeRoles("student"), saveJob);
+
+// ========================================
+// SAVED JOBS
+// ========================================
+
+router.get(
+    "/saved",
+    verifyToken,
+    authorizeRoles("student"),
+    getSavedJobs
+);
+
+router.post(
+    "/:id/save",
+    verifyToken,
+    authorizeRoles("student"),
+    saveJob
+);
+
+router.delete(
+    "/:id/save",
+    verifyToken,
+    authorizeRoles("student"),
+    removeSavedJob
+);
+
+
+// ========================================
+// RECRUITER UPDATE / DELETE
+// ========================================
+
+router.put(
+    "/:id",
+    verifyToken,
+    authorizeRoles("recruiter"),
+    updateJob
+);
+
+router.delete(
+    "/:id",
+    verifyToken,
+    authorizeRoles("recruiter"),
+    deleteJob
+);
+
 
 export default router;
