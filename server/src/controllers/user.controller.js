@@ -5,6 +5,8 @@ import { sendEmail } from '../utils/sendEmail.js';
 import crypto from "crypto";
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
+import mongoose from "mongoose";
+
 
 
 export const getMyProfile = asyncHandler(async (req, res) => {
@@ -237,4 +239,98 @@ export const resetPassword = asyncHandler(async (req, res) => {
         success: true,
         message: "Password reset successfully"
     });
+});
+
+export const getAllUsers = asyncHandler(async (req, res) => {
+
+    const { search = "", role = "" } = req.query;
+
+    const filter = {
+        role: { $ne: "admin" }
+    };
+
+    // Role filter
+    if (role === "student" || role === "recruiter") {
+        filter.role = role;
+    }
+
+    // Search filter
+    if (search.trim()) {
+
+        filter.$or = [
+            {
+                fullName: {
+                    $regex: search.trim(),
+                    $options: "i"
+                }
+            },
+            {
+                email: {
+                    $regex: search.trim(),
+                    $options: "i"
+                }
+            }
+        ];
+
+    }
+
+    const users = await User.find(filter)
+        .select("-password")
+        .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+        success: true,
+        message: "Users fetched successfully",
+        count: users.length,
+        users
+    });
+
+});
+
+export const updateUserStatus = asyncHandler(async (req, res) => {
+
+    const { id } = req.params;
+    const { accountStatus } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(400, "Invalid User ID");
+    }
+
+    if (!["active", "suspended", "deleted"].includes(accountStatus)) {
+        throw new ApiError(
+            400,
+            "Invalid account status"
+        );
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    // Admin ko modify nahi kar sakte
+    if (user.role === "admin") {
+        throw new ApiError(
+            403,
+            "Admin account cannot be modified"
+        );
+    }
+
+    user.accountStatus = accountStatus;
+
+    await user.save();
+
+    return res.status(200).json({
+        success: true,
+        message: `User account ${accountStatus} successfully`,
+        user: {
+            _id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            accountStatus: user.accountStatus
+        }
+    });
+
 });

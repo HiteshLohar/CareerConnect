@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Company from "../models/Company.js"
 import Application from "../models/Application.js";
 import Job from "../models/Job.js";
+import User from "../models/User.js";
 import { populate } from "dotenv";
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
@@ -318,4 +319,116 @@ export const getRecruiterAnalytics = asyncHandler(async (req, res) => {
         monthlyApplications,
         monthlyJobs
     });
+});
+
+export const getAdminDashboard = asyncHandler(async (req, res) => {
+
+    try {
+
+
+        const [
+            totalUsers,
+            totalStudents,
+            totalRecruiters,
+            totalCompanies,
+            totalJobs,
+            activeJobs,
+            inactiveJobs,
+            totalApplications,
+            pendingApplications,
+            acceptedApplications,
+            rejectedApplications,
+            recentUsers,
+            recentJobs
+        ] = await Promise.all([
+
+            User.countDocuments(),
+
+            User.countDocuments({
+                role: "student"
+            }),
+
+            User.countDocuments({
+                role: "recruiter"
+            }),
+
+            Company.countDocuments(),
+
+            Job.countDocuments(),
+
+            Job.countDocuments({
+                isActive: true
+            }),
+
+            Job.countDocuments({
+                isActive: false
+            }),
+
+            Application.countDocuments(),
+
+            Application.countDocuments({
+                status: "Pending"
+            }),
+
+            Application.countDocuments({
+                status: "Accepted"
+            }),
+
+            Application.countDocuments({
+                status: "Rejected"
+            }),
+
+            User.find()
+                .sort({ createdAt: -1 })
+                .limit(5)
+                .select("fullName email role accountStatus createdAt"),
+
+            Job.find()
+                .sort({ createdAt: -1 })
+                .limit(5)
+                .select("title location salary jobType isActive createdAt")
+                .populate("company", "name logo")
+
+        ]);
+
+        return res.status(200).json({
+
+            success: true,
+
+            message: "Admin dashboard fetched successfully",
+
+            dashboard: {
+
+                totalUsers,
+                totalStudents,
+                totalRecruiters,
+
+                totalCompanies,
+
+                totalJobs,
+                activeJobs,
+                inactiveJobs,
+
+                totalApplications,
+                pendingApplications,
+                acceptedApplications,
+                rejectedApplications,
+
+                recentUsers,
+                recentJobs
+
+            }
+
+        });
+    }
+    catch (error) {
+
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
 });

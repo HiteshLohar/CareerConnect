@@ -62,7 +62,7 @@ export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email })
-        .select("_id fullName email role password");
+        .select("_id fullName email role password accountStatus");
 
     if (!user) {
         throw new ApiError(404, "User not found");
@@ -72,6 +72,13 @@ export const login = asyncHandler(async (req, res) => {
 
     if (!isMatch) {
         throw new ApiError(401, "Invalid credentials");
+    }
+
+    if (user.accountStatus === "suspended") {
+        throw new ApiError(
+            403,
+            "Your account has been suspended"
+        );
     }
 
     const token = jwt.sign(
@@ -102,31 +109,31 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 
-export const logout = asyncHandler(async (req,res) =>{
+export const logout = asyncHandler(async (req, res) => {
     res.clearCookie("token", {
-        httpOnly : true,
-        secure : process.env.NODE_ENV === "production",
-        sameSite : "lax"
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax"
     });
 
     return res.status(200).json({
-        success : true,
-        message : "Logout Successful"
+        success: true,
+        message: "Logout Successful"
     });
 });
 
 
-export const getCurrentUser = asyncHandler(async (req, res)=>{
+export const getCurrentUser = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user.userId)
         .select("_id fullName email role");
 
-    if(!user){
+    if (!user) {
         throw new ApiError(404, "User not found");
     }
 
     return res.status(200).json({
-        success : true,
+        success: true,
         user
     });
 });

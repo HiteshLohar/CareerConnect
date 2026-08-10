@@ -18,7 +18,11 @@ import EditCompany from "../pages/Company/EditCompany";
 import CreateJob from "../pages/Recruiter/CreateJob";
 import MyJobs from "../pages/Recruiter/MyJobs";
 import EditJob from "../pages/Recruiter/EditJob";
-
+import RecruiterDashboard from "../pages/RecruiterDashboard/RecruiterDashboard";
+import StudentDashboard from "../pages/StudentDashboard/StudentDashboard";
+import RecruiterAnalytics from "../pages/RecruiterAnalytics/RecruiterAnalytics";
+import AdminDashboard from "../pages/AdminDashboard/AdminDashboard";
+import AdminUsers from "../pages/Admin/AdminUsers";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
@@ -133,6 +137,46 @@ function AppRoutes() {
                         element={
                             <ProtectedRoute>
                                 <EditJob />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <RecruiterDashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/student/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <StudentDashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/analytics"
+                        element={
+                            <ProtectedRoute>
+                                <RecruiterAnalytics />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <AdminDashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/users"
+                        element={
+                            <ProtectedRoute>
+                                <AdminUsers />
                             </ProtectedRoute>
                         }
                     />
