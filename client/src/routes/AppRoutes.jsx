@@ -25,6 +25,7 @@ import AdminDashboard from "../pages/AdminDashboard/AdminDashboard";
 import AdminUsers from "../pages/Admin/AdminUsers";
 import AdminCompanies from "../pages/Admin/AdminCompanies";
 import AdminJobs from "../pages/Admin/AdminJobs";
+import AdminApplications from "../pages/Admin/AdminApplications";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
@@ -195,6 +196,14 @@ function AppRoutes() {
                         element={
                             <ProtectedRoute>
                                 <AdminJobs />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/applications"
+                        element={
+                            <ProtectedRoute>
+                                <AdminApplications />
                             </ProtectedRoute>
                         }
                     />

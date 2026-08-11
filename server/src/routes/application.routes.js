@@ -1,8 +1,10 @@
 import express from 'express';
-import { applyJob, getApplicants, getMyApplications, updateApplicationStatus, checkApplicationStatus } from '../controllers/application.controllers.js';
+import { applyJob, getApplicants, getMyApplications, updateApplicationStatus, checkApplicationStatus, getAdminApplications } from '../controllers/application.controllers.js';
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js"
 
 const router = express.Router();
+
+router.get("/admin", verifyToken, authorizeRoles("admin"), getAdminApplications);
 
 router.post("/:id/apply", verifyToken, authorizeRoles("student"), applyJob);
 

@@ -226,3 +226,48 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
         }
     });
 });
+
+export const getAdminApplications = asyncHandler(async (req, res) => {
+
+    const applications = await Application.find()
+        .populate(
+            "student",
+            "fullName email headline skills location resumeUrl"
+        )
+        .populate({
+            path: "job",
+            select: "title company location salary jobType postedBy",
+            populate: [
+                {
+                    path: "company",
+                    select: "name logo location"
+                },
+                {
+                    path: "postedBy",
+                    select: "fullName email"
+                }
+            ]
+        })
+        .sort({ createdAt: -1 });
+
+
+    if (applications.length === 0) {
+
+        return res.status(200).json({
+            success: true,
+            message: "No applications found",
+            count: 0,
+            applications: []
+        });
+
+    }
+
+
+    return res.status(200).json({
+        success: true,
+        message: "Admin applications fetched successfully",
+        count: applications.length,
+        applications
+    });
+
+});
