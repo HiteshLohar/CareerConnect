@@ -12,9 +12,10 @@ export const createCompany = asyncHandler(async (req, res) => {
         name,
         description,
         website,
-        location,
-        logo
+        location
     } = req.body;
+
+    const logo = req.file?.path || "";
 
     // Validate company name
     if (!name || name.trim() === "") {

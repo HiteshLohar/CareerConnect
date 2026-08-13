@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { FiUpload, FiX } from "react-icons/fi";
 
 import api from "../../services/api";
-
 
 function CreateCompany() {
 
@@ -15,24 +15,99 @@ function CreateCompany() {
         website: "",
         location: ""
     });
+
+    const [logo, setLogo] = useState(null);
+    const [preview, setPreview] = useState("");
+
+    const [loading, setLoading] = useState(false);
+
+
+    // =========================
+    // HANDLE TEXT INPUT
+    // =========================
+
     const handleChange = (e) => {
+
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
+
     };
+
+
+    // =========================
+    // HANDLE LOGO
+    // =========================
+
+    const handleLogoChange = (e) => {
+
+        const file = e.target.files[0];
+
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+
+            toast.error("Please select an image file");
+
+            return;
+        }
+
+        setLogo(file);
+
+        setPreview(
+            URL.createObjectURL(file)
+        );
+
+    };
+
+
+    // =========================
+    // REMOVE LOGO
+    // =========================
+
+    const handleRemoveLogo = () => {
+
+        setLogo(null);
+        setPreview("");
+
+    };
+
+
+    // =========================
+    // CREATE COMPANY
+    // =========================
 
     const handleCreateCompany = async () => {
 
         try {
 
+            setLoading(true);
+
+            const data = new FormData();
+
+            data.append("name", formData.name);
+            data.append("description", formData.description);
+            data.append("website", formData.website);
+            data.append("location", formData.location);
+
+            if (logo) {
+                data.append("logo", logo);
+            }
+
+
             const response = await api.post(
                 "/companies",
-                formData
+                data
             );
 
-            toast.success(response.data.message);
+
+            toast.success(
+                response.data.message
+            );
+
             navigate("/companies");
+
 
         } catch (error) {
 
@@ -41,9 +116,14 @@ function CreateCompany() {
                 "Something went wrong"
             );
 
+        } finally {
+
+            setLoading(false);
+
         }
 
     };
+
 
     return (
 
@@ -58,7 +138,83 @@ function CreateCompany() {
 
                 <div className="space-y-6">
 
-                    {/* Company Name */}
+
+                    {/* =========================
+                        COMPANY LOGO
+                    ========================= */}
+
+                    <div>
+
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Company Logo
+                        </label>
+
+                        <div className="flex items-center gap-5">
+
+                            {preview ? (
+
+                                <div className="relative">
+
+                                    <img
+                                        src={preview}
+                                        alt="Company logo preview"
+                                        className="w-24 h-24 rounded-xl border object-cover"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveLogo}
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                    >
+                                        <FiX size={16} />
+                                    </button>
+
+                                </div>
+
+                            ) : (
+
+                                <label
+                                    htmlFor="companyLogo"
+                                    className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
+                                >
+
+                                    <FiUpload
+                                        size={24}
+                                        className="text-gray-500"
+                                    />
+
+                                    <span className="text-xs text-gray-500 mt-1">
+                                        Upload
+                                    </span>
+
+                                </label>
+
+                            )}
+
+                            <input
+                                id="companyLogo"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLogoChange}
+                                className="hidden"
+                            />
+
+                            {!preview && (
+                                <div className="text-sm text-gray-500">
+                                    Upload your company logo
+                                    <br />
+                                    JPG, JPEG or PNG
+                                </div>
+                            )}
+
+                        </div>
+
+                    </div>
+
+
+                    {/* =========================
+                        COMPANY NAME
+                    ========================= */}
 
                     <div>
 
@@ -77,7 +233,10 @@ function CreateCompany() {
 
                     </div>
 
-                    {/* Description */}
+
+                    {/* =========================
+                        DESCRIPTION
+                    ========================= */}
 
                     <div>
 
@@ -96,7 +255,10 @@ function CreateCompany() {
 
                     </div>
 
-                    {/* Website */}
+
+                    {/* =========================
+                        WEBSITE
+                    ========================= */}
 
                     <div>
 
@@ -115,7 +277,10 @@ function CreateCompany() {
 
                     </div>
 
-                    {/* Location */}
+
+                    {/* =========================
+                        LOCATION
+                    ========================= */}
 
                     <div>
 
@@ -137,14 +302,23 @@ function CreateCompany() {
                 </div>
 
 
+                {/* =========================
+                    BUTTON
+                ========================= */}
 
                 <div className="mt-8 flex justify-end">
 
                     <button
                         onClick={handleCreateCompany}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition"
+                        disabled={loading}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition disabled:bg-gray-400"
                     >
-                        Continue
+
+                        {loading
+                            ? "Creating..."
+                            : "Create Company"
+                        }
+
                     </button>
 
                 </div>

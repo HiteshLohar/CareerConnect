@@ -78,6 +78,48 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Job"
     }],
+    experience: [
+        {
+            jobTitle: {
+                type: String,
+                trim: true
+            },
+
+            company: {
+                type: String,
+                trim: true
+            },
+
+            employmentType: {
+                type: String,
+                enum: [
+                    "Full-time",
+                    "Part-time",
+                    "Internship",
+                    "Freelance",
+                    "Contract"
+                ]
+            },
+
+            startDate: {
+                type: Date
+            },
+
+            endDate: {
+                type: Date
+            },
+
+            currentlyWorking: {
+                type: Boolean,
+                default: false
+            },
+
+            description: {
+                type: String,
+                trim: true
+            }
+        }
+    ]
 }, {
     timestamps: true
 })

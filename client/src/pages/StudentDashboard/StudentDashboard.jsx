@@ -2,6 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
+import {
+    FaSearch,
+    FaBookmark,
+    FaBriefcase,
+    FaUser,
+    FaArrowRight
+} from "react-icons/fa";
+
 import api from "../../services/api";
 
 function StudentDashboard() {
@@ -10,6 +18,11 @@ function StudentDashboard() {
 
     const [dashboard, setDashboard] = useState(null);
     const [loading, setLoading] = useState(true);
+
+
+    // =========================
+    // FETCH DASHBOARD
+    // =========================
 
     const fetchDashboard = async () => {
 
@@ -34,42 +47,117 @@ function StudentDashboard() {
 
     };
 
+
     useEffect(() => {
         fetchDashboard();
     }, []);
 
 
+    // =========================
+    // LOADING
+    // =========================
+
     if (loading) {
 
         return (
             <div className="flex justify-center items-center min-h-[70vh]">
+
                 <p className="text-xl text-gray-500">
                     Loading Dashboard...
                 </p>
+
             </div>
         );
 
     }
 
+
+    // =========================
+    // ERROR
+    // =========================
 
     if (!dashboard) {
 
         return (
             <div className="flex justify-center items-center min-h-[70vh]">
+
                 <p className="text-gray-500">
                     Unable to load dashboard.
                 </p>
+
             </div>
         );
 
     }
+
+
+    // =========================
+    // APPLICATION DATA
+    // =========================
+
+    const totalApplications =
+        dashboard.totalApplications || 0;
+
+    const pendingApplications =
+        dashboard.pendingApplications || 0;
+
+    const acceptedApplications =
+        dashboard.acceptedApplications || 0;
+
+    const rejectedApplications =
+        dashboard.rejectedApplications || 0;
+
+
+    // =========================
+    // PERCENTAGES
+    // =========================
+
+    const pendingPercentage =
+        totalApplications > 0
+            ? (pendingApplications / totalApplications) * 100
+            : 0;
+
+    const acceptedPercentage =
+        totalApplications > 0
+            ? (acceptedApplications / totalApplications) * 100
+            : 0;
+
+    const rejectedPercentage =
+        totalApplications > 0
+            ? (rejectedApplications / totalApplications) * 100
+            : 0;
+
+
+    const acceptedEnd =
+        pendingPercentage + acceptedPercentage;
+
+
+    // =========================
+    // PIE CHART
+    // =========================
+
+    const pieStyle =
+        totalApplications > 0
+            ? {
+                background: `conic-gradient(
+                    #facc15 0% ${pendingPercentage}%,
+                    #22c55e ${pendingPercentage}% ${acceptedEnd}%,
+                    #ef4444 ${acceptedEnd}% 100%
+                )`
+            }
+            : {
+                background: "#e5e7eb"
+            };
 
 
     return (
 
         <div className="max-w-7xl mx-auto px-4 py-10">
 
-            {/* Header */}
+
+            {/* =========================
+                HEADER
+            ========================= */}
 
             <div className="mb-8">
 
@@ -84,80 +172,258 @@ function StudentDashboard() {
             </div>
 
 
-            {/* Statistics */}
+            {/* =========================
+                DASHBOARD OVERVIEW
+            ========================= */}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
 
-                {/* Total */}
+                {/* =========================
+                    APPLICATION SUMMARY
+                ========================= */}
 
-                <div className="bg-white border rounded-2xl shadow-sm p-6">
+                <div className="bg-white border rounded-2xl shadow-sm p-7">
 
-                    <p className="text-gray-500">
+                    <h2 className="text-xl font-bold text-gray-900">
                         Total Applications
-                    </p>
-
-                    <h2 className="text-3xl font-bold mt-2">
-                        {dashboard.totalApplications}
                     </h2>
+
+
+                    {/* TOTAL */}
+
+                    <div className="mt-6">
+
+                        <p className="text-gray-500">
+                            Total Applications
+                        </p>
+
+                        <h3 className="text-4xl font-bold text-gray-900 mt-2">
+                            {totalApplications}
+                        </h3>
+
+
+                    </div>
+
+
+                    {/* STATUS SUMMARY */}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+
+
+                        {/* Pending */}
+
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+
+                            <p className="text-sm text-yellow-700 font-medium">
+                                Pending
+                            </p>
+
+                            <p className="text-2xl font-bold text-yellow-700 mt-1">
+                                {pendingApplications}
+                            </p>
+
+                        </div>
+
+
+                        {/* Accepted */}
+
+                        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+
+                            <p className="text-sm text-green-700 font-medium">
+                                Accepted
+                            </p>
+
+                            <p className="text-2xl font-bold text-green-700 mt-1">
+                                {acceptedApplications}
+                            </p>
+
+                        </div>
+
+
+                        {/* Rejected */}
+
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+
+                            <p className="text-sm text-red-700 font-medium">
+                                Rejected
+                            </p>
+
+                            <p className="text-2xl font-bold text-red-700 mt-1">
+                                {rejectedApplications}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <p className="text-sm text-gray-500 mt-4">
+                        Keep applying! Every application brings you closer to your dream job.
+                    </p>
 
                 </div>
 
 
-                {/* Pending */}
+                {/* =========================
+                    PIE CHART
+                ========================= */}
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
+                <div className="bg-white border rounded-2xl shadow-sm p-7">
 
-                    <p className="text-yellow-700 font-medium">
-                        Pending
-                    </p>
-
-                    <h2 className="text-3xl font-bold text-yellow-700 mt-2">
-                        {dashboard.pendingApplications}
+                    <h2 className="text-xl font-bold text-gray-900">
+                        Application Status Overview
                     </h2>
 
-                </div>
-
-
-                {/* Accepted */}
-
-                <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
-
-                    <p className="text-green-700 font-medium">
-                        Accepted
+                    <p className="text-gray-500 text-sm mt-1">
+                        Overview of your job application status.
                     </p>
 
-                    <h2 className="text-3xl font-bold text-green-700 mt-2">
-                        {dashboard.acceptedApplications}
-                    </h2>
 
-                </div>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-10 mt-8">
 
 
-                {/* Rejected */}
+                        {/* PIE */}
 
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+                        <div className="relative flex-shrink-0">
 
-                    <p className="text-red-700 font-medium">
-                        Rejected
-                    </p>
+                            <div
+                                className="w-48 h-48 rounded-full"
+                                style={pieStyle}
+                            >
 
-                    <h2 className="text-3xl font-bold text-red-700 mt-2">
-                        {dashboard.rejectedApplications}
-                    </h2>
+                                <div className="absolute inset-0 flex items-center justify-center">
+
+                                    <div className="w-24 h-24 bg-white rounded-full flex flex-col items-center justify-center shadow-sm">
+
+                                        <span className="text-2xl font-bold text-gray-900">
+                                            {totalApplications}
+                                        </span>
+
+                                        <span className="text-xs text-gray-500">
+                                            Applications
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* LEGEND */}
+
+                        <div className="space-y-5 w-full sm:w-auto">
+
+
+                            {/* Pending */}
+
+                            <div className="flex items-center justify-between gap-8">
+
+                                <div className="flex items-center gap-3">
+
+                                    <span className="w-3 h-3 rounded-full bg-yellow-400"></span>
+
+                                    <span className="text-gray-700">
+                                        Pending
+                                    </span>
+
+                                </div>
+
+                                <div>
+
+                                    <span className="font-semibold">
+                                        {pendingApplications}
+                                    </span>
+
+                                    <span className="text-sm text-gray-400 ml-2">
+                                        {pendingPercentage.toFixed(0)}%
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            {/* Accepted */}
+
+                            <div className="flex items-center justify-between gap-8">
+
+                                <div className="flex items-center gap-3">
+
+                                    <span className="w-3 h-3 rounded-full bg-green-500"></span>
+
+                                    <span className="text-gray-700">
+                                        Accepted
+                                    </span>
+
+                                </div>
+
+                                <div>
+
+                                    <span className="font-semibold">
+                                        {acceptedApplications}
+                                    </span>
+
+                                    <span className="text-sm text-gray-400 ml-2">
+                                        {acceptedPercentage.toFixed(0)}%
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            {/* Rejected */}
+
+                            <div className="flex items-center justify-between gap-8">
+
+                                <div className="flex items-center gap-3">
+
+                                    <span className="w-3 h-3 rounded-full bg-red-500"></span>
+
+                                    <span className="text-gray-700">
+                                        Rejected
+                                    </span>
+
+                                </div>
+
+                                <div>
+
+                                    <span className="font-semibold">
+                                        {rejectedApplications}
+                                    </span>
+
+                                    <span className="text-sm text-gray-400 ml-2">
+                                        {rejectedPercentage.toFixed(0)}%
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
             </div>
 
 
-            {/* Recent Applications */}
+            {/* =========================
+                RECENT APPLICATIONS
+            ========================= */}
 
             <div className="bg-white border rounded-2xl shadow-sm mt-8">
 
+
+                {/* HEADER */}
+
                 <div className="flex justify-between items-center p-6 border-b">
 
-                    <h2 className="text-xl font-bold">
+                    <h2 className="text-xl font-bold text-gray-900">
                         Recent Applications
                     </h2>
 
@@ -170,6 +436,8 @@ function StudentDashboard() {
 
                 </div>
 
+
+                {/* APPLICATION LIST */}
 
                 <div className="divide-y">
 
@@ -201,7 +469,7 @@ function StudentDashboard() {
                                         className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5"
                                     >
 
-                                        {/* Job Info */}
+                                        {/* JOB INFO */}
 
                                         <div className="flex items-center gap-4">
 
@@ -252,6 +520,7 @@ function StudentDashboard() {
                                                 <p className="text-xs text-gray-400 mt-2">
 
                                                     Applied on{" "}
+
                                                     {new Date(
                                                         application.createdAt
                                                     ).toLocaleDateString()}
@@ -263,18 +532,17 @@ function StudentDashboard() {
                                         </div>
 
 
-                                        {/* Status + Button */}
+                                        {/* STATUS */}
 
                                         <div className="flex items-center gap-4">
 
                                             <span
-                                                className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                                                    application.status === "Accepted"
-                                                        ? "bg-green-100 text-green-700"
-                                                        : application.status === "Rejected"
-                                                            ? "bg-red-100 text-red-700"
-                                                            : "bg-yellow-100 text-yellow-700"
-                                                }`}
+                                                className={`px-4 py-2 rounded-full text-sm font-semibold ${application.status === "Accepted"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : application.status === "Rejected"
+                                                        ? "bg-red-100 text-red-700"
+                                                        : "bg-yellow-100 text-yellow-700"
+                                                    }`}
                                             >
                                                 {application.status}
                                             </span>
@@ -307,40 +575,176 @@ function StudentDashboard() {
             </div>
 
 
-            {/* Quick Actions */}
+            {/* =========================
+                QUICK ACTIONS
+            ========================= */}
+            {/* =========================
+    QUICK ACTIONS
+========================= */}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
+            <div className="mt-8">
 
-                <button
-                    onClick={() => navigate("/jobs")}
-                    className="bg-blue-600 text-white rounded-2xl p-6 text-left hover:bg-blue-700 transition"
-                >
-
-                    <h2 className="text-xl font-bold">
-                        Browse Jobs
-                    </h2>
-
-                    <p className="mt-2 text-blue-100">
-                        Find new job opportunities.
-                    </p>
-
-                </button>
+                <h2 className="text-xl font-bold text-gray-900 mb-5">
+                    Quick Actions
+                </h2>
 
 
-                <button
-                    onClick={() => navigate("/saved-jobs")}
-                    className="bg-white border rounded-2xl p-6 text-left hover:shadow-md transition"
-                >
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-                    <h2 className="text-xl font-bold text-gray-900">
-                        Saved Jobs
-                    </h2>
 
-                    <p className="mt-2 text-gray-500">
-                        View the jobs you saved for later.
-                    </p>
+                    {/* =========================
+            BROWSE JOBS
+        ========================= */}
 
-                </button>
+                    <button
+                        onClick={() => navigate("/jobs")}
+                        className="group bg-blue-50 border border-blue-100 rounded-2xl p-5 text-left hover:shadow-md transition"
+                    >
+
+                        <div className="flex items-start justify-between">
+
+                            <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
+
+                                <FaSearch size={25} />
+
+                            </div>
+
+                        </div>
+
+
+                        <h3 className="text-lg font-bold text-gray-900 mt-4">
+                            Browse Jobs
+                        </h3>
+
+                        <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                            Find new job opportunities that match your skills.
+                        </p>
+
+
+                        <div className="mt-4 text-blue-600">
+
+                            <FaArrowRight
+                                size={18}
+                                className="group-hover:translate-x-1 transition-transform"
+                            />
+
+                        </div>
+
+                    </button>
+
+
+                    {/* =========================
+            SAVED JOBS
+        ========================= */}
+
+                    <button
+                        onClick={() => navigate("/saved-jobs")}
+                        className="group bg-green-50 border border-green-100 rounded-2xl p-5 text-left hover:shadow-md transition"
+                    >
+
+                        <div className="w-14 h-14 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
+
+                            <FaBookmark size={25} />
+
+                        </div>
+
+
+                        <h3 className="text-lg font-bold text-gray-900 mt-4">
+                            Saved Jobs
+                        </h3>
+
+                        <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                            View jobs you saved for later.
+                        </p>
+
+
+                        <div className="mt-4 text-green-600">
+
+                            <FaArrowRight
+                                size={18}
+                                className="group-hover:translate-x-1 transition-transform"
+                            />
+
+                        </div>
+
+                    </button>
+
+
+                    {/* =========================
+            MY APPLICATIONS
+        ========================= */}
+
+                    <button
+                        onClick={() => navigate("/my-applications")}
+                        className="group bg-purple-50 border border-purple-100 rounded-2xl p-5 text-left hover:shadow-md transition"
+                    >
+
+                        <div className="w-14 h-14 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center">
+
+                            <FaBriefcase size={25} />
+
+                        </div>
+
+
+                        <h3 className="text-lg font-bold text-purple-900 mt-4">
+                            My Applications
+                        </h3>
+
+                        <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                            Track your applications and their status.
+                        </p>
+
+
+                        <div className="mt-4 text-purple-600">
+
+                            <FaArrowRight
+                                size={18}
+                                className="group-hover:translate-x-1 transition-transform"
+                            />
+
+                        </div>
+
+                    </button>
+
+
+                    {/* =========================
+            PROFILE
+        ========================= */}
+
+                    <button
+                        onClick={() => navigate("/profile")}
+                        className="group bg-orange-50 border border-orange-100 rounded-2xl p-5 text-left hover:shadow-md transition"
+                    >
+
+                        <div className="w-14 h-14 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center">
+
+                            <FaUser size={25} />
+
+                        </div>
+
+
+                        <h3 className="text-lg font-bold text-orange-900 mt-4">
+                            Profile
+                        </h3>
+
+                        <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                            Update your profile and manage your skills.
+                        </p>
+
+
+                        <div className="mt-4 text-orange-600">
+
+                            <FaArrowRight
+                                size={18}
+                                className="group-hover:translate-x-1 transition-transform"
+                            />
+
+                        </div>
+
+                    </button>
+
+
+                </div>
 
             </div>
 

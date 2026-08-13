@@ -1,23 +1,98 @@
 import { useEffect, useState } from "react";
 
-import { FaSpinner } from "react-icons/fa";
+import {
+    FaSpinner,
+    FaEdit,
+    FaPhone,
+    FaMapMarkerAlt,
+    FaEnvelope,
+    FaGraduationCap,
+    FaCode,
+    FaFilePdf,
+    FaExternalLinkAlt,
+    FaCamera,
+    FaBriefcase,
+    FaPlus,
+    FaTrash
+} from "react-icons/fa";
+
 import { toast } from "react-hot-toast";
 
 import api from "../../services/api";
 
+
 function Profile() {
 
     const [user, setUser] = useState(null);
+
     const [loading, setLoading] = useState(true);
 
     const [isEditing, setIsEditing] = useState(false);
 
     const [saving, setSaving] = useState(false);
 
+
+    // =========================
+    // EMPTY EDUCATION
+    // =========================
+
+    const emptyEducation = {
+        degree: "",
+        college: "",
+        branch: "",
+        year: ""
+    };
+
+
+    // =========================
+    // EMPTY EXPERIENCE
+    // =========================
+
+    const emptyExperience = {
+        jobTitle: "",
+        company: "",
+        employmentType: "",
+        startDate: "",
+        endDate: "",
+        currentlyWorking: false,
+        description: ""
+    };
+
+
+    // =========================
+    // FORM DATA
+    // =========================
+
     const [formData, setFormData] = useState({
-        fullName: "", phone: "", headline: "", location: "", skills: "", degree: "", college: "", year: "", branch: "", profilePhoto: null, resume: null,
+
+        fullName: "",
+        phone: "",
+        headline: "",
+        location: "",
+        skills: "",
+
+        education: [
+            {
+                ...emptyEducation
+            }
+        ],
+
+        experience: [
+            {
+                ...emptyExperience
+            }
+        ],
+
+        profilePhoto: null,
+
+        resume: null
+
     });
 
+
+    // =========================
+    // FETCH PROFILE
+    // =========================
 
     const fetchProfile = async () => {
 
@@ -25,39 +100,114 @@ function Profile() {
 
             setLoading(true);
 
-            const response = await api.get("/users/profile");
+            const response = await api.get(
+                "/users/profile"
+            );
 
             const profile = response.data.user;
 
             setUser(profile);
 
+
+            // =========================
+            // EDUCATION
+            // =========================
+
+            const educationData =
+                profile.education?.length > 0
+                    ? profile.education.map((edu) => ({
+
+                        degree: edu.degree || "",
+
+                        college: edu.college || "",
+
+                        branch: edu.branch || "",
+
+                        year: edu.year || ""
+
+                    }))
+                    : [
+                        {
+                            ...emptyEducation
+                        }
+                    ];
+
+
+            // =========================
+            // EXPERIENCE
+            // =========================
+
+            const experienceData =
+                profile.experience?.length > 0
+                    ? profile.experience.map((exp) => ({
+
+                        jobTitle: exp.jobTitle || "",
+
+                        company: exp.company || "",
+
+                        employmentType:
+                            exp.employmentType || "",
+
+                        startDate:
+                            exp.startDate
+                                ? exp.startDate.substring(0, 10)
+                                : "",
+
+                        endDate:
+                            exp.endDate
+                                ? exp.endDate.substring(0, 10)
+                                : "",
+
+                        currentlyWorking:
+                            exp.currentlyWorking || false,
+
+                        description:
+                            exp.description || ""
+
+                    }))
+                    : [
+                        {
+                            ...emptyExperience
+                        }
+                    ];
+
+
             setFormData({
 
-                fullName: profile.fullName || "",
+                fullName:
+                    profile.fullName || "",
 
-                phone: profile.phone || "",
+                phone:
+                    profile.phone || "",
 
-                headline: profile.headline || "",
+                headline:
+                    profile.headline || "",
 
-                location: profile.location || "",
+                location:
+                    profile.location || "",
 
-                skills: profile.skills?.join(", ") || "",
+                skills:
+                    profile.skills?.join(", ") || "",
 
-                degree: profile.education?.[0]?.degree || "",
+                education:
+                    educationData,
 
-                college: profile.education?.[0]?.college || "",
+                experience:
+                    experienceData,
 
-                year: profile.education?.[0]?.year || "",
+                profilePhoto: null,
 
-                branch: profile.education?.[0]?.branch || ""
+                resume: null
 
             });
 
-            setUser(response.data.user);
 
         } catch (error) {
 
-            console.log(error);
+            toast.error(
+                error.response?.data?.message ||
+                "Failed to load profile"
+            );
 
         } finally {
 
@@ -67,67 +217,526 @@ function Profile() {
 
     };
 
+
+    useEffect(() => {
+
+        fetchProfile();
+
+    }, []);
+
+
+    // =========================
+    // HANDLE BASIC INPUT
+    // =========================
+
+    const handleChange = (e) => {
+
+        const {
+            name,
+            value
+        } = e.target;
+
+
+        setFormData((prev) => ({
+
+            ...prev,
+
+            [name]: value
+
+        }));
+
+    };
+
+
+    // =========================
+    // HANDLE EDUCATION CHANGE
+    // =========================
+
+    const handleEducationChange = (
+        index,
+        e
+    ) => {
+
+        const {
+            name,
+            value
+        } = e.target;
+
+
+        setFormData((prev) => {
+
+            const updatedEducation =
+                [...prev.education];
+
+
+            updatedEducation[index] = {
+
+                ...updatedEducation[index],
+
+                [name]: value
+
+            };
+
+
+            return {
+
+                ...prev,
+
+                education:
+                    updatedEducation
+
+            };
+
+        });
+
+    };
+
+
+    // =========================
+    // ADD EDUCATION
+    // =========================
+
+    const addEducation = () => {
+
+        setFormData((prev) => ({
+
+            ...prev,
+
+            education: [
+
+                ...prev.education,
+
+                {
+                    ...emptyEducation
+                }
+
+            ]
+
+        }));
+
+    };
+
+
+    // =========================
+    // REMOVE EDUCATION
+    // =========================
+
+    const removeEducation = (index) => {
+
+        setFormData((prev) => {
+
+            if (
+                prev.education.length === 1
+            ) {
+
+                return prev;
+
+            }
+
+
+            return {
+
+                ...prev,
+
+                education:
+                    prev.education.filter(
+                        (_, educationIndex) =>
+                            educationIndex !== index
+                    )
+
+            };
+
+        });
+
+    };
+
+
+    // =========================
+    // HANDLE EXPERIENCE CHANGE
+    // =========================
+
+    const handleExperienceChange = (
+        index,
+        e
+    ) => {
+
+        const {
+            name,
+            value,
+            type,
+            checked
+        } = e.target;
+
+
+        setFormData((prev) => {
+
+            const updatedExperience =
+                [...prev.experience];
+
+
+            updatedExperience[index] = {
+
+                ...updatedExperience[index],
+
+                [name]:
+                    type === "checkbox"
+                        ? checked
+                        : value
+
+            };
+
+
+            // If currently working
+            // is enabled, remove end date
+
+            if (
+                name === "currentlyWorking" &&
+                checked
+            ) {
+
+                updatedExperience[index]
+                    .endDate = "";
+
+            }
+
+
+            return {
+
+                ...prev,
+
+                experience:
+                    updatedExperience
+
+            };
+
+        });
+
+    };
+
+
+    // =========================
+    // ADD EXPERIENCE
+    // =========================
+
+    const addExperience = () => {
+
+        setFormData((prev) => ({
+
+            ...prev,
+
+            experience: [
+
+                ...prev.experience,
+
+                {
+                    ...emptyExperience
+                }
+
+            ]
+
+        }));
+
+    };
+
+
+    // =========================
+    // REMOVE EXPERIENCE
+    // =========================
+
+    const removeExperience = (index) => {
+
+        setFormData((prev) => {
+
+            if (
+                prev.experience.length === 1
+            ) {
+
+                return prev;
+
+            }
+
+
+            return {
+
+                ...prev,
+
+                experience:
+                    prev.experience.filter(
+                        (_, experienceIndex) =>
+                            experienceIndex !== index
+                    )
+
+            };
+
+        });
+
+    };
+
+
+    // =========================
+    // UPDATE PROFILE
+    // =========================
+
     const handleUpdateProfile = async () => {
 
         if (saving) return;
+
 
         try {
 
             setSaving(true);
 
+
             const data = new FormData();
 
-            data.append("fullName", formData.fullName);
 
-            data.append("phone", formData.phone);
+            // =========================
+            // BASIC INFORMATION
+            // =========================
 
-            data.append("headline", formData.headline);
+            data.append(
+                "fullName",
+                formData.fullName
+            );
 
-            data.append("location", formData.location);
+            data.append(
+                "phone",
+                formData.phone
+            );
+
+            data.append(
+                "headline",
+                formData.headline
+            );
+
+            data.append(
+                "location",
+                formData.location
+            );
+
+
+            // =========================
+            // SKILLS
+            // =========================
 
             data.append(
                 "skills",
                 JSON.stringify(
+
                     formData.skills
                         .split(",")
-                        .map(skill => skill.trim())
+                        .map(
+                            (skill) =>
+                                skill.trim()
+                        )
+                        .filter(Boolean)
+
                 )
             );
 
+
+            // =========================
+            // EDUCATION
+            // =========================
+
+            const cleanedEducation =
+                formData.education
+                    .filter((edu) => {
+
+                        return (
+
+                            edu.degree?.trim() ||
+                            edu.college?.trim() ||
+                            edu.branch?.trim() ||
+                            edu.year
+
+                        );
+
+                    });
+
+
             data.append(
                 "education",
-                JSON.stringify([
-                    {
-                        degree: formData.degree,
-                        college: formData.college,
-                        branch: formData.branch,
-                        year: formData.year
-                    }
-                ])
+                JSON.stringify(
+                    cleanedEducation
+                )
             );
 
-            if (formData.profilePhoto) {
-                data.append("profilePhoto", formData.profilePhoto);
+
+            // =========================
+            // EXPERIENCE
+            // =========================
+
+            /*
+             * IMPORTANT:
+             *
+             * Empty experience forms are removed.
+             *
+             * employmentType is only included
+             * when it has a valid value.
+             *
+             * This prevents:
+             *
+             * experience.0.employmentType:
+             * "" is not a valid enum value
+             */
+
+            const cleanedExperience =
+                formData.experience
+
+                    .filter((exp) => {
+
+                        return (
+
+                            exp.jobTitle?.trim() ||
+                            exp.company?.trim() ||
+                            exp.employmentType ||
+                            exp.startDate ||
+                            exp.endDate ||
+                            exp.currentlyWorking ||
+                            exp.description?.trim()
+
+                        );
+
+                    })
+
+                    .map((exp) => {
+
+                        const cleaned = {
+
+                            jobTitle:
+                                exp.jobTitle?.trim() || "",
+
+                            company:
+                                exp.company?.trim() || "",
+
+                            startDate:
+                                exp.startDate || null,
+
+                            endDate:
+                                exp.currentlyWorking
+                                    ? null
+                                    : (
+                                        exp.endDate ||
+                                        null
+                                    ),
+
+                            currentlyWorking:
+                                Boolean(
+                                    exp.currentlyWorking
+                                ),
+
+                            description:
+                                exp.description?.trim() || ""
+
+                        };
+
+
+                        // =========================
+                        // EMPLOYMENT TYPE
+                        // =========================
+
+                        if (
+                            exp.employmentType
+                        ) {
+
+                            cleaned.employmentType =
+                                exp.employmentType;
+
+                        }
+
+
+                        return cleaned;
+
+                    });
+
+
+            data.append(
+                "experience",
+                JSON.stringify(
+                    cleanedExperience
+                )
+            );
+
+
+            // =========================
+            // PROFILE PHOTO
+            // =========================
+
+            if (
+                formData.profilePhoto
+            ) {
+
+                data.append(
+                    "profilePhoto",
+                    formData.profilePhoto
+                );
+
             }
 
-            if (formData.resume) {
-                data.append("resume", formData.resume);
+
+            // =========================
+            // RESUME
+            // =========================
+
+            if (
+                formData.resume
+            ) {
+
+                data.append(
+                    "resume",
+                    formData.resume
+                );
+
             }
 
-            const response = await api.put("/users/profile", data);
 
-            toast.success(response.data.message);
+            // =========================
+            // API REQUEST
+            // =========================
 
-            setUser(response.data.user);
+            const response =
+                await api.put(
+                    "/users/profile",
+                    data
+                );
+
+
+            // =========================
+            // SUCCESS
+            // =========================
+
+            toast.success(
+                response.data.message
+            );
+
+
+            setUser(
+                response.data.user
+            );
+
 
             setIsEditing(false);
 
+
+            setFormData((prev) => ({
+
+                ...prev,
+
+                profilePhoto: null,
+
+                resume: null
+
+            }));
+
+
         } catch (error) {
 
-            console.log(error);
-
             toast.error(
-                error.response?.data?.message || "Something went wrong"
+
+                error.response?.data?.message ||
+                "Failed to update profile"
+
             );
 
         } finally {
@@ -138,19 +747,26 @@ function Profile() {
 
     };
 
-    useEffect(() => {
 
-        fetchProfile();
-
-    }, []);
+    // =========================
+    // LOADING
+    // =========================
 
     if (loading) {
 
         return (
 
-            <div className="text-center py-20 text-xl">
+            <div className="min-h-[70vh] flex items-center justify-center">
 
-                Loading Profile...
+                <div className="flex items-center gap-3 text-gray-500">
+
+                    <FaSpinner className="animate-spin text-blue-600" />
+
+                    <span>
+                        Loading Profile...
+                    </span>
+
+                </div>
 
             </div>
 
@@ -158,275 +774,832 @@ function Profile() {
 
     }
 
-    if (isEditing) {
+
+    // =========================
+    // ERROR
+    // =========================
+
+    if (!user) {
 
         return (
 
-            <div className="max-w-5xl mx-auto py-10 px-4">
+            <div className="min-h-[70vh] flex items-center justify-center">
 
-                <div className="bg-white rounded-2xl shadow-lg p-8">
+                <p className="text-gray-500">
+                    Unable to load profile.
+                </p>
 
-                    <h1 className="text-3xl font-bold mb-8">
+            </div>
 
-                        Edit Profile
+        );
 
-                    </h1>
+    }
 
-                    <div className="grid md:grid-cols-2 gap-6">
 
-                        <div>
+    // =========================
+    // EDIT PROFILE
+    // =========================
 
-                            <label className="block mb-2 font-medium">
-                                Full Name
-                            </label>
+    if (isEditing) {
 
-                            <input
-                                type="text"
-                                value={formData.fullName}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        fullName: e.target.value
-                                    })
-                                }
-                                className="w-full border rounded-lg px-4 py-2"
-                            />
+        const previewPhoto =
+            formData.profilePhoto
 
-                        </div>
+                ? URL.createObjectURL(
+                    formData.profilePhoto
+                )
 
-                        <div>
+                : user.profilePhoto ||
 
-                            <label className="block mb-2 font-medium">
-                                Phone
-                            </label>
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    user.fullName
+                )}&background=2563eb&color=fff`;
 
-                            <input
-                                type="text"
-                                value={formData.phone}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        phone: e.target.value
-                                    })
-                                }
-                                className="w-full border rounded-lg px-4 py-2"
-                            />
 
-                        </div>
+        return (
 
-                        <div>
+            <div className="max-w-5xl mx-auto px-4 py-10">
 
-                            <label className="block mb-2 font-medium">
-                                Headline
-                            </label>
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
 
-                            <input
-                                type="text"
-                                value={formData.headline}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        headline: e.target.value
-                                    })
-                                }
-                                className="w-full border rounded-lg px-4 py-2"
-                            />
 
-                        </div>
+                    {/* =========================
+                        EDIT HEADER
+                    ========================= */}
 
-                        <div>
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8">
 
-                            <label className="block mb-2 font-medium">
-                                Location
-                            </label>
+                        <div className="flex items-center gap-5">
 
-                            <input
-                                type="text"
-                                value={formData.location}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        location: e.target.value
-                                    })
-                                }
-                                className="w-full border rounded-lg px-4 py-2"
-                            />
+                            <div className="relative">
 
-                        </div>
-
-                        <div className="mt-6">
-
-                            <label className="block mb-2 font-medium">
-                                Skills
-                            </label>
-
-                            <input
-                                type="text"
-                                value={formData.skills}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        skills: e.target.value
-                                    })
-                                }
-                                placeholder="React, Node.js, MongoDB"
-                                className="w-full border rounded-lg px-4 py-2"
-                            />
-
-                            <p className="text-sm text-gray-500 mt-1">
-                                Separate skills using commas.
-                            </p>
-
-                        </div>
-
-                        <div className="grid md:grid-cols-3 gap-6 mt-6">
-
-                            <div>
-
-                                <label className="block mb-2 font-medium">
-                                    Degree
-                                </label>
-
-                                <input
-                                    type="text"
-                                    value={formData.degree}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            degree: e.target.value
-                                        })
-                                    }
-                                    className="w-full border rounded-lg px-4 py-2"
+                                <img
+                                    src={previewPhoto}
+                                    alt={user.fullName}
+                                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
                                 />
+
+
+                                <label className="absolute bottom-0 right-0 w-9 h-9 bg-white text-blue-600 rounded-full flex items-center justify-center cursor-pointer shadow">
+
+                                    <FaCamera size={15} />
+
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) =>
+                                            setFormData(
+                                                (prev) => ({
+                                                    ...prev,
+                                                    profilePhoto:
+                                                        e.target.files?.[0] ||
+                                                        null
+                                                })
+                                            )
+                                        }
+                                    />
+
+                                </label>
 
                             </div>
 
-                            <div>
 
-                                <label className="block mb-2 font-medium">
-                                    College
-                                </label>
+                            <div className="text-white">
 
-                                <input
-                                    type="text"
-                                    value={formData.college}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            college: e.target.value
-                                        })
-                                    }
-                                    className="w-full border rounded-lg px-4 py-2"
-                                />
+                                <h1 className="text-2xl font-bold">
+                                    Edit Profile
+                                </h1>
 
-                            </div>
-
-                            <div>
-
-                                <label className="block mb-2 font-medium">
-                                    Branch
-                                </label>
-
-                                <input
-                                    type="text"
-                                    value={formData.branch}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            branch: e.target.value
-                                        })
-                                    }
-                                    className="w-full border rounded-lg px-4 py-2"
-                                />
-
-                            </div>
-
-                            <div>
-
-                                <label className="block mb-2 font-medium">
-                                    Year
-                                </label>
-
-                                <input
-                                    type="text"
-                                    value={formData.year}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            year: e.target.value
-                                        })
-                                    }
-                                    className="w-full border rounded-lg px-4 py-2"
-                                />
+                                <p className="text-blue-100 mt-1">
+                                    Keep your professional profile updated.
+                                </p>
 
                             </div>
 
                         </div>
 
-                        <div className="mt-8">
+                    </div>
 
-                            <label className="block mb-2 font-medium">
-                                Profile Photo
-                            </label>
 
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        profilePhoto: e.target.files[0]
-                                    })
-                                }
-                            />
+                    {/* =========================
+                        FORM
+                    ========================= */}
+
+                    <div className="p-8">
+
+
+                        {/* =========================
+                            BASIC INFORMATION
+                        ========================= */}
+
+                        <div className="grid md:grid-cols-2 gap-6">
+
+
+                            {/* FULL NAME */}
+
+                            <div>
+
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Full Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="fullName"
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+
+                            </div>
+
+
+                            {/* PHONE */}
+
+                            <div>
+
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Phone
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+
+                            </div>
+
+
+                            {/* HEADLINE */}
+
+                            <div className="md:col-span-2">
+
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Professional Headline
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="headline"
+                                    value={formData.headline}
+                                    onChange={handleChange}
+                                    placeholder="e.g. Backend Developer | Node.js | MongoDB"
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+
+                            </div>
+
+
+                            {/* LOCATION */}
+
+                            <div>
+
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Location
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleChange}
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+
+                            </div>
+
+
+                            {/* SKILLS */}
+
+                            <div>
+
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Skills
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="skills"
+                                    value={formData.skills}
+                                    onChange={handleChange}
+                                    placeholder="Node.js, Express, MongoDB"
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Separate skills using commas.
+                                </p>
+
+                            </div>
 
                         </div>
 
-                        <div className="mt-6">
 
-                            <label className="block mb-2 font-medium">
-                                Resume
-                            </label>
+                        {/* =========================
+                            EDUCATION
+                        ========================= */}
+
+                        <div className="mt-10">
+
+
+                            {/* EDUCATION HEADER */}
+
+                            <div className="flex items-center justify-between mb-5">
+
+                                <div className="flex items-center gap-2">
+
+                                    <FaGraduationCap className="text-blue-600" />
+
+                                    <h2 className="text-xl font-bold text-gray-900">
+                                        Education
+                                    </h2>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    onClick={addEducation}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
+                                >
+
+                                    <FaPlus size={13} />
+
+                                    Add Education
+
+                                </button>
+
+                            </div>
+
+
+                            {/* EDUCATION LIST */}
+
+                            <div className="space-y-6">
+
+                                {formData.education.map(
+                                    (education, index) => (
+
+                                        <div
+                                            key={index}
+                                            className="border border-gray-200 rounded-2xl p-6 relative bg-gray-50/50"
+                                        >
+
+
+                                            <div className="flex items-center justify-between mb-5">
+
+                                                <h3 className="font-semibold text-gray-800">
+                                                    Education {index + 1}
+                                                </h3>
+
+
+                                                {formData.education.length > 1 && (
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            removeEducation(index)
+                                                        }
+                                                        className="flex items-center gap-2 px-3 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition text-sm"
+                                                    >
+
+                                                        <FaTrash size={13} />
+
+                                                        Remove
+
+                                                    </button>
+
+                                                )}
+
+                                            </div>
+
+
+                                            <div className="grid md:grid-cols-2 gap-6">
+
+
+                                                {/* DEGREE */}
+
+                                                <div>
+
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Degree
+                                                    </label>
+
+                                                    <input
+                                                        type="text"
+                                                        name="degree"
+                                                        value={
+                                                            education.degree
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleEducationChange(
+                                                                index,
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="B.E / B.Tech"
+                                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    />
+
+                                                </div>
+
+
+                                                {/* COLLEGE */}
+
+                                                <div>
+
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        College
+                                                    </label>
+
+                                                    <input
+                                                        type="text"
+                                                        name="college"
+                                                        value={
+                                                            education.college
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleEducationChange(
+                                                                index,
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="College / University"
+                                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    />
+
+                                                </div>
+
+
+                                                {/* BRANCH */}
+
+                                                <div>
+
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Branch
+                                                    </label>
+
+                                                    <input
+                                                        type="text"
+                                                        name="branch"
+                                                        value={
+                                                            education.branch
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleEducationChange(
+                                                                index,
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="Computer Engineering"
+                                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    />
+
+                                                </div>
+
+
+                                                {/* YEAR */}
+
+                                                <div>
+
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Graduation Year
+                                                    </label>
+
+                                                    <input
+                                                        type="text"
+                                                        name="year"
+                                                        value={
+                                                            education.year
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleEducationChange(
+                                                                index,
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="2026"
+                                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    />
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    )
+                                )}
+
+                            </div>
+
+                        </div>
+
+
+                        {/* =========================
+                            EXPERIENCE
+                        ========================= */}
+
+                        <div className="mt-10">
+
+
+                            {/* EXPERIENCE HEADER */}
+
+                            <div className="flex items-center justify-between mb-5">
+
+                                <div className="flex items-center gap-2">
+
+                                    <FaBriefcase className="text-blue-600" />
+
+                                    <h2 className="text-xl font-bold text-gray-900">
+                                        Experience
+                                    </h2>
+
+                                </div>
+
+
+                                {/* ADD EXPERIENCE */}
+
+                                <button
+                                    type="button"
+                                    onClick={addExperience}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
+                                >
+
+                                    <FaPlus size={13} />
+
+                                    Add Experience
+
+                                </button>
+
+                            </div>
+
+
+                            {/* EXPERIENCE LIST */}
+
+                            <div className="space-y-6">
+
+                                {formData.experience.map(
+                                    (experience, index) => (
+
+                                        <div
+                                            key={index}
+                                            className="border border-gray-200 rounded-2xl p-6 bg-gray-50/50"
+                                        >
+
+
+                                            {/* EXPERIENCE HEADER */}
+
+                                            <div className="flex items-center justify-between mb-5">
+
+                                                <h3 className="font-semibold text-gray-800">
+                                                    Experience {index + 1}
+                                                </h3>
+
+
+                                                {formData.experience.length > 1 && (
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            removeExperience(
+                                                                index
+                                                            )
+                                                        }
+                                                        className="flex items-center gap-2 px-3 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition text-sm"
+                                                    >
+
+                                                        <FaTrash size={13} />
+
+                                                        Remove
+
+                                                    </button>
+
+                                                )}
+
+                                            </div>
+
+
+                                            <div className="grid md:grid-cols-2 gap-6">
+
+
+                                                {/* JOB TITLE */}
+
+                                                <div>
+
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Job Title
+                                                    </label>
+
+                                                    <input
+                                                        type="text"
+                                                        name="jobTitle"
+                                                        value={
+                                                            experience.jobTitle
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleExperienceChange(
+                                                                index,
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="Backend Developer"
+                                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    />
+
+                                                </div>
+
+
+                                                {/* COMPANY */}
+
+                                                <div>
+
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Company
+                                                    </label>
+
+                                                    <input
+                                                        type="text"
+                                                        name="company"
+                                                        value={
+                                                            experience.company
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleExperienceChange(
+                                                                index,
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="Company Name"
+                                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    />
+
+                                                </div>
+
+
+                                                {/* EMPLOYMENT TYPE */}
+
+                                                <div>
+
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Employment Type
+                                                    </label>
+
+                                                    <select
+                                                        name="employmentType"
+                                                        value={
+                                                            experience.employmentType
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleExperienceChange(
+                                                                index,
+                                                                e
+                                                            )
+                                                        }
+                                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    >
+
+                                                        <option value="">
+                                                            Select employment type
+                                                        </option>
+
+                                                        <option value="Full-time">
+                                                            Full-time
+                                                        </option>
+
+                                                        <option value="Part-time">
+                                                            Part-time
+                                                        </option>
+
+                                                        <option value="Internship">
+                                                            Internship
+                                                        </option>
+
+                                                        <option value="Freelance">
+                                                            Freelance
+                                                        </option>
+
+                                                        <option value="Contract">
+                                                            Contract
+                                                        </option>
+
+                                                    </select>
+
+                                                </div>
+
+
+                                                {/* START DATE */}
+
+                                                <div>
+
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Start Date
+                                                    </label>
+
+                                                    <input
+                                                        type="date"
+                                                        name="startDate"
+                                                        value={
+                                                            experience.startDate
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleExperienceChange(
+                                                                index,
+                                                                e
+                                                            )
+                                                        }
+                                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    />
+
+                                                </div>
+
+
+                                                {/* CURRENTLY WORKING */}
+
+                                                <div className="md:col-span-2">
+
+                                                    <label className="flex items-center gap-3 cursor-pointer">
+
+                                                        <input
+                                                            type="checkbox"
+                                                            name="currentlyWorking"
+                                                            checked={
+                                                                experience.currentlyWorking
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleExperienceChange(
+                                                                    index,
+                                                                    e
+                                                                )
+                                                            }
+                                                            className="w-4 h-4 text-blue-600 rounded"
+                                                        />
+
+                                                        <span className="text-sm font-semibold text-gray-700">
+                                                            I currently work here
+                                                        </span>
+
+                                                    </label>
+
+                                                </div>
+
+
+                                                {/* END DATE */}
+
+                                                {!experience.currentlyWorking && (
+
+                                                    <div>
+
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                            End Date
+                                                        </label>
+
+                                                        <input
+                                                            type="date"
+                                                            name="endDate"
+                                                            value={
+                                                                experience.endDate
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleExperienceChange(
+                                                                    index,
+                                                                    e
+                                                                )
+                                                            }
+                                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        />
+
+                                                    </div>
+
+                                                )}
+
+
+                                                {/* DESCRIPTION */}
+
+                                                <div className="md:col-span-2">
+
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                        Description
+                                                    </label>
+
+                                                    <textarea
+                                                        name="description"
+                                                        value={
+                                                            experience.description
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleExperienceChange(
+                                                                index,
+                                                                e
+                                                            )
+                                                        }
+                                                        rows="4"
+                                                        placeholder="Describe your responsibilities, achievements and work..."
+                                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                                    />
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    )
+                                )}
+
+                            </div>
+
+                        </div>
+
+
+                        {/* =========================
+                            RESUME
+                        ========================= */}
+
+                        <div className="mt-10">
+
+                            <div className="flex items-center gap-2 mb-4">
+
+                                <FaFilePdf className="text-red-500" />
+
+                                <h2 className="text-xl font-bold text-gray-900">
+                                    Resume
+                                </h2>
+
+                            </div>
+
 
                             <input
                                 type="file"
                                 accept=".pdf"
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        resume: e.target.files[0]
-                                    })
+                                    setFormData(
+                                        (prev) => ({
+                                            ...prev,
+                                            resume:
+                                                e.target.files?.[0] ||
+                                                null
+                                        })
+                                    )
                                 }
+                                className="w-full border border-gray-300 rounded-xl px-4 py-3"
                             />
+
+
+                            <p className="text-xs text-gray-500 mt-2">
+                                Upload your resume in PDF format.
+                            </p>
 
                         </div>
 
-                        <div className="flex justify-end gap-4 mt-8">
+
+                        {/* =========================
+                            ACTIONS
+                        ========================= */}
+
+                        <div className="flex justify-end gap-3 mt-10 pt-6 border-t">
+
 
                             <button
-                                onClick={() => setIsEditing(false)}
-                                className="px-6 py-2 border rounded-lg hover:bg-gray-100"
+                                onClick={() =>
+                                    setIsEditing(false)
+                                }
+                                disabled={saving}
+                                className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition"
                             >
                                 Cancel
                             </button>
 
+
                             <button
                                 onClick={handleUpdateProfile}
                                 disabled={saving}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-white transition
-        ${saving
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition ${
+                                    saving
                                         ? "bg-gray-400 cursor-not-allowed"
                                         : "bg-blue-600 hover:bg-blue-700"
-                                    }`}
+                                }`}
                             >
+
                                 {saving ? (
+
                                     <>
+
                                         <FaSpinner className="animate-spin" />
+
                                         Saving...
+
                                     </>
+
                                 ) : (
+
                                     "Save Changes"
+
                                 )}
+
                             </button>
 
                         </div>
@@ -442,163 +1615,538 @@ function Profile() {
     }
 
 
+    // =========================
+    // VIEW PROFILE
+    // =========================
+
     return (
 
-        <div className="max-w-5xl mx-auto py-10 px-4">
+        <div className="max-w-5xl mx-auto px-4 py-10">
 
-            <div className="bg-white rounded-2xl shadow-lg p-8">
 
-                {/* Header */}
+            {/* =========================
+                PROFILE HEADER
+            ========================= */}
 
-                <div className="flex justify-between items-start">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
 
-                    <div className="flex items-center gap-6">
 
-                        <img
-                            src={
-                                user.profilePhoto ||
-                                `https://ui-avatars.com/api/?name=${user.fullName}`
-                            }
-                            alt={user.fullName}
-                            className="w-28 h-28 rounded-full object-cover border"
-                        />
+                {/* COVER */}
 
-                        <div>
+                <div className="relative h-48 overflow-hidden">
 
-                            <h1 className="text-3xl font-bold">
-                                {user.fullName}
-                            </h1>
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-800">
 
-                            <p className="text-gray-600 mt-2">
-                                {user.email}
-                            </p>
 
-                            <p className="text-blue-600 font-medium mt-2">
-                                {user.headline || "No headline added"}
-                            </p>
+                        <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-blue-500/20"></div>
+
+                        <div className="absolute -bottom-32 -left-16 w-72 h-72 rounded-full bg-indigo-400/10"></div>
+
+
+                        <div className="absolute top-8 right-32 w-2 h-2 rounded-full bg-white/40"></div>
+
+                        <div className="absolute top-16 right-20 w-1.5 h-1.5 rounded-full bg-blue-300/50"></div>
+
+                        <div className="absolute bottom-10 right-44 w-2 h-2 rounded-full bg-indigo-300/40"></div>
+
+
+                        <div className="relative h-full flex items-center px-8 md:px-12">
+
+                            <div>
+
+                                <p className="text-blue-300 text-sm font-semibold tracking-[0.2em] uppercase">
+                                    CareerConnect
+                                </p>
+
+                                <h2 className="text-2xl md:text-3xl font-bold text-white mt-2">
+                                    Your career. Your next opportunity.
+                                </h2>
+
+                                <p className="text-blue-100/80 text-sm mt-2 max-w-xl">
+                                    Build your profile and connect with opportunities.
+                                </p>
+
+                            </div>
 
                         </div>
 
                     </div>
 
-                    <button
-                        onClick={() => setIsEditing(true)}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-                    >
-                        Edit Profile
-                    </button>
+                </div>
+
+
+                {/* PROFILE INFO */}
+
+                <div className="px-8 pb-8">
+
+                    <div className="relative flex flex-col md:flex-row md:items-start md:justify-between">
+
+
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+
+
+                            {/* PHOTO */}
+
+                            <div className="relative -mt-14 z-10 flex-shrink-0">
+
+                                <img
+                                    src={
+                                        user.profilePhoto ||
+                                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                            user.fullName
+                                        )}&background=2563eb&color=fff`
+                                    }
+                                    alt={user.fullName}
+                                    className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg bg-white"
+                                />
+
+                            </div>
+
+
+                            {/* NAME */}
+
+                            <div className="pt-5 sm:pt-6">
+
+                                <h1 className="text-3xl font-bold text-gray-900">
+                                    {user.fullName}
+                                </h1>
+
+                                <p className="text-blue-600 font-medium mt-1">
+                                    {user.headline ||
+                                        "No headline added"}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* EDIT */}
+
+                        <div className="mt-5 md:mt-6">
+
+                            <button
+                                onClick={() =>
+                                    setIsEditing(true)
+                                }
+                                className="flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm"
+                            >
+
+                                <FaEdit />
+
+                                Edit Profile
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* CONTACT */}
+
+                    <div className="flex flex-wrap gap-x-8 gap-y-3 mt-7 text-gray-600">
+
+
+                        <div className="flex items-center gap-2">
+
+                            <FaEnvelope className="text-blue-500" />
+
+                            <span>
+                                {user.email}
+                            </span>
+
+                        </div>
+
+
+                        <div className="flex items-center gap-2">
+
+                            <FaPhone className="text-blue-500" />
+
+                            <span>
+                                {user.phone ||
+                                    "Phone not added"}
+                            </span>
+
+                        </div>
+
+
+                        <div className="flex items-center gap-2">
+
+                            <FaMapMarkerAlt className="text-blue-500" />
+
+                            <span>
+                                {user.location ||
+                                    "Location not added"}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {/* =========================
+                MAIN CONTENT
+            ========================= */}
+
+            <div className="grid lg:grid-cols-3 gap-6 mt-6">
+
+
+                {/* LEFT */}
+
+                <div className="lg:col-span-2 space-y-6">
+
+
+                    {/* SKILLS */}
+
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-7">
+
+                        <div className="flex items-center gap-2 mb-5">
+
+                            <FaCode className="text-blue-600" />
+
+                            <h2 className="text-xl font-bold text-gray-900">
+                                Skills
+                            </h2>
+
+                        </div>
+
+
+                        {user.skills?.length > 0 ? (
+
+                            <div className="flex flex-wrap gap-3">
+
+                                {user.skills.map(
+                                    (skill) => (
+
+                                        <span
+                                            key={skill}
+                                            className="px-4 py-2 bg-blue-50 border border-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                                        >
+                                            {skill}
+                                        </span>
+
+                                    )
+                                )}
+
+                            </div>
+
+                        ) : (
+
+                            <p className="text-gray-500">
+                                No skills added yet.
+                            </p>
+
+                        )}
+
+                    </div>
+
+
+                    {/* EDUCATION */}
+
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-7">
+
+                        <div className="flex items-center gap-2 mb-6">
+
+                            <FaGraduationCap className="text-blue-600" />
+
+                            <h2 className="text-xl font-bold text-gray-900">
+                                Education
+                            </h2>
+
+                        </div>
+
+
+                        {user.education?.length > 0 ? (
+
+                            <div className="space-y-4">
+
+                                {user.education.map(
+                                    (edu, index) => (
+
+                                        <div
+                                            key={index}
+                                            className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition"
+                                        >
+
+                                            <div className="flex items-start gap-4">
+
+
+                                                <div className="w-11 h-11 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+
+                                                    <FaGraduationCap />
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <h3 className="font-bold text-lg text-gray-900">
+                                                        {edu.degree}
+                                                    </h3>
+
+                                                    <p className="text-gray-600 mt-1">
+                                                        {edu.college}
+                                                    </p>
+
+                                                    <p className="text-sm text-gray-500 mt-2">
+
+                                                        {edu.branch}
+
+                                                        {edu.branch &&
+                                                        edu.year
+                                                            ? " • "
+                                                            : ""}
+
+                                                        {edu.year}
+
+                                                    </p>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    )
+                                )}
+
+                            </div>
+
+                        ) : (
+
+                            <p className="text-gray-500">
+                                No education added yet.
+                            </p>
+
+                        )}
+
+                    </div>
+
+
+                    {/* EXPERIENCE */}
+
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-7">
+
+                        <div className="flex items-center gap-2 mb-6">
+
+                            <FaBriefcase className="text-blue-600" />
+
+                            <h2 className="text-xl font-bold text-gray-900">
+                                Experience
+                            </h2>
+
+                        </div>
+
+
+                        {user.experience?.length > 0 ? (
+
+                            <div className="space-y-4">
+
+                                {user.experience.map(
+                                    (exp, index) => (
+
+                                        <div
+                                            key={index}
+                                            className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition"
+                                        >
+
+                                            <div className="flex items-start gap-4">
+
+
+                                                <div className="w-11 h-11 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+
+                                                    <FaBriefcase />
+
+                                                </div>
+
+
+                                                <div className="flex-1">
+
+                                                    <h3 className="font-bold text-lg text-gray-900">
+                                                        {exp.jobTitle}
+                                                    </h3>
+
+
+                                                    <p className="text-gray-600 mt-1">
+                                                        {exp.company}
+                                                    </p>
+
+
+                                                    <p className="text-sm text-blue-600 mt-2 font-medium">
+                                                        {exp.employmentType}
+                                                    </p>
+
+
+                                                    <p className="text-sm text-gray-500 mt-2">
+
+                                                        {exp.startDate
+                                                            ? new Date(
+                                                                exp.startDate
+                                                            ).toLocaleDateString(
+                                                                "en-US",
+                                                                {
+                                                                    month: "short",
+                                                                    year: "numeric"
+                                                                }
+                                                            )
+                                                            : ""}
+
+                                                        {exp.startDate
+                                                            ? " - "
+                                                            : ""}
+
+                                                        {exp.currentlyWorking
+                                                            ? "Present"
+                                                            : exp.endDate
+                                                            ? new Date(
+                                                                exp.endDate
+                                                            ).toLocaleDateString(
+                                                                "en-US",
+                                                                {
+                                                                    month: "short",
+                                                                    year: "numeric"
+                                                                }
+                                                            )
+                                                            : ""}
+
+                                                    </p>
+
+
+                                                    {exp.description && (
+
+                                                        <p className="text-sm text-gray-600 mt-3 leading-relaxed">
+                                                            {exp.description}
+                                                        </p>
+
+                                                    )}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    )
+                                )}
+
+                            </div>
+
+                        ) : (
+
+                            <p className="text-gray-500">
+                                No experience added yet.
+                            </p>
+
+                        )}
+
+                    </div>
 
                 </div>
 
 
-                {/* Basic Details */}
+                {/* RIGHT SIDEBAR */}
 
-                <div className="grid md:grid-cols-2 gap-8 mt-10">
+                <div className="space-y-6">
 
-                    <div>
 
-                        <h3 className="text-gray-500 font-semibold">
-                            Phone
-                        </h3>
+                    {/* RESUME */}
 
-                        <p className="mt-2 text-lg">
-                            {user.phone || "Not Added"}
-                        </p>
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
 
-                    </div>
+                        <div className="flex items-center gap-2 mb-4">
 
-                    <div>
+                            <FaFilePdf className="text-red-500" />
 
-                        <h3 className="text-gray-500 font-semibold">
-                            Location
-                        </h3>
+                            <h2 className="text-lg font-bold text-gray-900">
+                                Resume
+                            </h2>
 
-                        <p className="mt-2 text-lg">
-                            {user.location || "Not Added"}
-                        </p>
+                        </div>
 
-                    </div>
 
-                </div>
+                        {user.resumeUrl ? (
 
-                {/* Skills */}
+                            <>
 
-                <div className="mt-10">
+                                <p className="text-sm text-gray-500 mb-4">
+                                    Your latest resume is available.
+                                </p>
 
-                    <h2 className="text-2xl font-bold mb-5">
-                        Skills
-                    </h2>
 
-                    <div className="flex flex-wrap gap-3">
-
-                        {
-                            user.skills?.length > 0
-                                ? user.skills.map((skill) => (
-
-                                    <span
-                                        key={skill}
-                                        className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full"
-                                    >
-                                        {skill}
-                                    </span>
-
-                                ))
-                                : (
-                                    <p className="text-gray-500">
-                                        No skills added
-                                    </p>
-                                )
-                        }
-
-                    </div>
-
-                </div>
-
-                {/* Education */}
-
-                <div className="mt-10">
-
-                    <h2 className="text-2xl font-bold mb-5">
-                        Education
-                    </h2>
-
-                    {
-                        user.education?.length > 0
-                            ? user.education.map((edu, index) => (
-
-                                <div
-                                    key={index}
-                                    className="border rounded-xl p-5 mb-4"
+                                <a
+                                    href={user.resumeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition"
                                 >
 
-                                    <h3 className="font-bold text-lg">
-                                        {edu.degree}
-                                    </h3>
+                                    <FaExternalLinkAlt size={14} />
 
-                                    <p className="text-gray-600 mt-1">
-                                        {edu.college}
-                                    </p>
+                                    View Resume
 
-                                    <p className="text-gray-500 text-sm mt-1">
-                                        {edu.year}
-                                    </p>
+                                </a>
 
-                                </div>
+                            </>
 
-                            ))
-                            : (
-                                <p className="text-gray-500">
-                                    No education added
+                        ) : (
+
+                            <p className="text-sm text-gray-500">
+                                No resume uploaded yet.
+                            </p>
+
+                        )}
+
+                    </div>
+
+
+                    {/* CAREER PROFILE */}
+
+                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+
+                        <div className="flex items-center gap-3">
+
+                            <div className="w-11 h-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+
+                                <FaBriefcase />
+
+                            </div>
+
+
+                            <div>
+
+                                <h3 className="font-bold text-gray-900">
+                                    Career Profile
+                                </h3>
+
+                                <p className="text-sm text-gray-600 mt-1">
+                                    Keep your profile updated.
                                 </p>
-                            )
-                    }
+
+                            </div>
+
+                        </div>
+
+
+                        <p className="text-sm text-gray-600 mt-4">
+                            A complete profile helps recruiters understand your skills and experience.
+                        </p>
+
+                    </div>
 
                 </div>
 
             </div>
 
         </div>
-    )
+
+    );
+
 }
+
 
 export default Profile;

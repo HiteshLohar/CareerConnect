@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useSearchParams } from "react-router-dom";
 
 import { loginSuccess } from "../../redux/slices/authSlice";
 import api from "../../services/api";
@@ -9,10 +8,6 @@ import { toast } from "react-hot-toast";
 function LoginForm() {
 
     const dispatch = useDispatch();
-
-    const [searchParams] = useSearchParams();
-
-    const redirectPath = searchParams.get("redirect") || "/";
 
     const [loading, setLoading] = useState(false);
 
@@ -40,8 +35,12 @@ function LoginForm() {
 
             setLoading(true);
 
-            const response = await api.post("/auth/login", formData);
+            const response = await api.post(
+                "/auth/login",
+                formData
+            );
 
+            // Save logged-in user in Redux
             dispatch(loginSuccess(response.data.user));
 
             toast.success(response.data.message);
@@ -49,7 +48,8 @@ function LoginForm() {
         } catch (error) {
 
             toast.error(
-                error.response?.data?.message || "Something went wrong"
+                error.response?.data?.message ||
+                "Something went wrong"
             );
 
         } finally {
@@ -61,6 +61,7 @@ function LoginForm() {
     };
 
     return (
+
         <div className="w-full max-w-md border rounded-lg p-6 shadow">
 
             <h2 className="text-3xl font-bold text-center mb-6">
@@ -69,8 +70,13 @@ function LoginForm() {
 
             <form onSubmit={handleSubmit}>
 
+                {/* Email */}
+
                 <div className="mb-4">
-                    <label>Email</label>
+
+                    <label>
+                        Email
+                    </label>
 
                     <input
                         type="email"
@@ -80,10 +86,17 @@ function LoginForm() {
                         placeholder="Enter your email"
                         className="w-full border rounded px-3 py-2 mt-1"
                     />
+
                 </div>
 
+
+                {/* Password */}
+
                 <div className="mb-4">
-                    <label>Password</label>
+
+                    <label>
+                        Password
+                    </label>
 
                     <input
                         type="password"
@@ -93,19 +106,29 @@ function LoginForm() {
                         placeholder="Enter your password"
                         className="w-full border rounded px-3 py-2 mt-1"
                     />
+
                 </div>
+
+
+                {/* Login Button */}
 
                 <button
                     type="submit"
                     disabled={loading}
                     className="w-full bg-blue-600 text-white py-2 rounded disabled:bg-gray-400"
                 >
-                    {loading ? "Logging in..." : "Login"}
+
+                    {loading
+                        ? "Logging in..."
+                        : "Login"
+                    }
+
                 </button>
 
             </form>
 
         </div>
+
     );
 }
 

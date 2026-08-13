@@ -27,7 +27,7 @@ export const getMyProfile = asyncHandler(async (req, res) => {
 
 export const updateProfile = asyncHandler(async (req, res) => {
 
-    const { fullName, phone, headline, location, skills, education } = req.body;
+    const { fullName, phone, headline, location, skills, education, experience } = req.body;
 
 
     const updateData = {};
@@ -55,6 +55,12 @@ export const updateProfile = asyncHandler(async (req, res) => {
             typeof education === "string"
                 ? JSON.parse(education)
                 : education;
+    }
+    if (experience !== undefined) {
+        updateData.experience =
+            typeof experience === "string"
+                ? JSON.parse(experience)
+                : experience;
     }
 
     const userData = await User.findById(req.user.userId);

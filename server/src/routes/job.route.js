@@ -9,6 +9,7 @@ const router = express.Router();
 // RECRUITER
 // ========================================
 
+// Create Job
 router.post(
     "/",
     verifyToken,
@@ -16,6 +17,7 @@ router.post(
     createJob
 );
 
+// Get Recruiter's Jobs
 router.get(
     "/recruiter",
     verifyToken,
@@ -23,6 +25,7 @@ router.get(
     getRecruiterJobs
 );
 
+// Get Single Recruiter's Job
 router.get(
     "/recruiter/:id",
     verifyToken,
@@ -35,6 +38,7 @@ router.get(
 // ADMIN
 // ========================================
 
+// Get All Jobs - Admin
 router.get(
     "/admin",
     verifyToken,
@@ -42,6 +46,7 @@ router.get(
     getAdminJobs
 );
 
+// Update Job Status - Admin
 router.patch(
     "/admin/:id/status",
     verifyToken,
@@ -54,14 +59,10 @@ router.patch(
 // STUDENT / PUBLIC JOBS
 // ========================================
 
+// Get All Active Jobs
 router.get(
     "/",
     getAllJobs
-);
-
-router.get(
-    "/:id",
-    getJobById
 );
 
 
@@ -69,6 +70,8 @@ router.get(
 // SAVED JOBS
 // ========================================
 
+// Get Saved Jobs
+// IMPORTANT: This must come before /:id
 router.get(
     "/saved",
     verifyToken,
@@ -76,6 +79,7 @@ router.get(
     getSavedJobs
 );
 
+// Save Job
 router.post(
     "/:id/save",
     verifyToken,
@@ -83,6 +87,7 @@ router.post(
     saveJob
 );
 
+// Remove Saved Job
 router.delete(
     "/:id/save",
     verifyToken,
@@ -95,6 +100,7 @@ router.delete(
 // RECRUITER UPDATE / DELETE
 // ========================================
 
+// Update Job
 router.put(
     "/:id",
     verifyToken,
@@ -102,11 +108,24 @@ router.put(
     updateJob
 );
 
+// Delete Job
 router.delete(
     "/:id",
     verifyToken,
     authorizeRoles("recruiter"),
     deleteJob
+);
+
+
+// ========================================
+// GET SINGLE JOB
+// ========================================
+
+// IMPORTANT:
+// Keep this route at the END
+router.get(
+    "/:id",
+    getJobById
 );
 
 

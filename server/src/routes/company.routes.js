@@ -12,7 +12,7 @@ router.get("/admin", verifyToken, authorizeRoles("admin"), getAdminCompanies);
 router.patch("/admin/:id/status", verifyToken, authorizeRoles("admin"), updateCompanyStatus);
 
 //Recruiter Routes
-router.post("/", verifyToken, authorizeRoles("recruiter"), createCompany);
+router.post("/", verifyToken, authorizeRoles("recruiter"), upload.single("logo"), createCompany);
 
 router.get("/", verifyToken, authorizeRoles("recruiter"), getAllCompanies);
 

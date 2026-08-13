@@ -59,9 +59,11 @@ function AppRoutes() {
                 {/* Pages with Navbar + Footer */}
 
                 <Route element={<MainLayout />}>
+
                     <Route path="/" element={<Home />} />
                     <Route path="/jobs" element={<Jobs />} />
                     <Route path="/jobs/:id" element={<JobDetails />} />
+                    
                     <Route
                         path="/profile"
                         element={
@@ -70,35 +72,40 @@ function AppRoutes() {
                             </ProtectedRoute>
                         }
                     />
+
+
+                    // Student Routes
                     <Route
-                        path="/my-applications"
+                        path="/student/dashboard"
                         element={
-                            <ProtectedRoute>
-                                <MyApplications />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/jobs/:id/applicants"
-                        element={
-                            <ProtectedRoute>
-                                <Applicants />
+                            <ProtectedRoute allowedRoles={["student"]}>
+                                <StudentDashboard />
                             </ProtectedRoute>
                         }
                     />
                     <Route
                         path="/saved-jobs"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["student"]}>
                                 <SavedJobs />
                             </ProtectedRoute>
                         }
                     />
+                    <Route
+                        path="/my-applications"
+                        element={
+                            <ProtectedRoute allowedRoles={["student"]}>
+                                <MyApplications />
+                            </ProtectedRoute>
+                        }
+                    />
 
+
+                    // Recruiter Routes
                     <Route
                         path="/companies"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["recruiter"]}>
                                 <CompanyList />
                             </ProtectedRoute>
                         }
@@ -106,7 +113,7 @@ function AppRoutes() {
                     <Route
                         path="/companies/create"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["recruiter"]}>
                                 <CreateCompany />
                             </ProtectedRoute>
                         }
@@ -114,7 +121,7 @@ function AppRoutes() {
                     <Route
                         path="/companies/:id/edit"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["recruiter"]}>
                                 <EditCompany />
                             </ProtectedRoute>
                         }
@@ -122,87 +129,95 @@ function AppRoutes() {
                     <Route
                         path="/jobs/create"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["recruiter"]}>
                                 <CreateJob />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/recruiter/jobs"
-                        element={
-                            <ProtectedRoute>
-                                <MyJobs />
                             </ProtectedRoute>
                         }
                     />
                     <Route
                         path="/jobs/:id/edit"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["recruiter"]}>
                                 <EditJob />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/jobs/:id/applicants"
+                        element={
+                            <ProtectedRoute allowedRoles={["recruiter"]}>
+                                <Applicants />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/jobs"
+                        element={
+                            <ProtectedRoute allowedRoles={["recruiter"]}>
+                                <MyJobs />
                             </ProtectedRoute>
                         }
                     />
                     <Route
                         path="/recruiter/dashboard"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["recruiter"]}>
                                 <RecruiterDashboard />
                             </ProtectedRoute>
                         }
                     />
-                    <Route
-                        path="/student/dashboard"
-                        element={
-                            <ProtectedRoute>
-                                <StudentDashboard />
-                            </ProtectedRoute>
-                        }
-                    />
+
                     <Route
                         path="/recruiter/analytics"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["recruiter"]}>
                                 <RecruiterAnalytics />
                             </ProtectedRoute>
                         }
                     />
+
+
+                    // Admin Routes
                     <Route
                         path="/admin/dashboard"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["admin"]}>
                                 <AdminDashboard />
                             </ProtectedRoute>
                         }
                     />
+
                     <Route
                         path="/admin/users"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["admin"]}>
                                 <AdminUsers />
                             </ProtectedRoute>
                         }
                     />
+
                     <Route
                         path="/admin/companies"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["admin"]}>
                                 <AdminCompanies />
                             </ProtectedRoute>
                         }
                     />
+
                     <Route
                         path="/admin/jobs"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["admin"]}>
                                 <AdminJobs />
                             </ProtectedRoute>
                         }
                     />
+
                     <Route
                         path="/admin/applications"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute allowedRoles={["admin"]}>
                                 <AdminApplications />
                             </ProtectedRoute>
                         }
