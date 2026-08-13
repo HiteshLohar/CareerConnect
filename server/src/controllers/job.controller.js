@@ -273,7 +273,7 @@ export const getAllJobs = asyncHandler(async (req, res) => {
 
 
     const jobs = await Job.find(filter)
-        .select("title company location salary jobType createdAt")
+        .select("title company location salary jobType experience vacancies deadline isActive createdAt")
         .populate("company", "name logo location")
         .populate("postedBy", "fullName email")
         .sort(sortOption)

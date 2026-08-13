@@ -7,73 +7,66 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 
 export const applyJob = asyncHandler(async (req, res) => {
-    try {
-        const { id: jobId } = req.params;
-        const studentId = req.user.userId;
+    const { id: jobId } = req.params;
+    const studentId = req.user.userId;
 
-        if (!mongoose.Types.ObjectId.isValid(jobId)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid Job Id"
-            });
-        }
-
-        const job = await Job.findById(jobId);
-
-        if (!job) {
-            return res.status(404).json({
-                success: false,
-                message: "Job not Found"
-            });
-        }
-
-        if (!job.isActive) {
-            return res.status(400).json({
-                success: false,
-                message: "This job is no longer active"
-            });
-        }
-
-        const existingApplication = await Application.findOne({
-            job: jobId,
-            student: studentId
-        });
-
-        if (existingApplication) {
-            return res.status(400).json({
-                success: false,
-                message: "You have already applied for this job"
-            });
-        }
-
-        const application = await Application.create({
-            job: jobId,
-            student: studentId
-        });
-
-        const student = await User.findById(studentId);
-
-        const notification = await Notification.create({
-            recipient: job.postedBy,
-            sender: studentId,
-            title: "New Job Application",
-            message: `${student.fullName} applied for ${job.title}.`,
-            type: "NEW_APPLICATION"
-        });
-
-        return res.status(201).json({
-            success: true,
-            message: "Job applied successfully",
-            application
-        });
-
-    }
-    catch (error) {
-        return res.status(500).json({
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+        return res.status(400).json({
             success: false,
-            message: error.message
+            message: "Invalid Job Id"
         });
     }
+
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+        return res.status(404).json({
+            success: false,
+            message: "Job not Found"
+        });
+    }
+
+    if (!job.isActive) {
+        return res.status(400).json({
+            success: false,
+            message: "This job is no longer active"
+        });
+    }
+
+    const existingApplication = await Application.findOne({
+        job: jobId,
+        student: studentId
+    });
+
+    if (existingApplication) {
+        return res.status(400).json({
+            success: false,
+            message: "You have already applied for this job"
+        });
+    }
+
+    const application = await Application.create({
+        job: jobId,
+        student: studentId
+    });
+
+    const student = await User.findById(studentId);
+
+    const notification = await Notification.create({
+        recipient: job.postedBy,
+        sender: studentId,
+        title: "New Job Application",
+        message: `${student.fullName} applied for ${job.title}.`,
+        type: "NEW_APPLICATION"
+    });
+
+    return res.status(201).json({
+        success: true,
+        message: "Job applied successfully",
+        application
+    });
+
+
 });
 
 export const checkApplicationStatus = asyncHandler(async (req, res) => {

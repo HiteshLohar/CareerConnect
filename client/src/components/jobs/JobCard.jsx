@@ -24,11 +24,22 @@ function JobCard({ job }) {
 
 
     // =========================
+    // CHECK APPLICATION CLOSED
+    // =========================
+
+    const isApplicationClosed =
+        job.deadline &&
+        new Date(job.deadline) < new Date();
+
+
+    // =========================
     // FORMAT SALARY
     // =========================
 
     const formatSalary = (salary) => {
+
         return `₹ ${(salary / 100000).toFixed(1)} LPA`;
+
     };
 
 
@@ -56,6 +67,7 @@ function JobCard({ job }) {
         }
 
         return `${days} days ago`;
+
     };
 
 
@@ -133,6 +145,19 @@ function JobCard({ job }) {
     // =========================
 
     const handleApply = async () => {
+
+        // Application deadline check
+
+        if (isApplicationClosed) {
+
+            toast.error(
+                "Application deadline has passed"
+            );
+
+            return;
+
+        }
+
 
         try {
 
@@ -344,6 +369,23 @@ function JobCard({ job }) {
 
                 </div>
 
+
+                {/* Application Status */}
+
+                {isApplicationClosed && (
+
+                    <div className="flex items-center gap-2 text-red-600 text-sm font-semibold">
+
+                        <FiClock />
+
+                        <span>
+                            Application Closed
+                        </span>
+
+                    </div>
+
+                )}
+
             </div>
 
 
@@ -370,19 +412,27 @@ function JobCard({ job }) {
 
                 <button
                     onClick={handleApply}
-                    disabled={applying || applied}
+                    disabled={
+                        applying ||
+                        applied ||
+                        isApplicationClosed
+                    }
                     className={`flex-1 py-2 rounded-lg transition duration-300 ${
-                        applied
-                            ? "bg-green-500 text-white cursor-not-allowed"
-                            : "border border-blue-600 text-blue-600 hover:bg-blue-50"
+                        isApplicationClosed
+                            ? "bg-gray-400 text-white cursor-not-allowed"
+                            : applied
+                                ? "bg-green-500 text-white cursor-not-allowed"
+                                : "border border-blue-600 text-blue-600 hover:bg-blue-50"
                     }`}
                 >
 
                     {applying
                         ? "Applying..."
-                        : applied
-                            ? "Applied"
-                            : "Apply Now"
+                        : isApplicationClosed
+                            ? "Application Closed"
+                            : applied
+                                ? "Applied"
+                                : "Apply Now"
                     }
 
                 </button>
