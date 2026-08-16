@@ -19,7 +19,9 @@ function NavLinks() {
 
         <div className="flex items-center gap-6">
 
-            {/* STUDENT */}
+            {/* =========================
+                STUDENT
+            ========================= */}
 
             {role === "student" && (
                 <>
@@ -50,11 +52,20 @@ function NavLinks() {
                     >
                         My Applications
                     </NavLink>
+
+                    <NavLink
+                        to="/companies/browse"
+                        className={navClass}
+                    >
+                        Browse Companies
+                    </NavLink>
                 </>
             )}
 
 
-            {/* RECRUITER */}
+            {/* =========================
+                RECRUITER
+            ========================= */}
 
             {role === "recruiter" && (
                 <>
@@ -89,7 +100,9 @@ function NavLinks() {
             )}
 
 
-            {/* ADMIN */}
+            {/* =========================
+                ADMIN
+            ========================= */}
 
             {role === "admin" && (
                 <>
@@ -133,6 +146,7 @@ function NavLinks() {
         </div>
 
     );
+
 }
 
 export default NavLinks;

@@ -1,4 +1,5 @@
 import Company from "../models/Company.js";
+import Job from "../models/Job.js";
 import mongoose from "mongoose";
 import { deleteFromCloudinary } from "../utils/cloudinary.js";
 import asyncHandler from '../utils/asyncHandler.js';
@@ -272,6 +273,73 @@ export const updateCompanyStatus = asyncHandler(async (req, res) => {
         success: true,
         message: `Company ${accountStatus} successfully`,
         company
+    });
+
+});
+
+// ================================
+// PUBLIC / STUDENT COMPANY LIST
+// ================================
+
+export const getBrowseCompanies = asyncHandler(async (req, res) => {
+
+    const companies = await Company.find({
+        accountStatus: "active"
+    })
+        .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+        success: true,
+        message: "Companies fetched successfully",
+        count: companies.length,
+        companies
+    });
+
+});
+
+
+// ================================
+// COMPANY DETAILS + ACTIVE JOBS
+// ================================
+
+export const getBrowseCompanyById = asyncHandler(async (req, res) => {
+
+    const { id: companyId } = req.params;
+
+    // Validate Company ID
+    if (!mongoose.Types.ObjectId.isValid(companyId)) {
+        throw new ApiError(400, "Invalid Company ID");
+    }
+
+
+    // Find active company
+    const company = await Company.findOne({
+        _id: companyId,
+        accountStatus: "active"
+    });
+
+    if (!company) {
+        throw new ApiError(404, "Company not found");
+    }
+
+
+    // Find active jobs of this company
+    const jobs = await Job.find({
+        company: companyId,
+        isActive: true,
+        deadline: {
+            $gte: new Date()
+        }
+    })
+        .sort({ createdAt: -1 });
+
+
+    return res.status(200).json({
+        success: true,
+        message: "Company fetched successfully",
+        company,
+        jobs,
+        jobCount: jobs.length
     });
 
 });

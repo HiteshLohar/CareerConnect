@@ -15,6 +15,8 @@ import SavedJobs from "../pages/SavedJobs/SavedJobs";
 import CompanyList from "../pages/Company/CompanyList";
 import CreateCompany from "../pages/Company/CreateCompany";
 import EditCompany from "../pages/Company/EditCompany";
+import CompanyBrowse from "../pages/Company/CompanyBrowse";
+import CompanyDetails from "../pages/Company/CompanyDetails";
 import CreateJob from "../pages/Recruiter/CreateJob";
 import MyJobs from "../pages/Recruiter/MyJobs";
 import EditJob from "../pages/Recruiter/EditJob";
@@ -26,6 +28,7 @@ import AdminUsers from "../pages/Admin/AdminUsers";
 import AdminCompanies from "../pages/Admin/AdminCompanies";
 import AdminJobs from "../pages/Admin/AdminJobs";
 import AdminApplications from "../pages/Admin/AdminApplications";
+
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
@@ -63,7 +66,25 @@ function AppRoutes() {
                     <Route path="/" element={<Home />} />
                     <Route path="/jobs" element={<Jobs />} />
                     <Route path="/jobs/:id" element={<JobDetails />} />
-                    
+
+                    <Route
+                        path="/companies/browse"
+                        element={
+                            <ProtectedRoute>
+                                <CompanyBrowse />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/companies/browse/:id"
+                        element={
+                            <ProtectedRoute>
+                                <CompanyDetails />
+                            </ProtectedRoute>
+                        }
+                    />
+
+
                     <Route
                         path="/profile"
                         element={

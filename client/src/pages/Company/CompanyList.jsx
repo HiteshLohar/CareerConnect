@@ -124,35 +124,42 @@ function CompanyList() {
 
                                         <div className="flex items-center gap-5">
 
-                                            <img
-                                                src={
-                                                    company.logo ||
-                                                    "https://ui-avatars.com/api/?name=" +
-                                                    encodeURIComponent(company.name)
-                                                }
-                                                alt={company.name}
-                                                className="w-20 h-20 rounded-xl object-cover border"
-                                            />
+                                            <Link
+                                                to={`/companies/browse/${company._id}`}
+                                                className="flex items-center gap-5 group"
+                                            >
 
-                                            <div>
+                                                <img
+                                                    src={
+                                                        company.logo ||
+                                                        "https://ui-avatars.com/api/?name=" +
+                                                        encodeURIComponent(company.name)
+                                                    }
+                                                    alt={company.name}
+                                                    className="w-20 h-20 rounded-xl object-cover border"
+                                                />
 
-                                                <h2 className="text-2xl font-bold">
-                                                    {company.name}
-                                                </h2>
+                                                <div>
 
-                                                <p className="text-gray-600 mt-2">
-                                                    {company.description}
-                                                </p>
+                                                    <h2 className="text-2xl font-bold group-hover:text-blue-600 transition">
+                                                        {company.name}
+                                                    </h2>
 
-                                                <p className="text-gray-500 mt-2">
-                                                    🌍 {company.website}
-                                                </p>
+                                                    <p className="text-gray-600 mt-2">
+                                                        {company.description}
+                                                    </p>
 
-                                                <p className="text-gray-500 mt-1">
-                                                    📍 {company.location}
-                                                </p>
+                                                    <p className="text-gray-500 mt-2">
+                                                        🌍 {company.website}
+                                                    </p>
 
-                                            </div>
+                                                    <p className="text-gray-500 mt-1">
+                                                        📍 {company.location}
+                                                    </p>
+
+                                                </div>
+
+                                            </Link>
 
                                         </div>
 

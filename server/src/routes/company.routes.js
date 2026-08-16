@@ -1,5 +1,5 @@
 import express from "express";
-import { createCompany, getAllCompanies, getCompanyById, updateCompany, deleteCompany, getAdminCompanies, updateCompanyStatus } from "../controllers/company.controller.js";
+import { createCompany, getAllCompanies, getCompanyById, updateCompany, deleteCompany, getAdminCompanies, updateCompanyStatus, getBrowseCompanies, getBrowseCompanyById } from "../controllers/company.controller.js";
 import { verifyToken } from "../middleware/authMiddleware.js"
 import { authorizeRoles } from "../middleware/authMiddleware.js";
 import upload from "../middleware/upload.js";
@@ -14,6 +14,12 @@ router.patch("/admin/:id/status", verifyToken, authorizeRoles("admin"), updateCo
 //Recruiter Routes
 router.post("/", verifyToken, authorizeRoles("recruiter"), upload.single("logo"), createCompany);
 
+// Company Browse
+router.get("/browse", verifyToken, authorizeRoles("student", "recruiter"), getBrowseCompanies);
+
+router.get("/browse/:id", verifyToken, authorizeRoles("student", "recruiter"), getBrowseCompanyById);
+
+// Recruiter management
 router.get("/", verifyToken, authorizeRoles("recruiter"), getAllCompanies);
 
 router.get("/:id", verifyToken, authorizeRoles("recruiter"), getCompanyById);
