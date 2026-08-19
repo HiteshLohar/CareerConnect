@@ -9,7 +9,6 @@ function CreateJob() {
     const navigate = useNavigate();
 
     const [companies, setCompanies] = useState([]);
-
     const [isSaving, setIsSaving] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -114,8 +113,6 @@ function CreateJob() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                    {/* Job Title */}
-
                     <div>
 
                         <label className="block text-sm font-medium mb-2">
@@ -132,8 +129,6 @@ function CreateJob() {
                         />
 
                     </div>
-
-                    {/* Company */}
 
                     <div>
 
@@ -167,8 +162,6 @@ function CreateJob() {
 
                     </div>
 
-                    {/* Location */}
-
                     <div>
 
                         <label className="block text-sm font-medium mb-2">
@@ -185,8 +178,6 @@ function CreateJob() {
                         />
 
                     </div>
-
-                    {/* Salary */}
 
                     <div>
 
@@ -205,8 +196,6 @@ function CreateJob() {
 
                     </div>
 
-                    {/* Experience */}
-
                     <div>
 
                         <label className="block text-sm font-medium mb-2">
@@ -224,8 +213,6 @@ function CreateJob() {
 
                     </div>
 
-                    {/* Job Type */}
-
                     <div>
 
                         <label className="block text-sm font-medium mb-2">
@@ -237,10 +224,11 @@ function CreateJob() {
                             value={formData.jobType}
                             onChange={handleChange}
                             className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-
                         >
 
-                            <option value="">Select Job Type</option>
+                            <option value="">
+                                Select Job Type
+                            </option>
 
                             <option value="Full-time">
                                 Full-time
@@ -260,10 +248,7 @@ function CreateJob() {
 
                         </select>
 
-
                     </div>
-
-                    {/* Skills */}
 
                     <div>
 
@@ -282,8 +267,6 @@ function CreateJob() {
 
                     </div>
 
-                    {/* Vacancies */}
-
                     <div>
 
                         <label className="block text-sm font-medium mb-2">
@@ -300,8 +283,6 @@ function CreateJob() {
                         />
 
                     </div>
-
-                    {/* Deadline */}
 
                     <div>
 
@@ -321,8 +302,6 @@ function CreateJob() {
 
                 </div>
 
-                {/* Description */}
-
                 <div className="mt-6">
 
                     <label className="block text-sm font-medium mb-2">
@@ -340,19 +319,20 @@ function CreateJob() {
 
                 </div>
 
-                {/* Button */}
-
                 <div className="mt-8 flex justify-end">
 
                     <button
                         onClick={handleCreateJob}
                         disabled={isSaving}
-                        className={`px-6 py-3 rounded-lg text-white transition ${isSaving
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700"
-                            }`}
+                        className={`px-6 py-3 rounded-lg text-white transition ${
+                            isSaving
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700"
+                        }`}
                     >
-                        {isSaving ? "Creating..." : "Create Job"}
+                        {isSaving
+                            ? "Creating..."
+                            : "Create Job"}
                     </button>
 
                 </div>

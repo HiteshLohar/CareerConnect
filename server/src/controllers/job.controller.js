@@ -1,48 +1,18 @@
+import mongoose from "mongoose";
+
 import Job from "../models/Job.js";
 import Company from "../models/Company.js";
-import mongoose from 'mongoose';
 import User from "../models/User.js";
-import asyncHandler from '../utils/asyncHandler.js';
-import ApiError from '../utils/ApiError.js';
+import Notification from "../models/Notification.js";
 
-//recruiter jobs
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+
+import { getIO, onlineUsers } from "../../socket.js";
+
 export const createJob = asyncHandler(async (req, res) => {
 
-    const { title, company, description, location, salary, jobType, experience, skills, vacancies, deadline } = req.body;
-    const postedBy = req.user.userId;
-
-    if (!mongoose.Types.ObjectId.isValid(company)) {
-        throw new ApiError(400, "Invalid Company ID");
-    }
-
-    const companyExists = await Company.findById(company);
-
-    if (!companyExists) {
-        throw new ApiError(404, "Company not found");
-    }
-
-    if (companyExists.owner.toString() !== postedBy) {
-        throw new ApiError(403, "You are not authorized to create jobs for this company");
-    }
-
-
-
-    if (
-        !title ||
-        !company ||
-        !description ||
-        !location ||
-        salary === undefined ||
-        !jobType ||
-        experience === undefined ||
-        !skills || skills.length === 0 ||
-        vacancies === undefined ||
-        !deadline
-    ) {
-        throw new ApiError(400, "Please fill all required fields.");
-    }
-
-    const job = await Job.create({
+    const {
         title,
         company,
         description,
@@ -52,15 +22,161 @@ export const createJob = asyncHandler(async (req, res) => {
         experience,
         skills,
         vacancies,
-        deadline,
+        deadline
+    } = req.body;
+
+    const postedBy = req.user.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(company)) {
+
+        throw new ApiError(
+            400,
+            "Invalid Company ID"
+        );
+
+    }
+
+    const companyExists =
+        await Company.findById(company);
+
+    if (!companyExists) {
+
+        throw new ApiError(
+            404,
+            "Company not found"
+        );
+
+    }
+
+    if (
+        companyExists.owner.toString() !==
         postedBy
+    ) {
+
+        throw new ApiError(
+            403,
+            "You are not authorized to create jobs for this company"
+        );
+
+    }
+
+    if (
+        !title ||
+        !company ||
+        !description ||
+        !location ||
+        salary === undefined ||
+        !jobType ||
+        experience === undefined ||
+        !skills ||
+        skills.length === 0 ||
+        vacancies === undefined ||
+        !deadline
+    ) {
+
+        throw new ApiError(
+            400,
+            "Please fill all required fields."
+        );
+
+    }
+
+    const job = await Job.create({
+
+        title,
+
+        company,
+
+        description,
+
+        location,
+
+        salary,
+
+        jobType,
+
+        experience,
+
+        skills,
+
+        vacancies,
+
+        deadline,
+
+        postedBy
+
     });
 
+    const admins = await User.find({
+        role: "admin"
+    }).select("_id");
+
+    if (admins.length > 0) {
+
+        const notifications = admins.map((admin) => ({
+
+            recipient: admin._id,
+
+            sender: postedBy,
+
+            title: "New Job Posted",
+
+            message:
+                `A new job "${job.title}" has been posted.`,
+
+            type: "SYSTEM"
+
+        }));
+
+        await Notification.insertMany(
+            notifications
+        );
+
+        const socketIO = getIO();
+
+        admins.forEach((admin) => {
+
+            const adminId =
+                admin._id.toString();
+
+            const socketId =
+                onlineUsers.get(adminId);
+
+            if (socketId) {
+
+                socketIO
+                    .to(socketId)
+                    .emit(
+                        "new_notification",
+                        {
+                            title: "New Job Posted",
+
+                            message:
+                                `A new job "${job.title}" has been posted.`,
+
+                            type: "SYSTEM",
+
+                            jobId: job._id
+                        }
+                    );
+
+            }
+
+        });
+
+    }
+
     return res.status(201).json({
+
         success: true,
-        message: "Job created successfully",
+
+        message:
+            "Job created successfully",
+
         job
+
     });
+
 });
 
 export const getRecruiterJobs = asyncHandler(async (req, res) => {

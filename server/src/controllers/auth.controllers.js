@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Notification from "../models/Notification.js";
 import Job from "../models/Job.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -21,39 +22,138 @@ export const register = asyncHandler(async (req, res) => {
         location
     } = req.body;
 
-    if (!fullName || !email || !password || !location) {
-        throw new ApiError(400, "Please fill all required fields");
+
+    // =========================
+    // VALIDATION
+    // =========================
+
+    if (
+        !fullName ||
+        !email ||
+        !password ||
+        !location
+    ) {
+        throw new ApiError(
+            400,
+            "Please fill all required fields"
+        );
     }
 
-    const existingUser = await User.findOne({ email });
+
+    // =========================
+    // CHECK EXISTING USER
+    // =========================
+
+    const existingUser =
+        await User.findOne({ email });
 
     if (existingUser) {
-        throw new ApiError(409, "Email already Exists");
+        throw new ApiError(
+            409,
+            "Email already Exists"
+        );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // =========================
+    // HASH PASSWORD
+    // =========================
+
+    const hashedPassword =
+        await bcrypt.hash(password, 12);
+
+
+    // =========================
+    // CREATE USER
+    // =========================
 
     const user = await User.create({
+
         fullName,
+
         email,
+
         password: hashedPassword,
+
         role,
+
         phone,
+
         profilePhoto,
+
         headline,
+
         skills,
+
         education,
+
         resumeUrl,
+
         location
+
     });
+
+
+    // =========================
+    // FIND ADMINS
+    // =========================
+
+    const admins = await User.find({
+        role: "admin"
+    }).select("_id");
+
+
+    // =========================
+    // CREATE ADMIN NOTIFICATIONS
+    // =========================
+
+    if (admins.length > 0) {
+
+        const notifications =
+            admins.map((admin) => ({
+
+                recipient: admin._id,
+
+                sender: user._id,
+
+                title: "New User Registered",
+
+                message:
+                    `${user.fullName} registered as a ${user.role}.`,
+
+                type: "SYSTEM"
+
+            }));
+
+        await Notification.insertMany(
+            notifications
+        );
+
+    }
+
+
+    // =========================
+    // REMOVE PASSWORD
+    // =========================
 
     user.password = undefined;
 
+
+    // =========================
+    // RESPONSE
+    // =========================
+
     return res.status(201).json({
+
         success: true,
-        message: "User registered successfully",
+
+        message:
+            "User registered successfully",
+
         user
+
     });
+
 });
 
 

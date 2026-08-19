@@ -5,6 +5,10 @@ import { deleteFromCloudinary } from "../utils/cloudinary.js";
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 
+import User from "../models/User.js";
+import Notification from "../models/Notification.js";
+
+
 export const createCompany = asyncHandler(async (req, res) => {
 
     const owner = req.user.userId;
@@ -18,36 +22,117 @@ export const createCompany = asyncHandler(async (req, res) => {
 
     const logo = req.file?.path || "";
 
-    // Validate company name
+
+    // =========================
+    // VALIDATE COMPANY NAME
+    // =========================
+
     if (!name || name.trim() === "") {
-        throw new ApiError(400, "Company name is required");
+        throw new ApiError(
+            400,
+            "Company name is required"
+        );
     }
 
-    // Check duplicate company (case-insensitive)
+
+    // =========================
+    // CHECK DUPLICATE COMPANY
+    // =========================
+
     const companyExists = await Company.findOne({
         name: {
-            $regex: new RegExp(`^${name.trim()}$`, "i")
+            $regex: new RegExp(
+                `^${name.trim()}$`,
+                "i"
+            )
         }
     });
 
     if (companyExists) {
-        throw new ApiError(400, "Company already exists");
+        throw new ApiError(
+            400,
+            "Company already exists"
+        );
     }
 
+
+    // =========================
+    // CREATE COMPANY
+    // =========================
+
     const company = await Company.create({
+
         name: name.trim(),
-        description: description?.trim() || "",
-        website: website?.trim() || "",
-        location: location?.trim() || "",
-        logo: logo?.trim() || "",
+
+        description:
+            description?.trim() || "",
+
+        website:
+            website?.trim() || "",
+
+        location:
+            location?.trim() || "",
+
+        logo:
+            logo?.trim() || "",
+
         owner
+
     });
 
+
+    // =========================
+    // FIND ADMINS
+    // =========================
+
+    const admins = await User.find({
+        role: "admin"
+    }).select("_id");
+
+
+    // =========================
+    // CREATE ADMIN NOTIFICATIONS
+    // =========================
+
+    if (admins.length > 0) {
+
+        const notifications = admins.map((admin) => ({
+
+            recipient: admin._id,
+
+            sender: owner,
+
+            title: "New Company Created",
+
+            message:
+                `A new company "${company.name}" has been created.`,
+
+            type: "SYSTEM"
+
+        }));
+
+        await Notification.insertMany(
+            notifications
+        );
+
+    }
+
+
+    // =========================
+    // RESPONSE
+    // =========================
+
     return res.status(201).json({
+
         success: true,
-        message: "Company created successfully",
+
+        message:
+            "Company created successfully",
+
         company
+
     });
+
 });
 
 export const getAllCompanies = asyncHandler(async (req, res) => {

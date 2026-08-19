@@ -1,9 +1,11 @@
-import api from "../../services/api.js";
-
-import { useEffect } from "react";
-
+import { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa";
-import { useState } from "react";
+import { toast } from "react-hot-toast";
+import { io } from "socket.io-client";
+
+import { useSelector } from "react-redux";
+
+import api from "../../services/api.js";
 import NotificationDropdown from "./NotificationDropdown";
 
 function NotificationBell() {
@@ -11,6 +13,10 @@ function NotificationBell() {
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    const { user } = useSelector(
+        (state) => state.auth
+    );
 
     const unreadCount = notifications.filter(
         (notification) => !notification.isRead
@@ -22,13 +28,20 @@ function NotificationBell() {
 
             setLoading(true);
 
-            const response = await api.get("/notifications");
+            const response = await api.get(
+                "/notifications"
+            );
 
-            setNotifications(response.data.notifications);
+            setNotifications(
+                response.data.notifications || []
+            );
 
         } catch (error) {
 
-            console.log(error);
+            console.log(
+                "Failed to fetch notifications:",
+                error
+            );
 
         } finally {
 
@@ -38,16 +51,23 @@ function NotificationBell() {
 
     };
 
-    const handleMarkAsRead = async (notificationId) => {
+    const handleMarkAsRead = async (
+        notificationId
+    ) => {
 
         try {
 
-            await api.patch(`/notifications/${notificationId}/read`);
+            await api.patch(
+                `/notifications/${notificationId}/read`
+            );
 
             setNotifications((prev) =>
                 prev.map((notification) =>
                     notification._id === notificationId
-                        ? { ...notification, isRead: true }
+                        ? {
+                            ...notification,
+                            isRead: true
+                        }
                         : notification
                 )
             );
@@ -60,12 +80,13 @@ function NotificationBell() {
 
     };
 
-
     const handleMarkAllAsRead = async () => {
 
         try {
 
-            await api.patch("/notifications/read-all");
+            await api.patch(
+                "/notifications/read-all"
+            );
 
             setNotifications((prev) =>
                 prev.map((notification) => ({
@@ -83,17 +104,90 @@ function NotificationBell() {
     };
 
     useEffect(() => {
+
         fetchNotifications();
-    }, []);
+
+        const socket = io(
+            "http://localhost:5000",
+            {
+                withCredentials: true
+            }
+        );
+
+        socket.on("connect", () => {
+
+            if (user?._id) {
+
+                socket.emit(
+                    "register",
+                    user._id
+                );
+
+            }
+
+        });
+
+        socket.on(
+            "new_notification",
+            (notification) => {
+
+                setNotifications((prev) => {
+
+                    const exists = prev.some(
+                        (item) =>
+                            item._id === notification._id
+                    );
+
+                    if (exists) {
+                        return prev;
+                    }
+
+                    return [
+                        notification,
+                        ...prev
+                    ];
+
+                });
+
+                toast.success(
+                    notification.title ||
+                    "New notification"
+                );
+
+            }
+        );
+
+        socket.on(
+            "connect_error",
+            (error) => {
+
+                console.log(
+                    "Socket connection error:",
+                    error
+                );
+
+            }
+        );
+
+        return () => {
+
+            socket.disconnect();
+
+        };
+
+    }, [user]);
 
     return (
+
         <div className="relative">
 
             <button
-                onClick={() => setOpen(!open)}
-
+                onClick={() =>
+                    setOpen(!open)
+                }
                 className="relative p-2 rounded-full hover:bg-gray-100 transition"
             >
+
                 <FaBell size={20} />
 
                 {
@@ -112,17 +206,23 @@ function NotificationBell() {
 
             {
                 open && (
+
                     <NotificationDropdown
                         notifications={notifications}
                         loading={loading}
                         onRead={handleMarkAsRead}
-                        onMarkAllAsRead={handleMarkAllAsRead}
+                        onMarkAllAsRead={
+                            handleMarkAllAsRead
+                        }
                     />
+
                 )
             }
 
         </div>
+
     );
+
 }
 
-export default NotificationBell;    
+export default NotificationBell;

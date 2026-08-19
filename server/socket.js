@@ -8,32 +8,39 @@ export const initializeSocket = (server) => {
 
     io = new Server(server, {
         cors: {
-            origin: "*"
+            origin: "http://localhost:5173",
+            credentials: true
         }
     });
 
     io.on("connection", (socket) => {
 
-        console.log("User Connected:", socket.id);
-
         socket.on("register", (userId) => {
 
-            onlineUsers.set(userId, socket.id);
+            onlineUsers.set(
+                userId.toString(),
+                socket.id
+            );
 
-            console.log(`User ${userId} connected.`);
         });
 
         socket.on("disconnect", () => {
 
-            for (const [userId, socketId] of onlineUsers.entries()) {
+            for (
+                const [userId, socketId]
+                of onlineUsers.entries()
+            ) {
 
                 if (socketId === socket.id) {
+
                     onlineUsers.delete(userId);
+
                     break;
+
                 }
+
             }
 
-            console.log("User Disconnected:", socket.id);
         });
 
     });
@@ -41,4 +48,17 @@ export const initializeSocket = (server) => {
     return io;
 };
 
-export { io, onlineUsers };
+export const getIO = () => {
+
+    if (!io) {
+
+        throw new Error(
+            "Socket.IO has not been initialized"
+        );
+
+    }
+
+    return io;
+};
+
+export { onlineUsers };
