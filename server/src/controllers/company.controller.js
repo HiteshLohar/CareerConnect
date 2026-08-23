@@ -8,6 +8,8 @@ import ApiError from '../utils/ApiError.js';
 import User from "../models/User.js";
 import Notification from "../models/Notification.js";
 
+import { getIO, onlineUsers } from "../../socket.js";
+
 
 export const createCompany = asyncHandler(async (req, res) => {
 
@@ -28,10 +30,12 @@ export const createCompany = asyncHandler(async (req, res) => {
     // =========================
 
     if (!name || name.trim() === "") {
+
         throw new ApiError(
             400,
             "Company name is required"
         );
+
     }
 
 
@@ -40,19 +44,23 @@ export const createCompany = asyncHandler(async (req, res) => {
     // =========================
 
     const companyExists = await Company.findOne({
+
         name: {
             $regex: new RegExp(
                 `^${name.trim()}$`,
                 "i"
             )
         }
+
     });
 
     if (companyExists) {
+
         throw new ApiError(
             400,
             "Company already exists"
         );
+
     }
 
 
@@ -96,24 +104,83 @@ export const createCompany = asyncHandler(async (req, res) => {
 
     if (admins.length > 0) {
 
-        const notifications = admins.map((admin) => ({
+        const notifications =
+            admins.map((admin) => ({
 
-            recipient: admin._id,
+                recipient: admin._id,
 
-            sender: owner,
+                sender: owner,
 
-            title: "New Company Created",
+                title: "New Company Created",
 
-            message:
-                `A new company "${company.name}" has been created.`,
+                message:
+                    `A new company "${company.name}" has been created.`,
 
-            type: "SYSTEM"
+                type: "SYSTEM"
 
-        }));
+            }));
 
-        await Notification.insertMany(
-            notifications
-        );
+
+        const createdNotifications =
+            await Notification.insertMany(
+                notifications
+            );
+
+
+        // =========================
+        // SEND SOCKET NOTIFICATION
+        // =========================
+
+        const socketIO = getIO();
+
+
+        for (
+            const notification
+            of createdNotifications
+        ) {
+
+            const adminId =
+                notification.recipient.toString();
+
+            const socketId =
+                onlineUsers.get(adminId);
+
+
+            console.log(
+                "🔥 Admin ID:",
+                adminId
+            );
+
+            console.log(
+                "🔥 Admin Socket ID:",
+                socketId
+            );
+
+
+            if (socketId) {
+
+                socketIO
+                    .to(socketId)
+                    .emit(
+                        "new_notification",
+                        notification
+                    );
+
+                console.log(
+                    "🔔 Company notification sent to admin:",
+                    adminId
+                );
+
+            } else {
+
+                console.log(
+                    "ℹ️ Admin is offline:",
+                    adminId
+                );
+
+            }
+
+        }
 
     }
 

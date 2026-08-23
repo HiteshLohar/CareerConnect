@@ -48,10 +48,7 @@ export const createJob = asyncHandler(async (req, res) => {
 
     }
 
-    if (
-        companyExists.owner.toString() !==
-        postedBy
-    ) {
+    if (companyExists.owner.toString() !== postedBy) {
 
         throw new ApiError(
             403,
@@ -128,16 +125,17 @@ export const createJob = asyncHandler(async (req, res) => {
 
         }));
 
-        await Notification.insertMany(
-            notifications
-        );
+        const createdNotifications =
+            await Notification.insertMany(
+                notifications
+            );
 
         const socketIO = getIO();
 
-        admins.forEach((admin) => {
+        createdNotifications.forEach((notification) => {
 
             const adminId =
-                admin._id.toString();
+                notification.recipient.toString();
 
             const socketId =
                 onlineUsers.get(adminId);
@@ -148,16 +146,7 @@ export const createJob = asyncHandler(async (req, res) => {
                     .to(socketId)
                     .emit(
                         "new_notification",
-                        {
-                            title: "New Job Posted",
-
-                            message:
-                                `A new job "${job.title}" has been posted.`,
-
-                            type: "SYSTEM",
-
-                            jobId: job._id
-                        }
+                        notification
                     );
 
             }

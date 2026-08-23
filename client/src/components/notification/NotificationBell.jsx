@@ -131,16 +131,22 @@ function NotificationBell() {
             "new_notification",
             (notification) => {
 
+                console.log(
+                    "🔔 SOCKET NOTIFICATION:",
+                    notification
+                );
+
+                console.log(
+                    "🔔 Notification ID:",
+                    notification?._id
+                );
+
                 setNotifications((prev) => {
 
-                    const exists = prev.some(
-                        (item) =>
-                            item._id === notification._id
+                    console.log(
+                        "📦 OLD NOTIFICATIONS:",
+                        prev
                     );
-
-                    if (exists) {
-                        return prev;
-                    }
 
                     return [
                         notification,
@@ -175,7 +181,7 @@ function NotificationBell() {
 
         };
 
-    }, [user]);
+    }, [user?._id]);
 
     return (
 
