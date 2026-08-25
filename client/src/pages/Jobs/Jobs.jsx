@@ -157,17 +157,17 @@ function Jobs() {
 
     return (
 
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
 
             {/* SEARCH */}
 
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
                 <input
                     type="text"
                     placeholder="Search jobs, companies..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:ring-2 focus:ring-blue-500 sm:text-base"
                 />
             </div>
 

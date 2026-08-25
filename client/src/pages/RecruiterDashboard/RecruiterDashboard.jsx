@@ -42,8 +42,8 @@ function RecruiterDashboard() {
     if (loading) {
 
         return (
-            <div className="flex justify-center items-center min-h-[70vh]">
-                <p className="text-xl text-gray-500">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
+                <p className="text-center text-lg text-gray-500 sm:text-xl">
                     Loading Dashboard...
                 </p>
             </div>
@@ -55,7 +55,7 @@ function RecruiterDashboard() {
     if (!dashboard) {
 
         return (
-            <div className="flex justify-center items-center min-h-[70vh]">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
                 <p className="text-gray-500">
                     Unable to load dashboard.
                 </p>
@@ -67,15 +67,15 @@ function RecruiterDashboard() {
 
     return (
 
-        <div className="max-w-7xl mx-auto px-4 py-10">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
             {/* =========================
                 HEADER
             ========================= */}
 
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
 
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                     Recruiter Dashboard
                 </h1>
 
@@ -90,12 +90,12 @@ function RecruiterDashboard() {
                 STAT CARDS
             ========================= */}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
 
 
                 {/* Companies */}
 
-                <div className="bg-white border rounded-2xl shadow-sm p-6">
+                <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6">
 
                     <p className="text-gray-500">
                         Total Companies
@@ -159,12 +159,12 @@ function RecruiterDashboard() {
                 APPLICATION STATUS
             ========================= */}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:mt-6 sm:gap-5 md:grid-cols-3">
 
 
                 {/* Pending */}
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
+                <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 sm:p-6">
 
                     <p className="text-yellow-700 font-medium">
                         Pending Applications
@@ -179,7 +179,7 @@ function RecruiterDashboard() {
 
                 {/* Accepted */}
 
-                <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
+                <div className="rounded-2xl border border-green-200 bg-green-50 p-4 sm:p-6">
 
                     <p className="text-green-700 font-medium">
                         Accepted Applications
@@ -194,7 +194,7 @@ function RecruiterDashboard() {
 
                 {/* Rejected */}
 
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-4 sm:p-6">
 
                     <p className="text-red-700 font-medium">
                         Rejected Applications
@@ -213,9 +213,9 @@ function RecruiterDashboard() {
                 RECENT JOBS
             ========================= */}
 
-            <div className="bg-white border rounded-2xl shadow-sm mt-8">
+            <div className="mt-6 rounded-2xl border bg-white shadow-sm sm:mt-8">
 
-                <div className="flex justify-between items-center p-6 border-b">
+                <div className="flex items-center justify-between gap-4 border-b p-4 sm:p-6">
 
                     <h2 className="text-xl font-bold">
                         Recent Jobs
@@ -246,7 +246,7 @@ function RecruiterDashboard() {
 
                                 <div
                                     key={job._id}
-                                    className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                                    className="flex flex-col gap-4 p-4 sm:p-6 md:flex-row md:items-center md:justify-between"
                                 >
 
                                     <div>
@@ -266,7 +266,7 @@ function RecruiterDashboard() {
                                     </div>
 
 
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex flex-wrap items-center gap-3 sm:gap-4">
 
                                         <span
                                             className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -299,9 +299,9 @@ function RecruiterDashboard() {
                 RECENT APPLICATIONS
             ========================= */}
 
-            <div className="bg-white border rounded-2xl shadow-sm mt-8">
+            <div className="mt-6 rounded-2xl border bg-white shadow-sm sm:mt-8">
 
-                <div className="p-6 border-b">
+                <div className="border-b p-4 sm:p-6">
 
                     <h2 className="text-xl font-bold">
                         Recent Applications
@@ -326,7 +326,7 @@ function RecruiterDashboard() {
 
                                     <div
                                         key={application._id}
-                                        className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                                        className="flex flex-col gap-4 p-4 sm:p-6 md:flex-row md:items-center md:justify-between"
                                     >
 
                                         <div>

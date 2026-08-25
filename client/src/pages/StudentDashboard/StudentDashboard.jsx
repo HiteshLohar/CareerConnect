@@ -60,9 +60,9 @@ function StudentDashboard() {
     if (loading) {
 
         return (
-            <div className="flex justify-center items-center min-h-[70vh]">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
 
-                <p className="text-xl text-gray-500">
+                <p className="text-center text-lg text-gray-500 sm:text-xl">
                     Loading Dashboard...
                 </p>
 
@@ -79,9 +79,9 @@ function StudentDashboard() {
     if (!dashboard) {
 
         return (
-            <div className="flex justify-center items-center min-h-[70vh]">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
 
-                <p className="text-gray-500">
+                <p className="text-center text-gray-500">
                     Unable to load dashboard.
                 </p>
 
@@ -152,16 +152,16 @@ function StudentDashboard() {
 
     return (
 
-        <div className="max-w-7xl mx-auto px-4 py-10">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
 
             {/* =========================
                 HEADER
             ========================= */}
 
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
 
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                     Student Dashboard
                 </h1>
 
@@ -176,14 +176,14 @@ function StudentDashboard() {
                 DASHBOARD OVERVIEW
             ========================= */}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
 
 
                 {/* =========================
                     APPLICATION SUMMARY
                 ========================= */}
 
-                <div className="bg-white border rounded-2xl shadow-sm p-7">
+                <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6 lg:p-7">
 
                     <h2 className="text-xl font-bold text-gray-900">
                         Total Applications
@@ -208,7 +208,7 @@ function StudentDashboard() {
 
                     {/* STATUS SUMMARY */}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+                    <div className="mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4">
 
 
                         {/* Pending */}
@@ -268,7 +268,7 @@ function StudentDashboard() {
                     PIE CHART
                 ========================= */}
 
-                <div className="bg-white border rounded-2xl shadow-sm p-7">
+                <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6 lg:p-7">
 
                     <h2 className="text-xl font-bold text-gray-900">
                         Application Status Overview
@@ -279,7 +279,7 @@ function StudentDashboard() {
                     </p>
 
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-10 mt-8">
+                    <div className="mt-6 flex flex-col items-center justify-center gap-6 sm:mt-8 sm:flex-row sm:gap-10">
 
 
                         {/* PIE */}
@@ -287,15 +287,15 @@ function StudentDashboard() {
                         <div className="relative flex-shrink-0">
 
                             <div
-                                className="w-48 h-48 rounded-full"
+                                className="h-40 w-40 rounded-full sm:h-48 sm:w-48"
                                 style={pieStyle}
                             >
 
                                 <div className="absolute inset-0 flex items-center justify-center">
 
-                                    <div className="w-24 h-24 bg-white rounded-full flex flex-col items-center justify-center shadow-sm">
+                                    <div className="flex h-20 w-20 flex-col items-center justify-center rounded-full bg-white shadow-sm sm:h-24 sm:w-24">
 
-                                        <span className="text-2xl font-bold text-gray-900">
+                                        <span className="text-xl font-bold text-gray-900 sm:text-2xl">
                                             {totalApplications}
                                         </span>
 
@@ -314,12 +314,12 @@ function StudentDashboard() {
 
                         {/* LEGEND */}
 
-                        <div className="space-y-5 w-full sm:w-auto">
+                        <div className="w-full space-y-4 sm:w-auto sm:space-y-5">
 
 
                             {/* Pending */}
 
-                            <div className="flex items-center justify-between gap-8">
+                            <div className="flex items-center justify-between gap-4 sm:gap-8">
 
                                 <div className="flex items-center gap-3">
 
@@ -348,7 +348,7 @@ function StudentDashboard() {
 
                             {/* Accepted */}
 
-                            <div className="flex items-center justify-between gap-8">
+                            <div className="flex items-center justify-between gap-4 sm:gap-8">
 
                                 <div className="flex items-center gap-3">
 
@@ -377,7 +377,7 @@ function StudentDashboard() {
 
                             {/* Rejected */}
 
-                            <div className="flex items-center justify-between gap-8">
+                            <div className="flex items-center justify-between gap-4 sm:gap-8">
 
                                 <div className="flex items-center gap-3">
 
@@ -416,20 +416,20 @@ function StudentDashboard() {
                 RECENT APPLICATIONS
             ========================= */}
 
-            <div className="bg-white border rounded-2xl shadow-sm mt-8">
+            <div className="mt-6 rounded-2xl border bg-white shadow-sm sm:mt-8">
 
 
                 {/* HEADER */}
 
-                <div className="flex justify-between items-center p-6 border-b">
+                <div className="flex items-center justify-between gap-4 border-b p-4 sm:p-6">
 
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
                         Recent Applications
                     </h2>
 
                     <button
                         onClick={() => navigate("/my-applications")}
-                        className="text-blue-600 hover:underline"
+                        className="shrink-0 text-blue-600 hover:underline"
                     >
                         View All
                     </button>
@@ -444,7 +444,7 @@ function StudentDashboard() {
                     {
                         dashboard.recentApplications.length === 0 ? (
 
-                            <div className="p-10 text-center">
+                            <div className="p-6 text-center sm:p-10">
 
                                 <p className="text-gray-500">
                                     You haven't applied for any jobs yet.
@@ -466,12 +466,12 @@ function StudentDashboard() {
 
                                     <div
                                         key={application._id}
-                                        className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5"
+                                        className="flex flex-col gap-4 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:gap-5"
                                     >
 
                                         {/* JOB INFO */}
 
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
 
                                             {
                                                 application.job?.company?.logo && (
@@ -483,19 +483,19 @@ function StudentDashboard() {
                                                         alt={
                                                             application.job.company.name
                                                         }
-                                                        className="w-14 h-14 rounded-xl border object-cover"
+                                                        className="h-12 w-12 shrink-0 rounded-xl border object-cover sm:h-14 sm:w-14"
                                                     />
 
                                                 )
                                             }
 
-                                            <div>
+                                            <div className="min-w-0">
 
-                                                <h3 className="font-semibold text-lg">
+                                                <h3 className="break-words text-base font-semibold sm:text-lg">
                                                     {application.job?.title}
                                                 </h3>
 
-                                                <p className="text-gray-600">
+                                                <p className="break-words text-gray-600">
                                                     {application.job?.company?.name}
                                                 </p>
 
@@ -534,7 +534,7 @@ function StudentDashboard() {
 
                                         {/* STATUS */}
 
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
 
                                             <span
                                                 className={`px-4 py-2 rounded-full text-sm font-semibold ${application.status === "Accepted"
@@ -554,7 +554,7 @@ function StudentDashboard() {
                                                         `/jobs/${application.job?._id}`
                                                     )
                                                 }
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                                             >
                                                 View Job
                                             </button>
@@ -582,14 +582,14 @@ function StudentDashboard() {
     QUICK ACTIONS
 ========================= */}
 
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
 
                 <h2 className="text-xl font-bold text-gray-900 mb-5">
                     Quick Actions
                 </h2>
 
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
 
 
                     {/* =========================

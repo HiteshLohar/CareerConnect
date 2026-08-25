@@ -756,7 +756,7 @@ function Profile() {
 
         return (
 
-            <div className="min-h-[70vh] flex items-center justify-center">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
 
                 <div className="flex items-center gap-3 text-gray-500">
 
@@ -783,7 +783,7 @@ function Profile() {
 
         return (
 
-            <div className="min-h-[70vh] flex items-center justify-center">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
 
                 <p className="text-gray-500">
                     Unable to load profile.
@@ -818,7 +818,7 @@ function Profile() {
 
         return (
 
-            <div className="max-w-5xl mx-auto px-4 py-10">
+            <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
 
@@ -827,16 +827,16 @@ function Profile() {
                         EDIT HEADER
                     ========================= */}
 
-                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8">
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-6 sm:px-8 sm:py-8">
 
-                        <div className="flex items-center gap-5">
+                        <div className="flex items-center gap-4 sm:gap-5">
 
                             <div className="relative">
 
                                 <img
                                     src={previewPhoto}
                                     alt={user.fullName}
-                                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
+                                    className="h-16 w-16 rounded-full border-4 border-white object-cover shadow-md sm:h-24 sm:w-24"
                                 />
 
 
@@ -865,9 +865,9 @@ function Profile() {
                             </div>
 
 
-                            <div className="text-white">
+                            <div className="min-w-0 text-white">
 
-                                <h1 className="text-2xl font-bold">
+                                <h1 className="text-xl font-bold sm:text-2xl">
                                     Edit Profile
                                 </h1>
 
@@ -886,14 +886,14 @@ function Profile() {
                         FORM
                     ========================= */}
 
-                    <div className="p-8">
+                    <div className="p-4 sm:p-6 lg:p-8">
 
 
                         {/* =========================
                             BASIC INFORMATION
                         ========================= */}
 
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
 
 
                             {/* FULL NAME */}
@@ -1008,7 +1008,7 @@ function Profile() {
 
                             {/* EDUCATION HEADER */}
 
-                            <div className="flex items-center justify-between mb-5">
+                            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
                                 <div className="flex items-center gap-2">
 
@@ -1024,7 +1024,7 @@ function Profile() {
                                 <button
                                     type="button"
                                     onClick={addEducation}
-                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
+                                    className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                                 >
 
                                     <FaPlus size={13} />
@@ -1045,11 +1045,11 @@ function Profile() {
 
                                         <div
                                             key={index}
-                                            className="border border-gray-200 rounded-2xl p-6 relative bg-gray-50/50"
+                                            className="relative rounded-2xl border border-gray-200 bg-gray-50/50 p-4 sm:p-6"
                                         >
 
 
-                                            <div className="flex items-center justify-between mb-5">
+                                            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
                                                 <h3 className="font-semibold text-gray-800">
                                                     Education {index + 1}
@@ -1077,7 +1077,7 @@ function Profile() {
                                             </div>
 
 
-                                            <div className="grid md:grid-cols-2 gap-6">
+                                            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
 
 
                                                 {/* DEGREE */}
@@ -1208,7 +1208,7 @@ function Profile() {
 
                             {/* EXPERIENCE HEADER */}
 
-                            <div className="flex items-center justify-between mb-5">
+                            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
                                 <div className="flex items-center gap-2">
 
@@ -1226,7 +1226,7 @@ function Profile() {
                                 <button
                                     type="button"
                                     onClick={addExperience}
-                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
+                                    className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                                 >
 
                                     <FaPlus size={13} />
@@ -1247,13 +1247,13 @@ function Profile() {
 
                                         <div
                                             key={index}
-                                            className="border border-gray-200 rounded-2xl p-6 bg-gray-50/50"
+                                            className="rounded-2xl border border-gray-200 bg-gray-50/50 p-4 sm:p-6"
                                         >
 
 
                                             {/* EXPERIENCE HEADER */}
 
-                                            <div className="flex items-center justify-between mb-5">
+                                            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
                                                 <h3 className="font-semibold text-gray-800">
                                                     Experience {index + 1}
@@ -1283,7 +1283,7 @@ function Profile() {
                                             </div>
 
 
-                                            <div className="grid md:grid-cols-2 gap-6">
+                                            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
 
 
                                                 {/* JOB TITLE */}
@@ -1560,7 +1560,7 @@ function Profile() {
                             ACTIONS
                         ========================= */}
 
-                        <div className="flex justify-end gap-3 mt-10 pt-6 border-t">
+                        <div className="mt-8 flex flex-col gap-3 border-t pt-6 sm:mt-10 sm:flex-row sm:justify-end">
 
 
                             <button
@@ -1568,7 +1568,7 @@ function Profile() {
                                     setIsEditing(false)
                                 }
                                 disabled={saving}
-                                className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition"
+                                className="w-full rounded-xl border border-gray-300 px-6 py-3 text-gray-700 transition hover:bg-gray-50 sm:w-auto"
                             >
                                 Cancel
                             </button>
@@ -1577,7 +1577,7 @@ function Profile() {
                             <button
                                 onClick={handleUpdateProfile}
                                 disabled={saving}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition ${
+                                className={`flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 font-semibold text-white transition sm:w-auto ${
                                     saving
                                         ? "bg-gray-400 cursor-not-allowed"
                                         : "bg-blue-600 hover:bg-blue-700"
@@ -1621,7 +1621,7 @@ function Profile() {
 
     return (
 
-        <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
 
             {/* =========================
@@ -1633,7 +1633,7 @@ function Profile() {
 
                 {/* COVER */}
 
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-40 overflow-hidden sm:h-48">
 
                     <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-800">
 
@@ -1650,15 +1650,15 @@ function Profile() {
                         <div className="absolute bottom-10 right-44 w-2 h-2 rounded-full bg-indigo-300/40"></div>
 
 
-                        <div className="relative h-full flex items-center px-8 md:px-12">
+                        <div className="relative flex h-full items-center px-5 sm:px-8 md:px-12">
 
                             <div>
 
-                                <p className="text-blue-300 text-sm font-semibold tracking-[0.2em] uppercase">
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-300 sm:text-sm sm:tracking-[0.2em]">
                                     CareerConnect
                                 </p>
 
-                                <h2 className="text-2xl md:text-3xl font-bold text-white mt-2">
+                                <h2 className="mt-2 text-xl font-bold text-white sm:text-2xl md:text-3xl">
                                     Your career. Your next opportunity.
                                 </h2>
 
@@ -1677,7 +1677,7 @@ function Profile() {
 
                 {/* PROFILE INFO */}
 
-                <div className="px-8 pb-8">
+                <div className="px-4 pb-6 sm:px-8 sm:pb-8">
 
                     <div className="relative flex flex-col md:flex-row md:items-start md:justify-between">
 
@@ -1707,7 +1707,7 @@ function Profile() {
 
                             <div className="pt-5 sm:pt-6">
 
-                                <h1 className="text-3xl font-bold text-gray-900">
+                                <h1 className="break-words text-2xl font-bold text-gray-900 sm:text-3xl">
                                     {user.fullName}
                                 </h1>
 
@@ -1729,7 +1729,7 @@ function Profile() {
                                 onClick={() =>
                                     setIsEditing(true)
                                 }
-                                className="flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700 sm:w-auto"
                             >
 
                                 <FaEdit />
@@ -1745,21 +1745,21 @@ function Profile() {
 
                     {/* CONTACT */}
 
-                    <div className="flex flex-wrap gap-x-8 gap-y-3 mt-7 text-gray-600">
+                    <div className="mt-7 flex flex-col gap-3 text-gray-600 sm:flex-row sm:flex-wrap sm:gap-x-8 sm:gap-y-3">
 
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
 
                             <FaEnvelope className="text-blue-500" />
 
-                            <span>
+                            <span className="break-all">
                                 {user.email}
                             </span>
 
                         </div>
 
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
 
                             <FaPhone className="text-blue-500" />
 
@@ -1771,7 +1771,7 @@ function Profile() {
                         </div>
 
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
 
                             <FaMapMarkerAlt className="text-blue-500" />
 
@@ -1793,7 +1793,7 @@ function Profile() {
                 MAIN CONTENT
             ========================= */}
 
-            <div className="grid lg:grid-cols-3 gap-6 mt-6">
+            <div className="mt-6 grid gap-4 sm:gap-6 lg:grid-cols-3">
 
 
                 {/* LEFT */}
@@ -1803,7 +1803,7 @@ function Profile() {
 
                     {/* SKILLS */}
 
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-7">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
 
                         <div className="flex items-center gap-2 mb-5">
 
@@ -1818,14 +1818,14 @@ function Profile() {
 
                         {user.skills?.length > 0 ? (
 
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex flex-wrap gap-2 sm:gap-3">
 
                                 {user.skills.map(
                                     (skill) => (
 
                                         <span
                                             key={skill}
-                                            className="px-4 py-2 bg-blue-50 border border-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                                            className="break-words rounded-full border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 sm:px-4"
                                         >
                                             {skill}
                                         </span>
@@ -1848,7 +1848,7 @@ function Profile() {
 
                     {/* EDUCATION */}
 
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-7">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
 
                         <div className="flex items-center gap-2 mb-6">
 
@@ -1870,7 +1870,7 @@ function Profile() {
 
                                         <div
                                             key={index}
-                                            className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition"
+                                            className="rounded-xl border border-gray-200 p-4 transition hover:shadow-sm sm:p-5"
                                         >
 
                                             <div className="flex items-start gap-4">
@@ -1883,7 +1883,7 @@ function Profile() {
                                                 </div>
 
 
-                                                <div>
+                                                <div className="min-w-0">
 
                                                     <h3 className="font-bold text-lg text-gray-900">
                                                         {edu.degree}
@@ -1930,7 +1930,7 @@ function Profile() {
 
                     {/* EXPERIENCE */}
 
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-7">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
 
                         <div className="flex items-center gap-2 mb-6">
 
@@ -1952,7 +1952,7 @@ function Profile() {
 
                                         <div
                                             key={index}
-                                            className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition"
+                                            className="rounded-xl border border-gray-200 p-4 transition hover:shadow-sm sm:p-5"
                                         >
 
                                             <div className="flex items-start gap-4">
@@ -1965,7 +1965,7 @@ function Profile() {
                                                 </div>
 
 
-                                                <div className="flex-1">
+                                                <div className="min-w-0 flex-1">
 
                                                     <h3 className="font-bold text-lg text-gray-900">
                                                         {exp.jobTitle}
@@ -2056,7 +2056,7 @@ function Profile() {
 
                     {/* RESUME */}
 
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
 
                         <div className="flex items-center gap-2 mb-4">
 

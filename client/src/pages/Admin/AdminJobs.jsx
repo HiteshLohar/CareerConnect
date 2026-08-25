@@ -9,10 +9,9 @@ function AdminJobs() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
 
-
-    // =====================================
+    // =========================
     // FETCH ALL JOBS
-    // =====================================
+    // =========================
 
     const fetchJobs = async () => {
 
@@ -41,11 +40,6 @@ function AdminJobs() {
 
     };
 
-
-    // =====================================
-    // INITIAL LOAD
-    // =====================================
-
     useEffect(() => {
 
         fetchJobs();
@@ -53,9 +47,9 @@ function AdminJobs() {
     }, []);
 
 
-    // =====================================
+    // =========================
     // SEARCH
-    // =====================================
+    // =========================
 
     const filteredJobs = jobs.filter((job) => {
 
@@ -90,9 +84,9 @@ function AdminJobs() {
     });
 
 
-    // =====================================
+    // =========================
     // UPDATE JOB STATUS
-    // =====================================
+    // =========================
 
     const handleStatusChange = async (
         jobId,
@@ -100,7 +94,6 @@ function AdminJobs() {
     ) => {
 
         const newStatus = !currentStatus;
-
 
         try {
 
@@ -111,18 +104,15 @@ function AdminJobs() {
                 }
             );
 
-
             toast.success(response.data.message);
 
-
-            // Update only the selected job
             setJobs((prevJobs) =>
                 prevJobs.map((job) =>
                     job._id === jobId
                         ? {
-                              ...job,
-                              isActive: newStatus
-                          }
+                            ...job,
+                            isActive: newStatus
+                        }
                         : job
                 )
             );
@@ -141,17 +131,17 @@ function AdminJobs() {
     };
 
 
-    // =====================================
+    // =========================
     // LOADING
-    // =====================================
+    // =========================
 
     if (loading) {
 
         return (
 
-            <div className="flex justify-center items-center min-h-[400px]">
+            <div className="flex justify-center items-center min-h-[400px] px-4">
 
-                <p className="text-xl text-gray-600">
+                <p className="text-lg sm:text-xl text-gray-600 text-center">
                     Loading Jobs...
                 </p>
 
@@ -164,62 +154,70 @@ function AdminJobs() {
 
     return (
 
-        <div className="max-w-7xl mx-auto px-4 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
+            {/* =========================
+                HEADER
+            ========================= */}
 
-            {/* HEADER */}
+            <div className="mb-6 sm:mb-8">
 
-            <div className="mb-8">
-
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                     Job Management
                 </h1>
 
-                <p className="text-gray-500 mt-2">
+                <p className="text-sm sm:text-base text-gray-500 mt-2">
                     Manage all jobs posted on CareerConnect
                 </p>
 
             </div>
 
 
-            {/* SEARCH */}
+            {/* =========================
+                SEARCH
+            ========================= */}
 
-            <div className="mb-6">
+            <div className="mb-5 sm:mb-6">
 
                 <input
                     type="text"
                     placeholder="Search job, company, recruiter or location..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) =>
+                        setSearch(e.target.value)
+                    }
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm sm:text-base outline-none focus:ring-2 focus:ring-blue-500"
                 />
 
             </div>
 
 
-            {/* COUNT */}
+            {/* =========================
+                COUNT
+            ========================= */}
 
-            <div className="mb-4 text-gray-600">
+            <div className="mb-4 text-sm sm:text-base text-gray-600">
 
                 Showing{" "}
+
                 <span className="font-semibold">
                     {filteredJobs.length}
                 </span>{" "}
+
                 jobs
 
             </div>
 
 
-            {/* TABLE */}
+            {/* ==================================================
+                DESKTOP TABLE
+            ================================================== */}
 
-            <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div className="hidden lg:block bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
 
                 <div className="overflow-x-auto">
 
                     <table className="w-full">
-
-
-                        {/* HEADER */}
 
                         <thead className="bg-gray-100">
 
@@ -254,8 +252,6 @@ function AdminJobs() {
                         </thead>
 
 
-                        {/* BODY */}
-
                         <tbody>
 
                             {filteredJobs.length === 0 ? (
@@ -266,9 +262,7 @@ function AdminJobs() {
                                         colSpan="6"
                                         className="text-center py-12 text-gray-500"
                                     >
-
                                         No jobs found
-
                                     </td>
 
                                 </tr>
@@ -281,7 +275,6 @@ function AdminJobs() {
                                         key={job._id}
                                         className="border-t hover:bg-gray-50 transition"
                                     >
-
 
                                         {/* JOB */}
 
@@ -315,20 +308,16 @@ function AdminJobs() {
                                                 ) : (
 
                                                     <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-
                                                         {job.company?.name
                                                             ?.charAt(0)
                                                             ?.toUpperCase()}
-
                                                     </div>
 
                                                 )}
 
                                                 <span className="font-medium">
-
                                                     {job.company?.name ||
                                                         "Unknown"}
-
                                                 </span>
 
                                             </div>
@@ -341,17 +330,13 @@ function AdminJobs() {
                                         <td className="p-4">
 
                                             <p className="font-medium text-gray-900">
-
                                                 {job.postedBy?.fullName ||
                                                     "Unknown"}
-
                                             </p>
 
                                             <p className="text-sm text-gray-500">
-
                                                 {job.postedBy?.email ||
                                                     "No email"}
-
                                             </p>
 
                                         </td>
@@ -360,9 +345,7 @@ function AdminJobs() {
                                         {/* LOCATION */}
 
                                         <td className="p-4 text-gray-600">
-
                                             {job.location || "N/A"}
-
                                         </td>
 
 
@@ -377,11 +360,9 @@ function AdminJobs() {
                                                         : "bg-red-100 text-red-700"
                                                 }`}
                                             >
-
                                                 {job.isActive
                                                     ? "Active"
                                                     : "Inactive"}
-
                                             </span>
 
                                         </td>
@@ -405,11 +386,9 @@ function AdminJobs() {
                                                         : "bg-green-600 hover:bg-green-700"
                                                 }`}
                                             >
-
                                                 {job.isActive
                                                     ? "Deactivate"
                                                     : "Activate"}
-
                                             </button>
 
                                         </td>
@@ -425,6 +404,167 @@ function AdminJobs() {
                     </table>
 
                 </div>
+
+            </div>
+
+
+            {/* ==================================================
+                MOBILE + TABLET CARDS
+            ================================================== */}
+
+            <div className="lg:hidden space-y-4">
+
+                {filteredJobs.length === 0 ? (
+
+                    <div className="bg-white border rounded-xl p-8 text-center text-gray-500">
+                        No jobs found
+                    </div>
+
+                ) : (
+
+                    filteredJobs.map((job) => (
+
+                        <div
+                            key={job._id}
+                            className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-5"
+                        >
+
+                            {/* JOB HEADER */}
+
+                            <div className="flex items-start justify-between gap-3">
+
+                                <div className="min-w-0">
+
+                                    <h2 className="font-semibold text-gray-900 text-base sm:text-lg break-words">
+                                        {job.title}
+                                    </h2>
+
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {job.jobType}
+                                    </p>
+
+                                </div>
+
+
+                                {/* STATUS */}
+
+                                <span
+                                    className={`shrink-0 px-2.5 py-1 rounded-full text-xs sm:text-sm font-semibold ${
+                                        job.isActive
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-red-100 text-red-700"
+                                    }`}
+                                >
+                                    {job.isActive
+                                        ? "Active"
+                                        : "Inactive"}
+                                </span>
+
+                            </div>
+
+
+                            {/* COMPANY */}
+
+                            <div className="flex items-center gap-3 mt-5">
+
+                                {job.company?.logo ? (
+
+                                    <img
+                                        src={job.company.logo}
+                                        alt={job.company.name}
+                                        className="w-10 h-10 rounded-lg object-cover shrink-0"
+                                    />
+
+                                ) : (
+
+                                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
+                                        {job.company?.name
+                                            ?.charAt(0)
+                                            ?.toUpperCase()}
+                                    </div>
+
+                                )}
+
+                                <div className="min-w-0">
+
+                                    <p className="font-medium text-gray-900 truncate">
+                                        {job.company?.name ||
+                                            "Unknown"}
+                                    </p>
+
+                                    <p className="text-sm text-gray-500">
+                                        Company
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            {/* DETAILS */}
+
+                            <div className="mt-5 space-y-3 text-sm">
+
+                                <div>
+
+                                    <p className="text-gray-400">
+                                        Recruiter
+                                    </p>
+
+                                    <p className="font-medium text-gray-900 break-words">
+                                        {job.postedBy?.fullName ||
+                                            "Unknown"}
+                                    </p>
+
+                                    <p className="text-gray-500 break-all">
+                                        {job.postedBy?.email ||
+                                            "No email"}
+                                    </p>
+
+                                </div>
+
+
+                                <div>
+
+                                    <p className="text-gray-400">
+                                        Location
+                                    </p>
+
+                                    <p className="text-gray-700">
+                                        {job.location || "N/A"}
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            {/* ACTION */}
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    handleStatusChange(
+                                        job._id,
+                                        job.isActive
+                                    )
+                                }
+                                className={`w-full mt-5 px-4 py-2.5 rounded-lg text-white font-medium transition ${
+                                    job.isActive
+                                        ? "bg-red-600 hover:bg-red-700"
+                                        : "bg-green-600 hover:bg-green-700"
+                                }`}
+                            >
+                                {job.isActive
+                                    ? "Deactivate Job"
+                                    : "Activate Job"}
+                            </button>
+
+                        </div>
+
+                    ))
+
+                )}
 
             </div>
 

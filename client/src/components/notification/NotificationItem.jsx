@@ -27,7 +27,7 @@ function NotificationItem({
 
         <div
             onClick={() => onRead(notification._id)}
-            className={`flex items-start gap-4 p-4 cursor-pointer transition border-b
+            className={`flex cursor-pointer items-start gap-3 border-b p-4 transition sm:gap-4
 
                 ${notification.isRead
                     ? "bg-white"
@@ -37,7 +37,7 @@ function NotificationItem({
                 hover:bg-gray-100`}
         >
 
-            <div className="mt-1">
+            <div className="mt-1 shrink-0">
 
                 {isNewApplication ? (
                     <FaBell className="text-blue-600 text-2xl" />
@@ -51,15 +51,15 @@ function NotificationItem({
 
             </div>
 
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
 
-                <h3 className="font-semibold text-gray-800 text-lg">
+                <h3 className="break-words text-base font-semibold text-gray-800 sm:text-lg">
 
                     {notification.title}
 
                 </h3>
 
-                <p className="text-gray-600 mt-1 leading-6">
+                <p className="mt-1 break-words text-gray-600 leading-6">
 
                     {notification.message}
 

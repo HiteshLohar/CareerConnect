@@ -130,7 +130,7 @@ function CompanyDetails() {
 
         return (
 
-            <div className="min-h-[60vh] flex items-center justify-center">
+            <div className="flex min-h-[60vh] items-center justify-center px-4">
 
                 <div className="flex items-center gap-3 text-gray-500">
 
@@ -157,7 +157,7 @@ function CompanyDetails() {
 
         return (
 
-            <div className="min-h-[60vh] flex flex-col items-center justify-center">
+            <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
 
                 <h2 className="text-2xl font-bold text-gray-800">
                     Company Not Found
@@ -180,7 +180,7 @@ function CompanyDetails() {
 
     return (
 
-        <div className="max-w-6xl mx-auto px-4 py-10">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
 
             {/* =========================
@@ -203,9 +203,9 @@ function CompanyDetails() {
                 COMPANY HEADER
             ========================= */}
 
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+            <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
 
-                <div className="flex flex-col md:flex-row md:items-center gap-6">
+                <div className="flex flex-col gap-4 sm:gap-6 md:flex-row md:items-center">
 
 
                     {/* COMPANY LOGO */}
@@ -218,15 +218,15 @@ function CompanyDetails() {
                             )}&background=2563eb&color=fff`
                         }
                         alt={company.name}
-                        className="w-28 h-28 rounded-2xl object-cover border"
+                        className="h-20 w-20 rounded-2xl border object-cover sm:h-28 sm:w-28"
                     />
 
 
                     {/* COMPANY INFO */}
 
-                    <div className="flex-1">
+                    <div className="min-w-0 flex-1">
 
-                        <h1 className="text-3xl font-bold text-gray-900">
+                        <h1 className="break-words text-2xl font-bold text-gray-900 sm:text-3xl">
                             {company.name}
                         </h1>
 
@@ -280,7 +280,7 @@ function CompanyDetails() {
                     COMPANY DESCRIPTION
                 ========================= */}
 
-                <div className="mt-8 pt-8 border-t border-gray-100">
+                <div className="mt-6 border-t border-gray-100 pt-6 sm:mt-8 sm:pt-8">
 
                     <h2 className="text-xl font-bold text-gray-900">
                         About Company
@@ -300,7 +300,7 @@ function CompanyDetails() {
                 OPEN POSITIONS
             ========================= */}
 
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
 
 
                 {/* SECTION HEADER */}
@@ -309,7 +309,7 @@ function CompanyDetails() {
 
                     <div>
 
-                        <h2 className="text-2xl font-bold text-gray-900">
+                        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
                             Open Positions
                         </h2>
 
@@ -345,7 +345,7 @@ function CompanyDetails() {
 
                 {jobs.length === 0 ? (
 
-                    <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center sm:p-10">
 
                         <div className="flex justify-center mb-4">
 
@@ -377,20 +377,20 @@ function CompanyDetails() {
                         JOB GRID
                     ========================= */
 
-                    < div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
                         {jobs.map((job) => (
 
                             <div
                                 key={job._id}
-                                className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-300"
+                                className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md sm:p-5"
                             >
 
                                 {/* JOB HEADER */}
 
                                 <div className="flex justify-between items-start gap-3">
 
-                                    <div>
+                                    <div className="min-w-0">
 
                                         <h3 className="text-lg font-bold text-gray-900">
                                             {job.title}

@@ -403,7 +403,7 @@ function JobDetails() {
 
         return (
 
-            <div className="min-h-[70vh] flex items-center justify-center">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
 
                 <div className="text-center">
 
@@ -430,15 +430,15 @@ function JobDetails() {
 
         return (
 
-            <div className="min-h-[70vh] flex items-center justify-center">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
 
-                <div className="text-center">
+                <div className="max-w-md text-center">
 
                     <h2 className="text-2xl font-bold text-gray-800">
                         Job Not Found
                     </h2>
 
-                    <p className="text-gray-500 mt-2">
+                    <p className="mt-2 text-gray-500">
                         This job may have been removed or is no longer available.
                     </p>
 
@@ -480,33 +480,33 @@ function JobDetails() {
 
     return (
 
-        <div className="max-w-6xl mx-auto px-4 py-10">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
 
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="rounded-2xl bg-white p-4 shadow-lg sm:p-6 lg:p-8">
 
 
                 {/* =========================
                     HEADER
                 ========================= */}
 
-                <div className="flex items-center gap-6">
+                <div className="flex min-w-0 items-center gap-4 sm:gap-6">
 
                     <img
                         src={companyLogo}
                         alt={companyName}
-                        className="w-20 h-20 rounded-xl border object-cover"
+                        className="h-14 w-14 shrink-0 rounded-xl border object-cover sm:h-20 sm:w-20"
                     />
 
 
-                    <div>
+                    <div className="min-w-0">
 
-                        <h1 className="text-3xl font-bold text-gray-900">
+                        <h1 className="break-words text-2xl font-bold text-gray-900 sm:text-3xl">
                             {job.title}
                         </h1>
 
 
-                        <p className="text-lg text-gray-600 mt-1">
+                        <p className="mt-1 break-words text-base text-gray-600 sm:text-lg">
                             {companyName}
                         </p>
 
@@ -519,7 +519,7 @@ function JobDetails() {
                     JOB INFO
                 ========================= */}
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mt-8">
+                <div className="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-6 md:grid-cols-3">
 
 
                     {/* LOCATION */}
@@ -675,14 +675,14 @@ function JobDetails() {
                     DESCRIPTION
                 ========================= */}
 
-                <div className="mt-10">
+                <div className="mt-8 sm:mt-10">
 
-                    <h2 className="text-2xl font-semibold mb-4">
+                    <h2 className="mb-3 text-xl font-semibold sm:mb-4 sm:text-2xl">
                         Job Description
                     </h2>
 
 
-                    <p className="text-gray-700 leading-7 whitespace-pre-line">
+                    <p className="break-words whitespace-pre-line leading-7 text-gray-700">
                         {job.description || "No description available."}
                     </p>
 
@@ -693,23 +693,23 @@ function JobDetails() {
                     SKILLS
                 ========================= */}
 
-                <div className="mt-10">
+                <div className="mt-8 sm:mt-10">
 
-                    <h2 className="text-2xl font-semibold mb-4">
+                    <h2 className="mb-3 text-xl font-semibold sm:mb-4 sm:text-2xl">
                         Required Skills
                     </h2>
 
 
                     {job.skills?.length > 0 ? (
 
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
 
                             {job.skills.map(
                                 (skill) => (
 
                                     <span
                                         key={skill}
-                                        className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full"
+                                        className="break-words rounded-full bg-blue-100 px-3 py-2 text-sm text-blue-700 sm:px-4"
                                     >
                                         {skill}
                                     </span>
@@ -734,14 +734,14 @@ function JobDetails() {
                     ACTION BUTTONS
                 ========================= */}
 
-                <div className="mt-10 flex gap-4">
+                <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4">
 
 
                     {/* =========================
                         APPLY BUTTON
                     ========================= */}
 
-                    <div className="flex-1">
+                    <div className="w-full flex-1">
 
 
                         {isDeadlinePassed ? (
@@ -792,7 +792,7 @@ function JobDetails() {
                     <button
                         onClick={handleSaveJob}
                         disabled={saving}
-                        className={`px-6 py-3 rounded-lg border transition flex items-center gap-2 ${
+                        className={`flex w-full items-center justify-center gap-2 rounded-lg border px-6 py-3 transition sm:w-auto ${
                             saved
                                 ? "bg-red-50 border-red-500 text-red-600"
                                 : "bg-white border-gray-300 hover:bg-gray-100"

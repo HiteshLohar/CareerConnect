@@ -127,11 +127,11 @@ function CreateCompany() {
 
     return (
 
-        <div className="max-w-3xl mx-auto py-10 px-4">
+        <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:py-10">
 
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="rounded-2xl bg-white p-4 shadow-lg sm:p-6 lg:p-8">
 
-                <h1 className="text-3xl font-bold mb-8">
+                <h1 className="mb-6 text-2xl font-bold sm:mb-8 sm:text-3xl">
                     Create Company
                 </h1>
 
@@ -149,7 +149,7 @@ function CreateCompany() {
                             Company Logo
                         </label>
 
-                        <div className="flex items-center gap-5">
+                        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
 
                             {preview ? (
 
@@ -158,7 +158,7 @@ function CreateCompany() {
                                     <img
                                         src={preview}
                                         alt="Company logo preview"
-                                        className="w-24 h-24 rounded-xl border object-cover"
+                                        className="h-20 w-20 rounded-xl border object-cover sm:h-24 sm:w-24"
                                     />
 
                                     <button
@@ -175,7 +175,7 @@ function CreateCompany() {
 
                                 <label
                                     htmlFor="companyLogo"
-                                    className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
+                                    className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 transition hover:border-blue-500 hover:bg-blue-50 sm:h-24 sm:w-24"
                                 >
 
                                     <FiUpload
@@ -306,12 +306,12 @@ function CreateCompany() {
                     BUTTON
                 ========================= */}
 
-                <div className="mt-8 flex justify-end">
+                <div className="mt-8 flex">
 
                     <button
                         onClick={handleCreateCompany}
                         disabled={loading}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition disabled:bg-gray-400"
+                        className="w-full rounded-lg bg-blue-600 px-6 py-3 text-white transition hover:bg-blue-700 disabled:bg-gray-400 sm:ml-auto sm:w-auto"
                     >
 
                         {loading

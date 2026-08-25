@@ -6,11 +6,9 @@ import api from "../../services/api";
 function AdminUsers() {
 
     const [users, setUsers] = useState([]);
-
     const [loading, setLoading] = useState(true);
 
     const [search, setSearch] = useState("");
-
     const [role, setRole] = useState("");
 
 
@@ -24,14 +22,19 @@ function AdminUsers() {
 
             setLoading(true);
 
-            const response = await api.get("/users/admin/users", {
-                params: {
-                    search: search.trim(),
-                    role
+            const response = await api.get(
+                "/users/admin/users",
+                {
+                    params: {
+                        search: search.trim(),
+                        role
+                    }
                 }
-            });
+            );
 
-            setUsers(response.data.users);
+            setUsers(
+                response.data.users || []
+            );
 
         } catch (error) {
 
@@ -52,27 +55,17 @@ function AdminUsers() {
 
 
     // ==============================
-    // INITIAL LOAD
-    // + REAL TIME SEARCH
-    // + ROLE FILTER
+    // SEARCH + ROLE FILTER
     // ==============================
 
     useEffect(() => {
 
         const timer = setTimeout(() => {
-
             fetchUsers();
-
         }, 500);
 
-
-        // Agar user 500ms ke andar dobara type kare
-        // previous API call cancel ho jayegi
-
         return () => {
-
             clearTimeout(timer);
-
         };
 
     }, [search, role]);
@@ -102,32 +95,21 @@ function AdminUsers() {
                 }
             );
 
+            toast.success(
+                response.data.message
+            );
 
-            toast.success(response.data.message);
 
-
-            // Full page reload nahi hoga.
-            // Sirf affected user ka status update hoga.
-
-            setUsers((prevUsers) => {
-
-                return prevUsers.map((user) => {
-
-                    if (user._id === userId) {
-
-                        return {
+            setUsers((prevUsers) =>
+                prevUsers.map((user) =>
+                    user._id === userId
+                        ? {
                             ...user,
                             accountStatus: newStatus
-                        };
-
-                    }
-
-                    return user;
-
-                });
-
-            });
-
+                        }
+                        : user
+                )
+            );
 
         } catch (error) {
 
@@ -151,9 +133,9 @@ function AdminUsers() {
 
         return (
 
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="min-h-[60vh] flex items-center justify-center px-4">
 
-                <p className="text-xl text-gray-600">
+                <p className="text-base sm:text-xl text-gray-500">
                     Loading Users...
                 </p>
 
@@ -166,20 +148,20 @@ function AdminUsers() {
 
     return (
 
-        <div className="max-w-7xl mx-auto px-4 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
 
 
             {/* ==============================
                 HEADER
             ============================== */}
 
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
 
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                     User Management
                 </h1>
 
-                <p className="text-gray-500 mt-2">
+                <p className="text-sm sm:text-base text-gray-500 mt-2">
                     Manage students and recruiters
                 </p>
 
@@ -190,99 +172,100 @@ function AdminUsers() {
                 SEARCH + FILTER
             ============================== */}
 
-            <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sm:p-5 mb-6">
+
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+
+                    {/* SEARCH */}
+
+                    <div className="flex-1 relative">
+
+                        <input
+                            type="text"
+                            placeholder="Search by name or email..."
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                            }}
+                            className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
 
 
-                {/* SEARCH */}
+                        {loading && (
 
-                <div className="flex-1 relative">
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
 
-                    <input
-                        type="text"
-                        placeholder="Search by name or email..."
-                        value={search}
+                                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+
+                            </div>
+
+                        )}
+
+                    </div>
+
+
+                    {/* ROLE FILTER */}
+
+                    <select
+                        value={role}
                         onChange={(e) => {
-                            setSearch(e.target.value);
+                            setRole(e.target.value);
                         }}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                        className="w-full sm:w-48 border border-gray-300 rounded-xl px-4 py-3 text-sm sm:text-base outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    >
 
-                    {/* Small loading indicator */}
+                        <option value="">
+                            All Users
+                        </option>
 
-                    {loading && (
+                        <option value="student">
+                            Students
+                        </option>
 
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                        <option value="recruiter">
+                            Recruiters
+                        </option>
 
-                            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-
-                        </div>
-
-                    )}
+                    </select>
 
                 </div>
-
-
-                {/* ROLE FILTER */}
-
-                <select
-                    value={role}
-                    onChange={(e) => {
-                        setRole(e.target.value);
-                    }}
-                    className="border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                >
-
-                    <option value="">
-                        All Users
-                    </option>
-
-                    <option value="student">
-                        Students
-                    </option>
-
-                    <option value="recruiter">
-                        Recruiters
-                    </option>
-
-                </select>
 
             </div>
 
 
-            {/* ==============================
-                USERS TABLE
-            ============================== */}
+            {/* =================================================
+                DESKTOP TABLE
+            ================================================= */}
 
-            <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
 
                 <div className="overflow-x-auto">
 
-                    <table className="w-full">
-
+                    <table className="w-full min-w-[750px]">
 
                         {/* TABLE HEADER */}
 
-                        <thead className="bg-gray-100">
+                        <thead className="bg-gray-50">
 
                             <tr>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 text-sm font-semibold text-gray-700">
                                     Name
                                 </th>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 text-sm font-semibold text-gray-700">
                                     Email
                                 </th>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 text-sm font-semibold text-gray-700">
                                     Role
                                 </th>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 text-sm font-semibold text-gray-700">
                                     Status
                                 </th>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 text-sm font-semibold text-gray-700">
                                     Action
                                 </th>
 
@@ -301,11 +284,9 @@ function AdminUsers() {
 
                                     <td
                                         colSpan="5"
-                                        className="text-center py-12 text-gray-500"
+                                        className="text-center py-14 text-gray-500"
                                     >
-
                                         No users found
-
                                     </td>
 
                                 </tr>
@@ -316,18 +297,15 @@ function AdminUsers() {
 
                                     <tr
                                         key={user._id}
-                                        className="border-t hover:bg-gray-50 transition"
+                                        className="border-t border-gray-100 hover:bg-gray-50 transition"
                                     >
-
 
                                         {/* NAME */}
 
                                         <td className="p-4">
 
                                             <div className="font-semibold text-gray-900">
-
                                                 {user.fullName}
-
                                             </div>
 
                                         </td>
@@ -337,7 +315,9 @@ function AdminUsers() {
 
                                         <td className="p-4 text-gray-600">
 
-                                            {user.email}
+                                            <div className="max-w-[280px] truncate">
+                                                {user.email}
+                                            </div>
 
                                         </td>
 
@@ -346,10 +326,14 @@ function AdminUsers() {
 
                                         <td className="p-4">
 
-                                            <span className="capitalize">
-
+                                            <span
+                                                className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                                                    user.role === "student"
+                                                        ? "bg-blue-100 text-blue-700"
+                                                        : "bg-purple-100 text-purple-700"
+                                                }`}
+                                            >
                                                 {user.role}
-
                                             </span>
 
                                         </td>
@@ -360,15 +344,13 @@ function AdminUsers() {
                                         <td className="p-4">
 
                                             <span
-                                                className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                                className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold capitalize ${
                                                     user.accountStatus === "active"
                                                         ? "bg-green-100 text-green-700"
                                                         : "bg-red-100 text-red-700"
                                                 }`}
                                             >
-
                                                 {user.accountStatus}
-
                                             </span>
 
                                         </td>
@@ -386,17 +368,16 @@ function AdminUsers() {
                                                         user.accountStatus
                                                     )
                                                 }
-                                                className={`px-4 py-2 rounded-lg text-white transition ${
+                                                className={`px-4 py-2 rounded-lg text-sm font-medium text-white transition ${
                                                     user.accountStatus === "active"
                                                         ? "bg-red-600 hover:bg-red-700"
                                                         : "bg-green-600 hover:bg-green-700"
                                                 }`}
                                             >
 
-                                                {
-                                                    user.accountStatus === "active"
-                                                        ? "Suspend"
-                                                        : "Activate"
+                                                {user.accountStatus === "active"
+                                                    ? "Suspend"
+                                                    : "Activate"
                                                 }
 
                                             </button>
@@ -414,6 +395,103 @@ function AdminUsers() {
                     </table>
 
                 </div>
+
+            </div>
+
+
+            {/* =================================================
+                MOBILE USER CARDS
+            ================================================= */}
+
+            <div className="md:hidden space-y-4">
+
+                {users.length === 0 ? (
+
+                    <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center text-gray-500">
+                        No users found
+                    </div>
+
+                ) : (
+
+                    users.map((user) => (
+
+                        <div
+                            key={user._id}
+                            className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4"
+                        >
+
+                            {/* USER INFO */}
+
+                            <div className="mb-4">
+
+                                <h3 className="font-semibold text-base sm:text-lg text-gray-900 break-words">
+                                    {user.fullName}
+                                </h3>
+
+                                <p className="text-sm text-gray-500 mt-1 break-all">
+                                    {user.email}
+                                </p>
+
+                            </div>
+
+
+                            {/* USER DETAILS */}
+
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
+
+                                <span
+                                    className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                                        user.role === "student"
+                                            ? "bg-blue-100 text-blue-700"
+                                            : "bg-purple-100 text-purple-700"
+                                    }`}
+                                >
+                                    {user.role}
+                                </span>
+
+
+                                <span
+                                    className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                                        user.accountStatus === "active"
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-red-100 text-red-700"
+                                    }`}
+                                >
+                                    {user.accountStatus}
+                                </span>
+
+                            </div>
+
+
+                            {/* ACTION */}
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    handleStatusChange(
+                                        user._id,
+                                        user.accountStatus
+                                    )
+                                }
+                                className={`w-full py-2.5 rounded-lg text-sm font-medium text-white transition ${
+                                    user.accountStatus === "active"
+                                        ? "bg-red-600 hover:bg-red-700"
+                                        : "bg-green-600 hover:bg-green-700"
+                                }`}
+                            >
+
+                                {user.accountStatus === "active"
+                                    ? "Suspend User"
+                                    : "Activate User"
+                                }
+
+                            </button>
+
+                        </div>
+
+                    ))
+
+                )}
 
             </div>
 

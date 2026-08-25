@@ -9,7 +9,7 @@ function NotificationDropdown({
 
     if (loading) {
         return (
-            <div className="absolute right-0 mt-3 w-[430px] bg-white rounded-xl shadow-2xl p-5 border z-50">
+            <div className="absolute bottom-full right-0 mb-3 w-[calc(100vw-2rem)] max-w-[430px] z-50 max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl border bg-white p-5 shadow-2xl md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:mt-3 md:w-[430px] md:max-h-[calc(100dvh-6rem)]">
                 Loading...
             </div>
         );
@@ -17,7 +17,7 @@ function NotificationDropdown({
 
     if (notifications.length === 0) {
         return (
-            <div className="absolute right-0 mt-3 w-[430px] bg-white rounded-xl shadow-2xl border z-50">
+            <div className="absolute bottom-full right-0 mb-3 w-[calc(100vw-2rem)] max-w-[430px] z-50 max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl border bg-white shadow-2xl md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:mt-3 md:w-[430px] md:max-h-[calc(100dvh-6rem)]">
 
                 <div className="flex items-center justify-between p-4 border-b">
 
@@ -49,24 +49,24 @@ function NotificationDropdown({
 
     return (
 
-        <div className="absolute right-0 mt-3 w-[430px] bg-white rounded-xl shadow-2xl border z-50">
+        <div className="absolute bottom-full right-0 mb-3 w-[calc(100vw-2rem)] max-w-[430px] z-50 flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-xl border bg-white shadow-2xl md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:mt-3 md:w-[430px] md:max-h-[calc(100dvh-6rem)]">
 
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b p-4">
 
-                <h2 className="text-xl font-bold">
+                <h2 className="text-lg font-bold sm:text-xl">
                     🔔 Notifications
                 </h2>
 
                 <button
                     onClick={onMarkAllAsRead}
-                    className="text-sm text-blue-600 hover:underline"
+                    className="shrink-0 text-sm text-blue-600 hover:underline"
                 >
                     Mark all as read
                 </button>
 
             </div>
 
-            <div className="max-h-[500px] overflow-y-auto">
+            <div className="min-h-0 flex-1 overflow-y-auto">
 
                 {
                     notifications.map((notification) => (

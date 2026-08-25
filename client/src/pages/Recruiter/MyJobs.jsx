@@ -145,23 +145,23 @@ function MyJobs() {
 
     return (
 
-        <div className="max-w-6xl mx-auto py-10 px-4">
+        <div className="w-full max-w-6xl mx-auto py-6 sm:py-8 lg:py-10 px-3 sm:px-4 lg:px-6">
 
 
             {/* =========================
                 HEADER
             ========================= */}
 
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
 
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                     My Jobs
                 </h1>
 
 
                 <Link
                     to="/jobs/create"
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg transition"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg transition"
                 >
 
                     <FiPlus size={18} />
@@ -181,7 +181,7 @@ function MyJobs() {
 
             {jobs.length === 0 ? (
 
-                <div className="bg-white rounded-xl shadow p-10 text-center">
+                <div className="bg-white rounded-xl shadow p-6 sm:p-10 text-center">
 
                     <div className="w-14 h-14 mx-auto rounded-full bg-blue-50 flex items-center justify-center">
 
@@ -198,7 +198,7 @@ function MyJobs() {
 
                     <Link
                         to="/jobs/create"
-                        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg transition"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg transition"
                     >
 
                         <FiPlus size={18} />
@@ -218,13 +218,13 @@ function MyJobs() {
                     JOB GRID
                 ========================= */
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
 
                     {jobs.map((job) => (
 
                         <div
                             key={job._id}
-                            className="bg-white rounded-xl shadow-md border border-gray-200 p-5 hover:shadow-lg transition"
+                            className="bg-white rounded-xl shadow-md border border-gray-200 p-4 sm:p-5 hover:shadow-lg transition min-w-0"
                         >
 
 
@@ -232,19 +232,19 @@ function MyJobs() {
                                 COMPANY
                             ========================= */}
 
-                            <div className="flex items-center gap-4 mb-5">
+                            <div className="flex items-center gap-3 sm:gap-4 mb-5 min-w-0">
 
                                 {job.company?.logo ? (
 
                                     <img
                                         src={job.company.logo}
                                         alt={job.company.name}
-                                        className="w-14 h-14 rounded-lg object-cover border"
+                                        className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover border shrink-0"
                                     />
 
                                 ) : (
 
-                                    <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center">
+                                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
 
                                         <FiBriefcase
                                             size={24}
@@ -258,7 +258,7 @@ function MyJobs() {
 
                                 <div className="min-w-0">
 
-                                    <h2 className="text-xl font-semibold text-gray-900 truncate">
+                                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
                                         {job.title}
                                     </h2>
 
@@ -275,7 +275,7 @@ function MyJobs() {
                                 JOB INFO
                             ========================= */}
 
-                            <div className="space-y-2.5 text-sm text-gray-600">
+                            <div className="space-y-2.5 text-sm text-gray-600 min-w-0">
 
 
                                 {/* Location */}
@@ -389,14 +389,14 @@ function MyJobs() {
 
                             {job.skills?.length > 0 && (
 
-                                <div className="flex flex-wrap gap-2 mt-5">
+                                <div className="flex flex-wrap gap-2 mt-4 sm:mt-5">
 
                                     {job.skills.map(
                                         (skill, index) => (
 
                                             <span
                                                 key={index}
-                                                className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm"
+                                                className="bg-blue-50 text-blue-600 px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm"
                                             >
                                                 {skill}
                                             </span>
@@ -413,14 +413,14 @@ function MyJobs() {
                                 ACTIONS
                             ========================= */}
 
-                            <div className="flex justify-end gap-2 mt-6">
+                            <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-5 sm:mt-6">
 
 
                                 {/* Applicants */}
 
                                 <Link
                                     to={`/jobs/${job._id}/applicants`}
-                                    className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+                                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
                                 >
 
                                     <FiUserCheck size={16} />
@@ -436,7 +436,7 @@ function MyJobs() {
 
                                 <Link
                                     to={`/jobs/${job._id}/edit`}
-                                    className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm"
+                                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm"
                                 >
 
                                     <FiEdit size={16} />
@@ -454,7 +454,7 @@ function MyJobs() {
                                     onClick={() =>
                                         handleDeleteJob(job._id)
                                     }
-                                    className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
+                                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
                                 >
 
                                     <FiTrash2 size={16} />

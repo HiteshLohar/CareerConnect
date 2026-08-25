@@ -6,9 +6,7 @@ import api from "../../services/api";
 function AdminCompanies() {
 
     const [companies, setCompanies] = useState([]);
-
     const [loading, setLoading] = useState(true);
-
     const [search, setSearch] = useState("");
 
 
@@ -24,7 +22,7 @@ function AdminCompanies() {
 
             const response = await api.get("/companies/admin");
 
-            setCompanies(response.data.companies);
+            setCompanies(response.data.companies || []);
 
         } catch (error) {
 
@@ -56,7 +54,7 @@ function AdminCompanies() {
 
 
     // =====================================
-    // REAL-TIME SEARCH
+    // SEARCH
     // =====================================
 
     const filteredCompanies = companies.filter((company) => {
@@ -112,32 +110,19 @@ function AdminCompanies() {
                 }
             );
 
-
             toast.success(response.data.message);
 
 
-            // =================================
-            // UPDATE ONLY THIS COMPANY
-            // =================================
-
-            setCompanies((prevCompanies) => {
-
-                return prevCompanies.map((company) => {
-
-                    if (company._id === companyId) {
-
-                        return {
+            setCompanies((prevCompanies) =>
+                prevCompanies.map((company) =>
+                    company._id === companyId
+                        ? {
                             ...company,
                             accountStatus: newStatus
-                        };
-
-                    }
-
-                    return company;
-
-                });
-
-            });
+                        }
+                        : company
+                )
+            );
 
         } catch (error) {
 
@@ -161,9 +146,9 @@ function AdminCompanies() {
 
         return (
 
-            <div className="flex justify-center items-center min-h-[400px]">
+            <div className="flex justify-center items-center min-h-[60vh] px-4">
 
-                <p className="text-xl text-gray-600">
+                <p className="text-lg sm:text-xl text-gray-600 text-center">
                     Loading Companies...
                 </p>
 
@@ -176,20 +161,20 @@ function AdminCompanies() {
 
     return (
 
-        <div className="max-w-7xl mx-auto px-4 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
 
 
             {/* =================================
                 HEADER
             ================================= */}
 
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
 
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                     Company Management
                 </h1>
 
-                <p className="text-gray-500 mt-2">
+                <p className="text-sm sm:text-base text-gray-500 mt-2">
                     Manage all companies registered on CareerConnect
                 </p>
 
@@ -200,7 +185,7 @@ function AdminCompanies() {
                 SEARCH
             ================================= */}
 
-            <div className="mb-8">
+            <div className="mb-5 sm:mb-8">
 
                 <input
                     type="text"
@@ -209,7 +194,7 @@ function AdminCompanies() {
                     onChange={(e) => {
                         setSearch(e.target.value);
                     }}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm sm:text-base outline-none focus:ring-2 focus:ring-blue-500"
                 />
 
             </div>
@@ -219,27 +204,28 @@ function AdminCompanies() {
                 RESULT COUNT
             ================================= */}
 
-            <div className="mb-4 text-gray-600">
+            <div className="mb-4 text-sm sm:text-base text-gray-600">
 
                 Showing{" "}
+
                 <span className="font-semibold">
                     {filteredCompanies.length}
                 </span>{" "}
+
                 companies
 
             </div>
 
 
-            {/* =================================
-                TABLE
-            ================================= */}
+            {/* =================================================
+                DESKTOP TABLE
+            ================================================= */}
 
-            <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div className="hidden md:block bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
 
                 <div className="overflow-x-auto">
 
                     <table className="w-full">
-
 
                         {/* TABLE HEADER */}
 
@@ -247,23 +233,23 @@ function AdminCompanies() {
 
                             <tr>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 whitespace-nowrap">
                                     Company
                                 </th>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 whitespace-nowrap">
                                     Owner
                                 </th>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 whitespace-nowrap">
                                     Location
                                 </th>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 whitespace-nowrap">
                                     Status
                                 </th>
 
-                                <th className="text-left p-4">
+                                <th className="text-left p-4 whitespace-nowrap">
                                     Action
                                 </th>
 
@@ -284,9 +270,7 @@ function AdminCompanies() {
                                         colSpan="5"
                                         className="text-center py-12 text-gray-500"
                                     >
-
                                         No companies found
-
                                     </td>
 
                                 </tr>
@@ -300,24 +284,23 @@ function AdminCompanies() {
                                         className="border-t hover:bg-gray-50 transition"
                                     >
 
-
                                         {/* COMPANY */}
 
                                         <td className="p-4">
 
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-3 min-w-[220px]">
 
                                                 {company.logo ? (
 
                                                     <img
                                                         src={company.logo}
                                                         alt={company.name}
-                                                        className="w-10 h-10 rounded-lg object-cover"
+                                                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                                                     />
 
                                                 ) : (
 
-                                                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0">
 
                                                         {company.name
                                                             ?.charAt(0)
@@ -327,17 +310,18 @@ function AdminCompanies() {
 
                                                 )}
 
-                                                <div>
+                                                <div className="min-w-0">
 
-                                                    <p className="font-semibold text-gray-900">
+                                                    <p className="font-semibold text-gray-900 truncate">
 
                                                         {company.name}
 
                                                     </p>
 
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-sm text-gray-500 truncate max-w-[200px]">
 
-                                                        {company.website || "No website"}
+                                                        {company.website ||
+                                                            "No website"}
 
                                                     </p>
 
@@ -352,7 +336,7 @@ function AdminCompanies() {
 
                                         <td className="p-4">
 
-                                            <p className="font-medium text-gray-900">
+                                            <p className="font-medium text-gray-900 whitespace-nowrap">
 
                                                 {company.owner?.fullName ||
                                                     "Unknown"}
@@ -383,7 +367,7 @@ function AdminCompanies() {
                                         <td className="p-4">
 
                                             <span
-                                                className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                                className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
                                                     company.accountStatus ===
                                                     "active"
                                                         ? "bg-green-100 text-green-700"
@@ -410,7 +394,7 @@ function AdminCompanies() {
                                                         company.accountStatus
                                                     )
                                                 }
-                                                className={`px-4 py-2 rounded-lg text-white transition ${
+                                                className={`px-4 py-2 rounded-lg text-white transition whitespace-nowrap ${
                                                     company.accountStatus ===
                                                     "active"
                                                         ? "bg-red-600 hover:bg-red-700"
@@ -438,6 +422,184 @@ function AdminCompanies() {
                     </table>
 
                 </div>
+
+            </div>
+
+
+            {/* =================================================
+                MOBILE CARDS
+            ================================================= */}
+
+            <div className="md:hidden space-y-4">
+
+                {filteredCompanies.length === 0 ? (
+
+                    <div className="bg-white border rounded-xl p-8 text-center text-gray-500">
+
+                        No companies found
+
+                    </div>
+
+                ) : (
+
+                    filteredCompanies.map((company) => (
+
+                        <div
+                            key={company._id}
+                            className="bg-white border border-gray-200 rounded-xl shadow-sm p-4"
+                        >
+
+                            {/* COMPANY */}
+
+                            <div className="flex items-start gap-3">
+
+                                {company.logo ? (
+
+                                    <img
+                                        src={company.logo}
+                                        alt={company.name}
+                                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                                    />
+
+                                ) : (
+
+                                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg flex-shrink-0">
+
+                                        {company.name
+                                            ?.charAt(0)
+                                            ?.toUpperCase()}
+
+                                    </div>
+
+                                )}
+
+                                <div className="min-w-0 flex-1">
+
+                                    <h2 className="font-semibold text-gray-900 text-base sm:text-lg break-words">
+
+                                        {company.name}
+
+                                    </h2>
+
+                                    <p className="text-sm text-gray-500 break-all">
+
+                                        {company.website ||
+                                            "No website"}
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            {/* DETAILS */}
+
+                            <div className="mt-4 space-y-3">
+
+
+                                {/* OWNER */}
+
+                                <div>
+
+                                    <p className="text-xs font-medium text-gray-400 uppercase">
+                                        Owner
+                                    </p>
+
+                                    <p className="font-medium text-gray-900 break-words">
+
+                                        {company.owner?.fullName ||
+                                            "Unknown"}
+
+                                    </p>
+
+                                    <p className="text-sm text-gray-500 break-all">
+
+                                        {company.owner?.email ||
+                                            "No email"}
+
+                                    </p>
+
+                                </div>
+
+
+                                {/* LOCATION */}
+
+                                <div>
+
+                                    <p className="text-xs font-medium text-gray-400 uppercase">
+                                        Location
+                                    </p>
+
+                                    <p className="text-gray-700 break-words">
+
+                                        {company.location || "N/A"}
+
+                                    </p>
+
+                                </div>
+
+
+                                {/* STATUS */}
+
+                                <div className="flex items-center justify-between gap-3">
+
+                                    <div>
+
+                                        <p className="text-xs font-medium text-gray-400 uppercase mb-1">
+                                            Status
+                                        </p>
+
+                                        <span
+                                            className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                                                company.accountStatus ===
+                                                "active"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-red-100 text-red-700"
+                                            }`}
+                                        >
+
+                                            {company.accountStatus}
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* ACTION */}
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        handleStatusChange(
+                                            company._id,
+                                            company.accountStatus
+                                        )
+                                    }
+                                    className={`w-full px-4 py-2.5 rounded-lg text-white font-medium transition ${
+                                        company.accountStatus ===
+                                        "active"
+                                            ? "bg-red-600 hover:bg-red-700"
+                                            : "bg-green-600 hover:bg-green-700"
+                                    }`}
+                                >
+
+                                    {company.accountStatus ===
+                                    "active"
+                                        ? "Suspend Company"
+                                        : "Activate Company"}
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    ))
+
+                )}
 
             </div>
 

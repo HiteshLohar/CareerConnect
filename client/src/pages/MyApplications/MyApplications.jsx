@@ -36,22 +36,22 @@ function MyApplications() {
 
     if (loading) {
         return (
-            <div className="text-center py-10">
+            <div className="px-4 py-10 text-center">
                 Loading...
             </div>
         );
     }
 
     return (
-        <div className="max-w-6xl mx-auto py-10 px-4">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
-            <h1 className="text-3xl font-bold mb-8">
+            <h1 className="mb-6 text-2xl font-bold sm:mb-8 sm:text-3xl">
                 My Applications
             </h1>
 
             {applications.length === 0 ? (
 
-                <div className="text-center py-20">
+                <div className="px-4 py-16 text-center sm:py-20">
 
                     <h2 className="text-2xl font-semibold text-gray-700">
                         No Applications Yet
@@ -72,30 +72,30 @@ function MyApplications() {
 
             ) : (
 
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
 
                     {applications.map((application) => (
 
                         <div
                             key={application._id}
-                            className="bg-white rounded-2xl shadow-md border hover:shadow-lg transition p-6"
+                            className="rounded-2xl border bg-white p-4 shadow-md transition hover:shadow-lg sm:p-6"
                         >
 
-                            <div className="flex justify-between items-start">
+                            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
 
                                 {/* Left Side */}
 
-                                <div>
+                                <div className="min-w-0">
 
-                                    <h2 className="text-2xl font-bold">
+                                    <h2 className="break-words text-xl font-bold sm:text-2xl">
                                         {application.job.title}
                                     </h2>
 
-                                    <p className="text-gray-600 mt-1 text-lg">
+                                    <p className="mt-1 break-words text-base text-gray-600 sm:text-lg">
                                         {application.job.company.name}
                                     </p>
 
-                                    <div className="flex gap-6 mt-4 text-gray-500">
+                                    <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500 sm:gap-6 sm:text-base">
 
                                         <span>
                                             📍 {application.job.location}
@@ -116,7 +116,7 @@ function MyApplications() {
 
                                 {/* Right Side */}
 
-                                <div className="flex flex-col items-end gap-4">
+                                <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-start sm:gap-4">
 
                                     <span
                                         className={`px-4 py-2 rounded-full text-sm font-semibold text-white
@@ -134,7 +134,7 @@ function MyApplications() {
                                         onClick={() =>
                                             navigate(`/jobs/${application.job._id}`)
                                         }
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
+                                        className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
                                     >
                                         View Job
                                     </button>

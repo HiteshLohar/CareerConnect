@@ -128,7 +128,7 @@ function EditCompany() {
 
         return (
 
-            <div className="text-center py-20 text-xl">
+            <div className="px-4 py-20 text-center text-lg sm:text-xl">
                 Loading...
             </div>
 
@@ -139,11 +139,11 @@ function EditCompany() {
 
     return (
 
-        <div className="max-w-4xl mx-auto py-10 px-4">
+        <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:py-10">
 
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="rounded-2xl bg-white p-4 shadow-lg sm:p-6 lg:p-8">
 
-                <h1 className="text-3xl font-bold mb-8">
+                <h1 className="mb-6 text-2xl font-bold sm:mb-8 sm:text-3xl">
                     Edit Company
                 </h1>
 
@@ -244,12 +244,12 @@ function EditCompany() {
 
                 </div>
 
-                <div className="mt-8 flex justify-end">
+                <div className="mt-8 flex">
 
                     <button
                         onClick={handleUpdateCompany}
                         disabled={isSaving}
-                        className={`px-6 py-3 rounded-lg text-white transition ${isSaving
+                        className={`w-full rounded-lg px-6 py-3 text-white transition sm:ml-auto sm:w-auto ${isSaving
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-blue-600 hover:bg-blue-700"
                             }`}

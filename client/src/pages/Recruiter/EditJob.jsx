@@ -149,9 +149,9 @@ function EditJob() {
     if (loading) {
 
         return (
-            <div className="flex justify-center items-center py-20">
+            <div className="flex justify-center items-center py-20 px-4">
 
-                <p className="text-gray-500">
+                <p className="text-gray-500 text-sm sm:text-base">
                     Loading job...
                 </p>
 
@@ -162,19 +162,19 @@ function EditJob() {
 
     return (
 
-        <div className="max-w-4xl mx-auto py-10 px-4">
+        <div className="w-full max-w-4xl mx-auto py-6 sm:py-8 lg:py-10 px-3 sm:px-4 lg:px-6">
 
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
 
-                <h1 className="text-3xl font-bold mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">
                     Edit Job
                 </h1>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
 
                     {/* Job Title */}
 
-                    <div>
+                    <div className="min-w-0">
 
                         <label className="block text-sm font-medium mb-2">
                             Job Title
@@ -186,14 +186,14 @@ function EditJob() {
                             value={formData.title}
                             onChange={handleChange}
                             placeholder="Enter Job Title"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
 
                     {/* Company */}
 
-                    <div>
+                    <div className="min-w-0">
 
                         <label className="block text-sm font-medium mb-2">
                             Company
@@ -203,7 +203,7 @@ function EditJob() {
                             name="company"
                             value={formData.company}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
 
                             <option value="">
@@ -227,7 +227,7 @@ function EditJob() {
 
                     {/* Location */}
 
-                    <div>
+                    <div className="min-w-0">
 
                         <label className="block text-sm font-medium mb-2">
                             Location
@@ -239,14 +239,14 @@ function EditJob() {
                             value={formData.location}
                             onChange={handleChange}
                             placeholder="Location"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
 
                     {/* Salary */}
 
-                    <div>
+                    <div className="min-w-0">
 
                         <label className="block text-sm font-medium mb-2">
                             Salary
@@ -258,14 +258,14 @@ function EditJob() {
                             value={formData.salary}
                             onChange={handleChange}
                             placeholder="Salary"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
 
                     {/* Experience */}
 
-                    <div>
+                    <div className="min-w-0">
 
                         <label className="block text-sm font-medium mb-2">
                             Experience (Years)
@@ -277,14 +277,14 @@ function EditJob() {
                             value={formData.experience}
                             onChange={handleChange}
                             placeholder="Experience"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
 
                     {/* Job Type */}
 
-                    <div>
+                    <div className="min-w-0">
 
                         <label className="block text-sm font-medium mb-2">
                             Job Type
@@ -294,7 +294,7 @@ function EditJob() {
                             name="jobType"
                             value={formData.jobType}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
 
                             <option value="">
@@ -323,7 +323,7 @@ function EditJob() {
 
                     {/* Skills */}
 
-                    <div>
+                    <div className="min-w-0">
 
                         <label className="block text-sm font-medium mb-2">
                             Skills
@@ -335,14 +335,14 @@ function EditJob() {
                             value={formData.skills}
                             onChange={handleChange}
                             placeholder="React, Node.js, MongoDB"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
 
                     {/* Vacancies */}
 
-                    <div>
+                    <div className="min-w-0">
 
                         <label className="block text-sm font-medium mb-2">
                             Vacancies
@@ -354,14 +354,14 @@ function EditJob() {
                             value={formData.vacancies}
                             onChange={handleChange}
                             placeholder="Vacancies"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
 
                     {/* Deadline */}
 
-                    <div>
+                    <div className="min-w-0">
 
                         <label className="block text-sm font-medium mb-2">
                             Deadline
@@ -372,7 +372,7 @@ function EditJob() {
                             name="deadline"
                             value={formData.deadline}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
@@ -381,7 +381,7 @@ function EditJob() {
 
                 {/* Description */}
 
-                <div className="mt-6">
+                <div className="mt-5 sm:mt-6">
 
                     <label className="block text-sm font-medium mb-2">
                         Description
@@ -393,20 +393,20 @@ function EditJob() {
                         value={formData.description}
                         onChange={handleChange}
                         placeholder="Enter Job Description"
-                        className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base resize-y focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
 
                 </div>
 
                 {/* Buttons */}
 
-                <div className="mt-8 flex justify-end gap-3">
+                <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:justify-end gap-3">
 
                     <button
                         type="button"
                         onClick={() => navigate("/recruiter/jobs")}
                         disabled={isSaving}
-                        className="px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-50"
+                        className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition text-sm sm:text-base"
                     >
                         Cancel
                     </button>
@@ -415,7 +415,7 @@ function EditJob() {
                         type="button"
                         onClick={handleUpdateJob}
                         disabled={isSaving}
-                        className={`px-6 py-3 rounded-lg text-white ${
+                        className={`w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-white transition text-sm sm:text-base ${
                             isSaving
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-blue-600 hover:bg-blue-700"

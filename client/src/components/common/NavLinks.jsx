@@ -1,152 +1,53 @@
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-function NavLinks() {
-
-    const { user } = useSelector(
-        (state) => state.auth
-    );
-
+function NavLinks({ onNavigate, className = "" }) {
+    const { user } = useSelector((state) => state.auth);
     const role = user?.role;
 
     const navClass = ({ isActive }) =>
-        `transition ${isActive
-            ? "text-blue-600 font-semibold"
-            : "text-gray-700 hover:text-blue-600"
+        `rounded-md px-2 py-2 text-sm font-medium transition ${isActive
+            ? "bg-blue-50 text-blue-600"
+            : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
         }`;
 
+    const links = {
+        student: [
+            ["/student/dashboard", "Dashboard"],
+            ["/jobs", "Jobs"],
+            ["/saved-jobs", "Saved Jobs"],
+            ["/my-applications", "My Applications"],
+            ["/companies/browse", "Browse Companies"]
+        ],
+        recruiter: [
+            ["/recruiter/dashboard", "Dashboard"],
+            ["/companies", "Companies"],
+            ["/recruiter/jobs", "My Jobs"],
+            ["/recruiter/analytics", "Analytics"]
+        ],
+        admin: [
+            ["/admin/dashboard", "Dashboard"],
+            ["/admin/users", "Users"],
+            ["/admin/companies", "Companies"],
+            ["/admin/jobs", "Jobs"],
+            ["/admin/applications", "Applications"]
+        ]
+    };
+
     return (
-
-        <div className="flex items-center gap-6">
-
-            {/* =========================
-                STUDENT
-            ========================= */}
-
-            {role === "student" && (
-                <>
-                    <NavLink
-                        to="/student/dashboard"
-                        className={navClass}
-                    >
-                        Dashboard
-                    </NavLink>
-
-                    <NavLink
-                        to="/jobs"
-                        className={navClass}
-                    >
-                        Jobs
-                    </NavLink>
-
-                    <NavLink
-                        to="/saved-jobs"
-                        className={navClass}
-                    >
-                        Saved Jobs
-                    </NavLink>
-
-                    <NavLink
-                        to="/my-applications"
-                        className={navClass}
-                    >
-                        My Applications
-                    </NavLink>
-
-                    <NavLink
-                        to="/companies/browse"
-                        className={navClass}
-                    >
-                        Browse Companies
-                    </NavLink>
-                </>
-            )}
-
-
-            {/* =========================
-                RECRUITER
-            ========================= */}
-
-            {role === "recruiter" && (
-                <>
-                    <NavLink
-                        to="/recruiter/dashboard"
-                        className={navClass}
-                    >
-                        Dashboard
-                    </NavLink>
-
-                    <NavLink
-                        to="/companies"
-                        className={navClass}
-                    >
-                        Companies
-                    </NavLink>
-
-                    <NavLink
-                        to="/recruiter/jobs"
-                        className={navClass}
-                    >
-                        My Jobs
-                    </NavLink>
-
-                    <NavLink
-                        to="/recruiter/analytics"
-                        className={navClass}
-                    >
-                        Analytics
-                    </NavLink>
-                </>
-            )}
-
-
-            {/* =========================
-                ADMIN
-            ========================= */}
-
-            {role === "admin" && (
-                <>
-                    <NavLink
-                        to="/admin/dashboard"
-                        className={navClass}
-                    >
-                        Dashboard
-                    </NavLink>
-
-                    <NavLink
-                        to="/admin/users"
-                        className={navClass}
-                    >
-                        Users
-                    </NavLink>
-
-                    <NavLink
-                        to="/admin/companies"
-                        className={navClass}
-                    >
-                        Companies
-                    </NavLink>
-
-                    <NavLink
-                        to="/admin/jobs"
-                        className={navClass}
-                    >
-                        Jobs
-                    </NavLink>
-
-                    <NavLink
-                        to="/admin/applications"
-                        className={navClass}
-                    >
-                        Applications
-                    </NavLink>
-                </>
-            )}
-
+        <div className={`flex items-center gap-1 md:gap-4 ${className}`}>
+            {(links[role] || []).map(([to, label]) => (
+                <NavLink
+                    key={to}
+                    to={to}
+                    className={navClass}
+                    onClick={onNavigate}
+                >
+                    {label}
+                </NavLink>
+            ))}
         </div>
-
     );
-
 }
 
 export default NavLinks;

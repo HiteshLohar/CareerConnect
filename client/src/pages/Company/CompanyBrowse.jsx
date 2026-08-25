@@ -70,7 +70,7 @@ function CompanyBrowse() {
 
         return (
 
-            <div className="min-h-[60vh] flex items-center justify-center">
+            <div className="flex min-h-[60vh] items-center justify-center px-4">
 
                 <div className="flex items-center gap-3 text-gray-500">
 
@@ -95,16 +95,16 @@ function CompanyBrowse() {
 
     return (
 
-        <div className="max-w-7xl mx-auto px-4 py-10">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
 
             {/* =========================
                 HEADER
             ========================= */}
 
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
 
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                     Explore Companies
                 </h1>
 
@@ -121,7 +121,7 @@ function CompanyBrowse() {
 
             {companies.length === 0 ? (
 
-                <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center">
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center sm:p-10">
 
                     <h2 className="text-xl font-semibold text-gray-800">
                         No Companies Found
@@ -140,13 +140,13 @@ function CompanyBrowse() {
                     COMPANY GRID
                 ========================= */
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
 
                     {companies.map((company) => (
 
                         <div
                             key={company._id}
-                            className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                            className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-6"
                         >
 
 

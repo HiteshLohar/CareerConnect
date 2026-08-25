@@ -103,15 +103,15 @@ function CreateJob() {
 
     return (
 
-        <div className="max-w-4xl mx-auto py-10 px-4">
+        <div className="w-full max-w-4xl mx-auto py-6 sm:py-8 lg:py-10 px-3 sm:px-4 lg:px-6">
 
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
 
-                <h1 className="text-3xl font-bold mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">
                     Create Job
                 </h1>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
 
                     <div>
 
@@ -125,7 +125,7 @@ function CreateJob() {
                             value={formData.title}
                             onChange={handleChange}
                             placeholder="Enter Job Title"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
@@ -140,7 +140,7 @@ function CreateJob() {
                             name="company"
                             value={formData.company}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
 
                             <option value="">
@@ -174,7 +174,7 @@ function CreateJob() {
                             value={formData.location}
                             onChange={handleChange}
                             placeholder="Location"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
@@ -191,7 +191,7 @@ function CreateJob() {
                             value={formData.salary}
                             onChange={handleChange}
                             placeholder="Salary"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
@@ -208,7 +208,7 @@ function CreateJob() {
                             value={formData.experience}
                             onChange={handleChange}
                             placeholder="Experience"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
@@ -223,7 +223,7 @@ function CreateJob() {
                             name="jobType"
                             value={formData.jobType}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
 
                             <option value="">
@@ -262,7 +262,7 @@ function CreateJob() {
                             value={formData.skills}
                             onChange={handleChange}
                             placeholder="React, Node.js, MongoDB"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
@@ -279,7 +279,7 @@ function CreateJob() {
                             value={formData.vacancies}
                             onChange={handleChange}
                             placeholder="Vacancies"
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
@@ -295,14 +295,14 @@ function CreateJob() {
                             name="deadline"
                             value={formData.deadline}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
 
                     </div>
 
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-5 sm:mt-6">
 
                     <label className="block text-sm font-medium mb-2">
                         Description
@@ -314,17 +314,17 @@ function CreateJob() {
                         value={formData.description}
                         onChange={handleChange}
                         placeholder="Enter Job Description"
-                        className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full min-w-0 border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
 
                 </div>
 
-                <div className="mt-8 flex justify-end">
+                <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:justify-end">
 
                     <button
                         onClick={handleCreateJob}
                         disabled={isSaving}
-                        className={`px-6 py-3 rounded-lg text-white transition ${
+                        className={`w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-white transition ${
                             isSaving
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-blue-600 hover:bg-blue-700"
