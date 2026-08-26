@@ -4,11 +4,11 @@ import { getRecruiterDashboard, getStudentDashboard, getRecruiterAnalytics, getA
 
 const router = express.Router();
 
+router.get("/recruiter/analytics", verifyToken, authorizeRoles("recruiter"), getRecruiterAnalytics);
+
 router.get('/recruiter', verifyToken, authorizeRoles("recruiter"), getRecruiterDashboard);
 
 router.get('/student', verifyToken, authorizeRoles("student"), getStudentDashboard);
-
-router.get("/recruiter/analytics", verifyToken, authorizeRoles("recruiter"), getRecruiterAnalytics);
 
 router.get("/admin", verifyToken, authorizeRoles("admin"), getAdminDashboard);
 

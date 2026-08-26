@@ -30,11 +30,6 @@ export const createJob = asyncHandler(async (req, res) => {
 
     const recruiterId = req.user.userId;
 
-
-    // =========================
-    // VALIDATION
-    // =========================
-
     if (
         !title?.trim() ||
         !company ||
@@ -55,51 +50,35 @@ export const createJob = asyncHandler(async (req, res) => {
     }
 
     if (!isValidObjectId(company)) {
-        throw new ApiError(
-            400,
-            "Invalid Company ID"
-        );
+        throw new ApiError(400, "Invalid Company ID");
     }
 
-    if (Number(salary) < 0) {
-        throw new ApiError(
-            400,
-            "Salary cannot be negative"
-        );
+    if (Number.isNaN(Number(salary)) || Number(salary) < 0) {
+        throw new ApiError(400, "Invalid salary");
     }
 
-    if (Number(experience) < 0) {
-        throw new ApiError(
-            400,
-            "Experience cannot be negative"
-        );
+    if (
+        Number.isNaN(Number(experience)) ||
+        Number(experience) < 0
+    ) {
+        throw new ApiError(400, "Invalid experience");
     }
 
-    if (!Number.isInteger(Number(vacancies)) || Number(vacancies) < 1) {
+    if (
+        !Number.isInteger(Number(vacancies)) ||
+        Number(vacancies) < 1
+    ) {
         throw new ApiError(
             400,
             "Vacancies must be at least 1"
         );
     }
 
-
-    // =========================
-    // FIND COMPANY
-    // =========================
-
     const companyExists = await Company.findById(company);
 
     if (!companyExists) {
-        throw new ApiError(
-            404,
-            "Company not found"
-        );
+        throw new ApiError(404, "Company not found");
     }
-
-
-    // =========================
-    // OWNER CHECK
-    // =========================
 
     if (companyExists.owner.toString() !== recruiterId) {
         throw new ApiError(
@@ -108,70 +87,32 @@ export const createJob = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // CREATE JOB
-    // =========================
-
     const job = await Job.create({
-
         title: title.trim(),
-
         company,
-
         description: description.trim(),
-
         location: location.trim(),
-
         salary: Number(salary),
-
         jobType,
-
         experience: Number(experience),
-
         skills,
-
         vacancies: Number(vacancies),
-
         deadline,
-
         postedBy: recruiterId
-
     });
-
-
-    // =========================
-    // NOTIFY ADMINS
-    // =========================
 
     await notifyAdmins({
-
         sender: recruiterId,
-
         title: "New Job Posted",
-
-        message:
-            `A new job "${job.title}" has been posted.`,
-
+        message: `A new job "${job.title}" has been posted.`,
         type: "SYSTEM"
-
     });
-
-
-    // =========================
-    // RESPONSE
-    // =========================
 
     return res.status(201).json({
-
         success: true,
-
         message: "Job created successfully",
-
         job
-
     });
-
 });
 
 
@@ -181,33 +122,20 @@ export const createJob = asyncHandler(async (req, res) => {
 
 export const getRecruiterJobs = asyncHandler(async (req, res) => {
 
-    const recruiterId = req.user.userId;
-
     const jobs = await Job.find({
-        postedBy: recruiterId
+        postedBy: req.user.userId
     })
-        .populate(
-            "company",
-            "name logo"
-        )
-        .sort({
-            createdAt: -1
-        });
+        .populate("company", "name logo")
+        .sort({ createdAt: -1 });
 
     return res.status(200).json({
-
         success: true,
-
         message: jobs.length
             ? "Jobs fetched successfully"
             : "No jobs found",
-
         count: jobs.length,
-
         jobs
-
     });
-
 });
 
 
@@ -218,39 +146,17 @@ export const getRecruiterJobs = asyncHandler(async (req, res) => {
 export const updateJob = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
-
     const recruiterId = req.user.userId;
 
-
-    // =========================
-    // VALIDATE JOB ID
-    // =========================
-
     if (!isValidObjectId(jobId)) {
-        throw new ApiError(
-            400,
-            "Invalid Job ID"
-        );
+        throw new ApiError(400, "Invalid Job ID");
     }
-
-
-    // =========================
-    // FIND JOB
-    // =========================
 
     const job = await Job.findById(jobId);
 
     if (!job) {
-        throw new ApiError(
-            404,
-            "Job not found"
-        );
+        throw new ApiError(404, "Job not found");
     }
-
-
-    // =========================
-    // OWNER CHECK
-    // =========================
 
     if (job.postedBy.toString() !== recruiterId) {
         throw new ApiError(
@@ -258,7 +164,6 @@ export const updateJob = asyncHandler(async (req, res) => {
             "You are not authorized to update this job"
         );
     }
-
 
     const {
         title,
@@ -273,10 +178,18 @@ export const updateJob = asyncHandler(async (req, res) => {
         deadline
     } = req.body;
 
+    const updateData = {};
 
-    // =========================
-    // COMPANY VALIDATION
-    // =========================
+    if (title !== undefined) {
+        if (!title.trim()) {
+            throw new ApiError(
+                400,
+                "Job title cannot be empty"
+            );
+        }
+
+        updateData.title = title.trim();
+    }
 
     if (company !== undefined) {
 
@@ -303,33 +216,9 @@ export const updateJob = asyncHandler(async (req, res) => {
                 "You are not authorized to use this company"
             );
         }
-    }
 
-
-    // =========================
-    // BUILD UPDATE DATA
-    // =========================
-
-    const updateData = {};
-
-
-    if (title !== undefined) {
-
-        if (!title.trim()) {
-            throw new ApiError(
-                400,
-                "Job title cannot be empty"
-            );
-        }
-
-        updateData.title = title.trim();
-    }
-
-
-    if (company !== undefined) {
         updateData.company = company;
     }
-
 
     if (description !== undefined) {
 
@@ -343,7 +232,6 @@ export const updateJob = asyncHandler(async (req, res) => {
         updateData.description = description.trim();
     }
 
-
     if (location !== undefined) {
 
         if (!location.trim()) {
@@ -356,10 +244,12 @@ export const updateJob = asyncHandler(async (req, res) => {
         updateData.location = location.trim();
     }
 
-
     if (salary !== undefined) {
 
-        if (Number.isNaN(Number(salary)) || Number(salary) < 0) {
+        if (
+            Number.isNaN(Number(salary)) ||
+            Number(salary) < 0
+        ) {
             throw new ApiError(
                 400,
                 "Invalid salary"
@@ -369,11 +259,9 @@ export const updateJob = asyncHandler(async (req, res) => {
         updateData.salary = Number(salary);
     }
 
-
     if (jobType !== undefined) {
         updateData.jobType = jobType;
     }
-
 
     if (experience !== undefined) {
 
@@ -390,7 +278,6 @@ export const updateJob = asyncHandler(async (req, res) => {
         updateData.experience = Number(experience);
     }
 
-
     if (skills !== undefined) {
 
         if (
@@ -405,7 +292,6 @@ export const updateJob = asyncHandler(async (req, res) => {
 
         updateData.skills = skills;
     }
-
 
     if (vacancies !== undefined) {
 
@@ -422,15 +308,9 @@ export const updateJob = asyncHandler(async (req, res) => {
         updateData.vacancies = Number(vacancies);
     }
 
-
     if (deadline !== undefined) {
         updateData.deadline = deadline;
     }
-
-
-    // =========================
-    // CHECK EMPTY UPDATE
-    // =========================
 
     if (Object.keys(updateData).length === 0) {
         throw new ApiError(
@@ -438,11 +318,6 @@ export const updateJob = asyncHandler(async (req, res) => {
             "No fields provided for update"
         );
     }
-
-
-    // =========================
-    // UPDATE JOB
-    // =========================
 
     const updatedJob =
         await Job.findByIdAndUpdate(
@@ -454,17 +329,11 @@ export const updateJob = asyncHandler(async (req, res) => {
             }
         );
 
-
     return res.status(200).json({
-
         success: true,
-
         message: "Job updated successfully",
-
         job: updatedJob
-
     });
-
 });
 
 
@@ -475,13 +344,7 @@ export const updateJob = asyncHandler(async (req, res) => {
 export const deleteJob = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
-
     const recruiterId = req.user.userId;
-
-
-    // =========================
-    // VALIDATE JOB ID
-    // =========================
 
     if (!isValidObjectId(jobId)) {
         throw new ApiError(
@@ -489,11 +352,6 @@ export const deleteJob = asyncHandler(async (req, res) => {
             "Invalid Job ID"
         );
     }
-
-
-    // =========================
-    // FIND JOB
-    // =========================
 
     const job = await Job.findById(jobId);
 
@@ -504,22 +362,12 @@ export const deleteJob = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // OWNER CHECK
-    // =========================
-
     if (job.postedBy.toString() !== recruiterId) {
         throw new ApiError(
             403,
             "You are not authorized to delete this job"
         );
     }
-
-
-    // =========================
-    // ACTIVE CHECK
-    // =========================
 
     if (!job.isActive) {
         throw new ApiError(
@@ -528,24 +376,14 @@ export const deleteJob = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // SOFT DELETE
-    // =========================
-
     job.isActive = false;
 
     await job.save();
 
-
     return res.status(200).json({
-
         success: true,
-
         message: "Job deleted successfully"
-
     });
-
 });
 
 
@@ -568,15 +406,8 @@ export const getAllJobs = asyncHandler(async (req, res) => {
         company
     } = req.query;
 
-
-    // =========================
-    // PAGINATION
-    // =========================
-
     const currentPage = Number(page);
-
     const pageLimit = Number(limit);
-
 
     if (
         !Number.isInteger(currentPage) ||
@@ -587,7 +418,6 @@ export const getAllJobs = asyncHandler(async (req, res) => {
             "Invalid page number"
         );
     }
-
 
     if (
         !Number.isInteger(pageLimit) ||
@@ -600,61 +430,31 @@ export const getAllJobs = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // BASE FILTER
-    // =========================
-
     const filter = {
         isActive: true
     };
 
-
-    // =========================
-    // KEYWORD
-    // =========================
-
     if (keyword?.trim()) {
-
         filter.title = {
             $regex: keyword.trim(),
             $options: "i"
         };
-
     }
 
-
-    // =========================
-    // LOCATION
-    // =========================
-
     if (location?.trim()) {
-
         filter.location = {
             $regex: location.trim(),
             $options: "i"
         };
-
     }
-
-
-    // =========================
-    // JOB TYPE
-    // =========================
 
     if (jobType) {
         filter.jobType = jobType;
     }
 
-
-    // =========================
-    // EXPERIENCE
-    // =========================
-
     if (experience !== undefined) {
 
-        const experienceValue =
-            Number(experience);
+        const experienceValue = Number(experience);
 
         if (
             Number.isNaN(experienceValue) ||
@@ -671,11 +471,6 @@ export const getAllJobs = asyncHandler(async (req, res) => {
         };
     }
 
-
-    // =========================
-    // SALARY
-    // =========================
-
     if (
         minSalary !== undefined ||
         maxSalary !== undefined
@@ -683,11 +478,9 @@ export const getAllJobs = asyncHandler(async (req, res) => {
 
         filter.salary = {};
 
-
         if (minSalary !== undefined) {
 
-            const minimumSalary =
-                Number(minSalary);
+            const minimumSalary = Number(minSalary);
 
             if (
                 Number.isNaN(minimumSalary) ||
@@ -702,11 +495,9 @@ export const getAllJobs = asyncHandler(async (req, res) => {
             filter.salary.$gte = minimumSalary;
         }
 
-
         if (maxSalary !== undefined) {
 
-            const maximumSalary =
-                Number(maxSalary);
+            const maximumSalary = Number(maxSalary);
 
             if (
                 Number.isNaN(maximumSalary) ||
@@ -721,7 +512,6 @@ export const getAllJobs = asyncHandler(async (req, res) => {
             filter.salary.$lte = maximumSalary;
         }
 
-
         if (
             minSalary !== undefined &&
             maxSalary !== undefined &&
@@ -733,11 +523,6 @@ export const getAllJobs = asyncHandler(async (req, res) => {
             );
         }
     }
-
-
-    // =========================
-    // COMPANY
-    // =========================
 
     if (company) {
 
@@ -751,15 +536,9 @@ export const getAllJobs = asyncHandler(async (req, res) => {
         filter.company = company;
     }
 
-
-    // =========================
-    // SORT
-    // =========================
-
     const sortOption = {
         createdAt: -1
     };
-
 
     if (sort === "oldest") {
 
@@ -768,87 +547,51 @@ export const getAllJobs = asyncHandler(async (req, res) => {
     } else if (sort === "salary_asc") {
 
         delete sortOption.createdAt;
-
         sortOption.salary = 1;
 
     } else if (sort === "salary_desc") {
 
         delete sortOption.createdAt;
-
         sortOption.salary = -1;
-
     }
-
-
-    // =========================
-    // PAGINATION CALCULATION
-    // =========================
 
     const skip =
         (currentPage - 1) * pageLimit;
 
-
     const totalJobs =
         await Job.countDocuments(filter);
-
 
     const totalPages =
         Math.ceil(totalJobs / pageLimit);
 
-
-    // =========================
-    // FETCH JOBS
-    // =========================
-
     const jobs = await Job.find(filter)
-
         .select(
             "title company location salary jobType experience vacancies deadline isActive createdAt"
         )
-
         .populate(
             "company",
             "name logo location"
         )
-
         .populate(
             "postedBy",
             "fullName email"
         )
-
         .sort(sortOption)
-
         .skip(skip)
-
         .limit(pageLimit)
-
         .lean();
 
-
-    // =========================
-    // RESPONSE
-    // =========================
-
     return res.status(200).json({
-
         success: true,
-
         message: jobs.length
             ? "Jobs fetched successfully"
             : "No jobs found",
-
         count: jobs.length,
-
         currentPage,
-
         totalPages,
-
         totalJobs,
-
         jobs
-
     });
-
 });
 
 
@@ -860,7 +603,6 @@ export const getJobById = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
 
-
     if (!isValidObjectId(jobId)) {
         throw new ApiError(
             400,
@@ -868,26 +610,21 @@ export const getJobById = asyncHandler(async (req, res) => {
         );
     }
 
-
     const job = await Job.findOne({
         _id: jobId,
         isActive: true
     })
-
         .select(
             "title company description location salary jobType experience skills vacancies deadline createdAt"
         )
-
         .populate(
             "postedBy",
             "fullName email"
         )
-
         .populate(
             "company",
             "name description website location logo"
         );
-
 
     if (!job) {
         throw new ApiError(
@@ -896,17 +633,11 @@ export const getJobById = asyncHandler(async (req, res) => {
         );
     }
 
-
     return res.status(200).json({
-
         success: true,
-
         message: "Job fetched successfully",
-
         job
-
     });
-
 });
 
 
@@ -917,13 +648,7 @@ export const getJobById = asyncHandler(async (req, res) => {
 export const saveJob = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
-
     const studentId = req.user.userId;
-
-
-    // =========================
-    // VALIDATE JOB ID
-    // =========================
 
     if (!isValidObjectId(jobId)) {
         throw new ApiError(
@@ -931,11 +656,6 @@ export const saveJob = asyncHandler(async (req, res) => {
             "Invalid Job ID"
         );
     }
-
-
-    // =========================
-    // FIND USER
-    // =========================
 
     const user = await User.findById(studentId);
 
@@ -946,17 +666,10 @@ export const saveJob = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // CHECK JOB
-    // =========================
-
-    const jobExists =
-        await Job.exists({
-            _id: jobId,
-            isActive: true
-        });
-
+    const jobExists = await Job.exists({
+        _id: jobId,
+        isActive: true
+    });
 
     if (!jobExists) {
         throw new ApiError(
@@ -965,16 +678,10 @@ export const saveJob = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // CHECK DUPLICATE
-    // =========================
-
     const alreadySaved =
         user.savedJobs.some(
             id => id.toString() === jobId
         );
-
 
     if (alreadySaved) {
         throw new ApiError(
@@ -983,26 +690,15 @@ export const saveJob = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // SAVE JOB
-    // =========================
-
     user.savedJobs.push(jobId);
 
     await user.save();
 
-
     return res.status(200).json({
-
         success: true,
-
         message: "Job saved successfully",
-
         savedJob: jobId
-
     });
-
 });
 
 
@@ -1013,13 +709,7 @@ export const saveJob = asyncHandler(async (req, res) => {
 export const removeSavedJob = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
-
     const studentId = req.user.userId;
-
-
-    // =========================
-    // VALIDATE JOB ID
-    // =========================
 
     if (!isValidObjectId(jobId)) {
         throw new ApiError(
@@ -1027,11 +717,6 @@ export const removeSavedJob = asyncHandler(async (req, res) => {
             "Invalid Job ID"
         );
     }
-
-
-    // =========================
-    // FIND USER
-    // =========================
 
     const user = await User.findById(studentId);
 
@@ -1042,16 +727,10 @@ export const removeSavedJob = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // CHECK SAVED JOB
-    // =========================
-
     const isSaved =
         user.savedJobs.some(
             id => id.toString() === jobId
         );
-
 
     if (!isSaved) {
         throw new ApiError(
@@ -1060,28 +739,17 @@ export const removeSavedJob = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // REMOVE JOB
-    // =========================
-
     user.savedJobs =
         user.savedJobs.filter(
             id => id.toString() !== jobId
         );
 
-
     await user.save();
 
-
     return res.status(200).json({
-
         success: true,
-
         message: "Saved job removed successfully"
-
     });
-
 });
 
 
@@ -1091,25 +759,16 @@ export const removeSavedJob = asyncHandler(async (req, res) => {
 
 export const getSavedJobs = asyncHandler(async (req, res) => {
 
-    const studentId = req.user.userId;
-
-
-    const user = await User.findById(studentId)
-
+    const user = await User.findById(req.user.userId)
         .populate({
             path: "savedJobs",
-
             select:
                 "title company location salary jobType isActive createdAt",
-
             populate: {
                 path: "company",
-
-                select:
-                    "name logo location"
+                select: "name logo location"
             }
         });
-
 
     if (!user) {
         throw new ApiError(
@@ -1118,21 +777,14 @@ export const getSavedJobs = asyncHandler(async (req, res) => {
         );
     }
 
-
     return res.status(200).json({
-
         success: true,
-
         message: user.savedJobs.length
             ? "Saved jobs fetched successfully"
             : "No saved jobs found",
-
         count: user.savedJobs.length,
-
         savedJobs: user.savedJobs
-
     });
-
 });
 
 
@@ -1143,9 +795,7 @@ export const getSavedJobs = asyncHandler(async (req, res) => {
 export const getRecruiterJob = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
-
     const recruiterId = req.user.userId;
-
 
     if (!isValidObjectId(jobId)) {
         throw new ApiError(
@@ -1154,14 +804,11 @@ export const getRecruiterJob = asyncHandler(async (req, res) => {
         );
     }
 
-
     const job = await Job.findById(jobId)
-
         .populate(
             "company",
             "name logo"
         );
-
 
     if (!job) {
         throw new ApiError(
@@ -1170,7 +817,6 @@ export const getRecruiterJob = asyncHandler(async (req, res) => {
         );
     }
 
-
     if (job.postedBy.toString() !== recruiterId) {
         throw new ApiError(
             403,
@@ -1178,17 +824,11 @@ export const getRecruiterJob = asyncHandler(async (req, res) => {
         );
     }
 
-
     return res.status(200).json({
-
         success: true,
-
         message: "Job fetched successfully",
-
         job
-
     });
-
 });
 
 
@@ -1199,36 +839,26 @@ export const getRecruiterJob = asyncHandler(async (req, res) => {
 export const getAdminJobs = asyncHandler(async (req, res) => {
 
     const jobs = await Job.find()
-
         .populate(
             "company",
             "name logo location"
         )
-
         .populate(
             "postedBy",
             "fullName email"
         )
-
         .sort({
             createdAt: -1
         });
 
-
     return res.status(200).json({
-
         success: true,
-
         message: jobs.length
             ? "Jobs fetched successfully"
             : "No jobs found",
-
         count: jobs.length,
-
         jobs
-
     });
-
 });
 
 
@@ -1239,13 +869,7 @@ export const getAdminJobs = asyncHandler(async (req, res) => {
 export const updateJobStatus = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
-
     const { isActive } = req.body;
-
-
-    // =========================
-    // VALIDATE JOB ID
-    // =========================
 
     if (!isValidObjectId(jobId)) {
         throw new ApiError(
@@ -1254,22 +878,12 @@ export const updateJobStatus = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // VALIDATE STATUS
-    // =========================
-
     if (typeof isActive !== "boolean") {
         throw new ApiError(
             400,
             "isActive must be true or false"
         );
     }
-
-
-    // =========================
-    // FIND JOB
-    // =========================
 
     const job = await Job.findById(jobId);
 
@@ -1280,26 +894,15 @@ export const updateJobStatus = asyncHandler(async (req, res) => {
         );
     }
 
-
-    // =========================
-    // UPDATE STATUS
-    // =========================
-
     job.isActive = isActive;
 
     await job.save();
 
-
     return res.status(200).json({
-
         success: true,
-
         message: isActive
             ? "Job activated successfully"
             : "Job deactivated successfully",
-
         job
-
     });
-
 });

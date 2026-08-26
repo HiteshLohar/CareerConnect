@@ -1,5 +1,4 @@
 import http from "http";
-import { Server } from "socket.io";
 import { initializeSocket } from "./socket.js";
 
 import express from 'express';

@@ -1,15 +1,58 @@
 import express from "express";
-import { getNotifications, markNotificationAsRead, deleteNotification, markAllAsRead } from "../controllers/notification.controller.js";
+
+import {
+    getNotifications,
+    markNotificationAsRead,
+    deleteNotification,
+    markAllAsRead
+} from "../controllers/notification.controller.js";
+
 import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", verifyToken, getNotifications);
 
-router.patch("/:id/read", verifyToken, markNotificationAsRead);
+// ========================================
+// NOTIFICATIONS
+// ========================================
 
-router.patch("/read-all", verifyToken, markAllAsRead);
+router.get(
+    "/",
+    verifyToken,
+    getNotifications
+);
 
-router.delete("/:id", verifyToken, deleteNotification);
+
+// ========================================
+// MARK ALL AS READ
+// ========================================
+
+router.patch(
+    "/read-all",
+    verifyToken,
+    markAllAsRead
+);
+
+
+// ========================================
+// MARK SINGLE AS READ
+// ========================================
+
+router.patch(
+    "/:id/read",
+    verifyToken,
+    markNotificationAsRead
+);
+
+
+// ========================================
+// DELETE NOTIFICATION
+// ========================================
+
+router.delete(
+    "/:id",
+    verifyToken,
+    deleteNotification
+);
 
 export default router;
