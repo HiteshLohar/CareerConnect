@@ -1,19 +1,28 @@
 import mongoose from "mongoose";
-import Company from "../models/Company.js"
+import Company from "../models/Company.js";
 import Application from "../models/Application.js";
 import Job from "../models/Job.js";
 import User from "../models/User.js";
-import { populate } from "dotenv";
-import asyncHandler from '../utils/asyncHandler.js';
-import ApiError from '../utils/ApiError.js';
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
 
 
 export const getRecruiterDashboard = asyncHandler(async (req, res) => {
+    const recruiterId = req.user.userId;
 
-    const jobs = await Job.find({ postedBy: req.user.userId })
-        .select("_id");
+    // =========================
+    // FIND RECRUITER JOBS
+    // =========================
 
-    const jobIds = jobs.map(job => job._id);
+    const jobs = await Job.find({
+        postedBy: recruiterId,
+    }).select("_id");
+
+    const jobIds = jobs.map((job) => job._id);
+
+    // =========================
+    // FETCH DASHBOARD DATA
+    // =========================
 
     const [
         totalCompanies,
@@ -25,29 +34,57 @@ export const getRecruiterDashboard = asyncHandler(async (req, res) => {
         acceptedApplications,
         rejectedApplications,
         recentJobs,
-        recentApplications
+        recentApplications,
     ] = await Promise.all([
-        Company.countDocuments({ owner: req.user.userId }),
+        Company.countDocuments({
+            owner: recruiterId,
+        }),
 
-        Job.countDocuments({ postedBy: req.user.userId }),
+        Job.countDocuments({
+            postedBy: recruiterId,
+        }),
 
-        Job.countDocuments({ postedBy: req.user.userId, isActive: true }),
+        Job.countDocuments({
+            postedBy: recruiterId,
+            isActive: true,
+        }),
 
-        Job.countDocuments({ postedBy: req.user.userId, isActive: false }),
+        Job.countDocuments({
+            postedBy: recruiterId,
+            isActive: false,
+        }),
 
-        Application.countDocuments({ job: { $in: jobIds } }),
-        Application.countDocuments({ job: { $in: jobIds }, status: "Pending" }),
+        Application.countDocuments({
+            job: { $in: jobIds },
+        }),
 
-        Application.countDocuments({ job: { $in: jobIds }, status: "Accepted" }),
+        Application.countDocuments({
+            job: { $in: jobIds },
+            status: "Pending",
+        }),
 
-        Application.countDocuments({ job: { $in: jobIds }, status: "Rejected" }),
+        Application.countDocuments({
+            job: { $in: jobIds },
+            status: "Accepted",
+        }),
 
-        Job.find({ postedBy: req.user.userId })
+        Application.countDocuments({
+            job: { $in: jobIds },
+            status: "Rejected",
+        }),
+
+        Job.find({
+            postedBy: recruiterId,
+        })
             .sort({ createdAt: -1 })
             .limit(5)
-            .select("title location salary jobType isActive createdAt"),
+            .select(
+                "title location salary jobType isActive createdAt"
+            ),
 
-        Application.find({ job: { $in: jobIds } })
+        Application.find({
+            job: { $in: jobIds },
+        })
             .sort({ createdAt: -1 })
             .limit(5)
             .populate("student", "fullName email")
@@ -56,10 +93,14 @@ export const getRecruiterDashboard = asyncHandler(async (req, res) => {
                 select: "title company",
                 populate: {
                     path: "company",
-                    select: "name logo"
-                }
-            })
+                    select: "name logo",
+                },
+            }),
     ]);
+
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(200).json({
         success: true,
@@ -74,43 +115,47 @@ export const getRecruiterDashboard = asyncHandler(async (req, res) => {
             acceptedApplications,
             rejectedApplications,
             recentJobs,
-            recentApplications
-        }
+            recentApplications,
+        },
     });
 });
 
 
 export const getStudentDashboard = asyncHandler(async (req, res) => {
+    const studentId = req.user.userId;
+
+    // =========================
+    // FETCH DASHBOARD DATA
+    // =========================
 
     const [
         totalApplications,
         pendingApplications,
         acceptedApplications,
         rejectedApplications,
-        recentApplications
+        recentApplications,
     ] = await Promise.all([
-
         Application.countDocuments({
-            student: req.user.userId
+            student: studentId,
         }),
 
         Application.countDocuments({
-            student: req.user.userId,
-            status: "Pending"
+            student: studentId,
+            status: "Pending",
         }),
 
         Application.countDocuments({
-            student: req.user.userId,
-            status: "Accepted"
+            student: studentId,
+            status: "Accepted",
         }),
 
         Application.countDocuments({
-            student: req.user.userId,
-            status: "Rejected"
+            student: studentId,
+            status: "Rejected",
         }),
 
         Application.find({
-            student: req.user.userId
+            student: studentId,
         })
             .select("-student")
             .sort({ createdAt: -1 })
@@ -120,10 +165,14 @@ export const getStudentDashboard = asyncHandler(async (req, res) => {
                 select: "title company location salary jobType",
                 populate: {
                     path: "company",
-                    select: "name logo location"
-                }
-            })
+                    select: "name logo location",
+                },
+            }),
     ]);
+
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(200).json({
         success: true,
@@ -133,14 +182,20 @@ export const getStudentDashboard = asyncHandler(async (req, res) => {
             pendingApplications,
             acceptedApplications,
             rejectedApplications,
-            recentApplications
-        }
+            recentApplications,
+        },
     });
 });
 
-export const getRecruiterAnalytics = asyncHandler(async (req, res) => {
 
-    const recruiterId = new mongoose.Types.ObjectId(req.user.userId);
+export const getRecruiterAnalytics = asyncHandler(async (req, res) => {
+    const recruiterId = new mongoose.Types.ObjectId(
+        req.user.userId
+    );
+
+    // =========================
+    // APPLICATION STATUS
+    // =========================
 
     const applicationStatus = await Application.aggregate([
         {
@@ -148,52 +203,73 @@ export const getRecruiterAnalytics = asyncHandler(async (req, res) => {
                 from: "jobs",
                 localField: "job",
                 foreignField: "_id",
-                as: "job"
-            }
+                as: "job",
+            },
         },
         {
-            $unwind: "$job"
+            $unwind: "$job",
         },
         {
             $match: {
-                "job.postedBy": recruiterId
-            }
+                "job.postedBy": recruiterId,
+            },
         },
         {
             $group: {
                 _id: "$status",
                 count: {
-                    $sum: 1
-                }
-            }
-        }
+                    $sum: 1,
+                },
+            },
+        },
     ]);
-    const statusSummary = { pending: 0, accepted: 0, rejected: 0 };
-    applicationStatus.forEach(status => {
-        switch (status._id) {
-            case "Pending":
-                statusSummary.pending = status.count;
-                break;
 
-            case "Accepted":
-                statusSummary.accepted = status.count;
-                break;
+    const statusSummary = {
+        pending: 0,
+        accepted: 0,
+        rejected: 0,
+    };
 
-            case "Rejected":
-                statusSummary.rejected = status.count;
-                break;
+    applicationStatus.forEach(({ _id, count }) => {
+        if (_id === "Pending") {
+            statusSummary.pending = count;
+        } else if (_id === "Accepted") {
+            statusSummary.accepted = count;
+        } else if (_id === "Rejected") {
+            statusSummary.rejected = count;
         }
     });
-    const totalApplications = statusSummary.pending + statusSummary.accepted + statusSummary.rejected;
 
-    const acceptanceRate = totalApplications === 0 ? 0 : Number(
-        ((statusSummary.accepted / totalApplications) * 100).toFixed(2)
-    );
+    const totalApplications =
+        statusSummary.pending +
+        statusSummary.accepted +
+        statusSummary.rejected;
 
-    const rejectionRate = totalApplications === 0 ? 0 : Number(
-        ((statusSummary.rejected / totalApplications) * 100).toFixed(2)
-    );
+    const acceptanceRate =
+        totalApplications === 0
+            ? 0
+            : Number(
+                  (
+                      (statusSummary.accepted /
+                          totalApplications) *
+                      100
+                  ).toFixed(2)
+              );
 
+    const rejectionRate =
+        totalApplications === 0
+            ? 0
+            : Number(
+                  (
+                      (statusSummary.rejected /
+                          totalApplications) *
+                      100
+                  ).toFixed(2)
+              );
+
+    // =========================
+    // TOP JOBS
+    // =========================
 
     const topJobs = await Application.aggregate([
         {
@@ -201,114 +277,135 @@ export const getRecruiterAnalytics = asyncHandler(async (req, res) => {
                 from: "jobs",
                 localField: "job",
                 foreignField: "_id",
-                as: "job"
-            }
+                as: "job",
+            },
         },
         {
-            $unwind: "$job"
+            $unwind: "$job",
         },
         {
             $match: {
-                "job.postedBy": recruiterId
-            }
+                "job.postedBy": recruiterId,
+            },
         },
         {
             $group: {
                 _id: "$job._id",
                 title: {
-                    $first: "$job.title"
+                    $first: "$job.title",
                 },
                 applications: {
-                    $sum: 1
-                }
-            }
+                    $sum: 1,
+                },
+            },
         },
         {
             $sort: {
-                applications: -1
-            }
+                applications: -1,
+            },
         },
         {
-            $limit: 5
-        }
+            $limit: 5,
+        },
     ]);
 
-    const monthlyApplications = await Application.aggregate([
-        {
-            $lookup: {
-                from: "jobs",
-                localField: "job",
-                foreignField: "_id",
-                as: "job"
-            }
-        },
-        {
-            $unwind: "$job"
-        },
-        {
-            $match: {
-                "job.postedBy": recruiterId
-            }
-        },
-        {
-            $group: {
-                _id: {
-                    year: { $year: "$createdAt" },
-                    month: { $month: "$createdAt" }
+    // =========================
+    // MONTHLY APPLICATIONS
+    // =========================
+
+    const monthlyApplications =
+        await Application.aggregate([
+            {
+                $lookup: {
+                    from: "jobs",
+                    localField: "job",
+                    foreignField: "_id",
+                    as: "job",
                 },
-                applications: {
-                    $sum: 1
-                }
-            }
-        },
-        {
-            $sort: {
-                "_id.year": 1,
-                "_id.month": 1
-            }
-        },
-        {
-            $project: {
-                _id: 0,
-                year: "$_id.year",
-                month: "$_id.month",
-                applications: 1
-            }
-        }
-    ]);
+            },
+            {
+                $unwind: "$job",
+            },
+            {
+                $match: {
+                    "job.postedBy": recruiterId,
+                },
+            },
+            {
+                $group: {
+                    _id: {
+                        year: {
+                            $year: "$createdAt",
+                        },
+                        month: {
+                            $month: "$createdAt",
+                        },
+                    },
+                    applications: {
+                        $sum: 1,
+                    },
+                },
+            },
+            {
+                $sort: {
+                    "_id.year": 1,
+                    "_id.month": 1,
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    applications: 1,
+                },
+            },
+        ]);
+
+    // =========================
+    // MONTHLY JOBS
+    // =========================
 
     const monthlyJobs = await Job.aggregate([
         {
             $match: {
-                postedBy: recruiterId
-            }
+                postedBy: recruiterId,
+            },
         },
         {
             $group: {
                 _id: {
-                    year: { $year: "$createdAt" },
-                    month: { $month: "$createdAt" }
+                    year: {
+                        $year: "$createdAt",
+                    },
+                    month: {
+                        $month: "$createdAt",
+                    },
                 },
                 jobs: {
-                    $sum: 1
-                }
-            }
+                    $sum: 1,
+                },
+            },
         },
         {
             $sort: {
                 "_id.year": 1,
-                "_id.month": 1
-            }
+                "_id.month": 1,
+            },
         },
         {
             $project: {
                 _id: 0,
                 year: "$_id.year",
                 month: "$_id.month",
-                jobs: 1
-            }
-        }
+                jobs: 1,
+            },
+        },
     ]);
+
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(200).json({
         success: true,
@@ -317,16 +414,91 @@ export const getRecruiterAnalytics = asyncHandler(async (req, res) => {
         rejectionRate,
         topJobs,
         monthlyApplications,
-        monthlyJobs
+        monthlyJobs,
     });
 });
 
+
 export const getAdminDashboard = asyncHandler(async (req, res) => {
+    // =========================
+    // FETCH DASHBOARD DATA
+    // =========================
 
-    try {
+    const [
+        totalUsers,
+        totalStudents,
+        totalRecruiters,
+        totalCompanies,
+        totalJobs,
+        activeJobs,
+        inactiveJobs,
+        totalApplications,
+        pendingApplications,
+        acceptedApplications,
+        rejectedApplications,
+        recentUsers,
+        recentJobs,
+    ] = await Promise.all([
+        User.countDocuments(),
 
+        User.countDocuments({
+            role: "student",
+        }),
 
-        const [
+        User.countDocuments({
+            role: "recruiter",
+        }),
+
+        Company.countDocuments(),
+
+        Job.countDocuments(),
+
+        Job.countDocuments({
+            isActive: true,
+        }),
+
+        Job.countDocuments({
+            isActive: false,
+        }),
+
+        Application.countDocuments(),
+
+        Application.countDocuments({
+            status: "Pending",
+        }),
+
+        Application.countDocuments({
+            status: "Accepted",
+        }),
+
+        Application.countDocuments({
+            status: "Rejected",
+        }),
+
+        User.find()
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .select(
+                "fullName email role accountStatus createdAt"
+            ),
+
+        Job.find()
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .select(
+                "title location salary jobType isActive createdAt"
+            )
+            .populate("company", "name logo"),
+    ]);
+
+    // =========================
+    // RESPONSE
+    // =========================
+
+    return res.status(200).json({
+        success: true,
+        message: "Admin dashboard fetched successfully",
+        dashboard: {
             totalUsers,
             totalStudents,
             totalRecruiters,
@@ -339,96 +511,7 @@ export const getAdminDashboard = asyncHandler(async (req, res) => {
             acceptedApplications,
             rejectedApplications,
             recentUsers,
-            recentJobs
-        ] = await Promise.all([
-
-            User.countDocuments(),
-
-            User.countDocuments({
-                role: "student"
-            }),
-
-            User.countDocuments({
-                role: "recruiter"
-            }),
-
-            Company.countDocuments(),
-
-            Job.countDocuments(),
-
-            Job.countDocuments({
-                isActive: true
-            }),
-
-            Job.countDocuments({
-                isActive: false
-            }),
-
-            Application.countDocuments(),
-
-            Application.countDocuments({
-                status: "Pending"
-            }),
-
-            Application.countDocuments({
-                status: "Accepted"
-            }),
-
-            Application.countDocuments({
-                status: "Rejected"
-            }),
-
-            User.find()
-                .sort({ createdAt: -1 })
-                .limit(5)
-                .select("fullName email role accountStatus createdAt"),
-
-            Job.find()
-                .sort({ createdAt: -1 })
-                .limit(5)
-                .select("title location salary jobType isActive createdAt")
-                .populate("company", "name logo")
-
-        ]);
-
-        return res.status(200).json({
-
-            success: true,
-
-            message: "Admin dashboard fetched successfully",
-
-            dashboard: {
-
-                totalUsers,
-                totalStudents,
-                totalRecruiters,
-
-                totalCompanies,
-
-                totalJobs,
-                activeJobs,
-                inactiveJobs,
-
-                totalApplications,
-                pendingApplications,
-                acceptedApplications,
-                rejectedApplications,
-
-                recentUsers,
-                recentJobs
-
-            }
-
-        });
-    }
-    catch (error) {
-
-
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
-    }
-
+            recentJobs,
+        },
+    });
 });

@@ -12,12 +12,18 @@ function NotFound() {
 
   const navigate = useNavigate();
 
+
   // =====================================
   // MOUSE POSITION
   // =====================================
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+
+
+  // =====================================
+  // SMOOTH MOUSE MOVEMENT
+  // =====================================
 
   const springX = useSpring(mouseX, {
     stiffness: 100,
@@ -31,7 +37,7 @@ function NotFound() {
 
 
   // =====================================
-  // MOUSE MOVE
+  // MOUSE MOVE EVENT
   // =====================================
 
   useEffect(() => {
@@ -49,16 +55,20 @@ function NotFound() {
 
     };
 
+
     window.addEventListener(
       "mousemove",
       handleMouseMove
     );
 
+
     return () => {
+
       window.removeEventListener(
         "mousemove",
         handleMouseMove
       );
+
     };
 
   }, [mouseX, mouseY]);
@@ -72,26 +82,39 @@ function NotFound() {
 
     const handleKeyDown = (event) => {
 
+      // ESC → Go Back
+
       if (event.key === "Escape") {
+
         navigate(-1);
+
       }
 
+
+      // ENTER → Home
+
       if (event.key === "Enter") {
+
         navigate("/");
+
       }
 
     };
+
 
     window.addEventListener(
       "keydown",
       handleKeyDown
     );
 
+
     return () => {
+
       window.removeEventListener(
         "keydown",
         handleKeyDown
       );
+
     };
 
   }, [navigate]);
@@ -102,22 +125,44 @@ function NotFound() {
   // =====================================
 
   const handleReload = () => {
+
     window.location.reload();
+
   };
 
 
   return (
 
+    /*
+    =====================================
+    OUTER CONTAINER
+
+    flex-1:
+    Takes all remaining space inside <main>
+
+    items-center:
+    Vertical center
+
+    justify-center:
+    Horizontal center
+
+    min-h-0:
+    Prevents flex overflow problems
+    =====================================
+    */
+
     <div className="
-    flex-1
-    flex
-    items-center
-    justify-center
-    px-4
-    bg-gray-50
-    overflow-hidden
-    relative
-">
+        h-dvh
+        w-full
+        flex
+        items-center
+        justify-center
+        px-4
+        py-4
+        bg-gray-50
+        overflow-hidden
+        relative
+    ">
 
 
       {/* =====================================
@@ -125,22 +170,25 @@ function NotFound() {
             ===================================== */}
 
       <motion.div
+
         style={{
           x: springX,
           y: springY,
         }}
+
         className="
                     absolute
-                    w-64
-                    h-64
-                    sm:w-80
-                    sm:h-80
+                    w-52
+                    h-52
+                    sm:w-72
+                    sm:h-72
                     rounded-full
                     bg-blue-200
                     blur-3xl
                     opacity-30
                     pointer-events-none
                 "
+
       />
 
 
@@ -149,20 +197,24 @@ function NotFound() {
             ===================================== */}
 
       <motion.div
+
         initial={{
           opacity: 0,
           y: 30,
           scale: 0.96,
         }}
+
         animate={{
           opacity: 1,
           y: 0,
           scale: 1,
         }}
+
         transition={{
           duration: 0.6,
           ease: "easeOut",
         }}
+
         className="
                     relative
                     z-10
@@ -174,11 +226,12 @@ function NotFound() {
                     rounded-2xl
                     shadow-lg
                     px-5
-                    py-6
+                    py-5
                     sm:px-8
-                    sm:py-8
+                    sm:py-7
                     text-center
                 "
+
       >
 
 
@@ -187,22 +240,27 @@ function NotFound() {
                 ===================================== */}
 
         <motion.div
+
           initial={{
             opacity: 0,
             scale: 0,
           }}
+
           animate={{
             opacity: 1,
             scale: 1,
           }}
+
           transition={{
             delay: 0.15,
             type: "spring",
           }}
+
           whileHover={{
             rotate: 15,
             scale: 1.1,
           }}
+
           className="
                         mx-auto
                         w-11
@@ -216,43 +274,51 @@ function NotFound() {
                         items-center
                         justify-center
                     "
+
         >
-          <FiSearch
-            size={23}
-          />
+
+          <FiSearch size={23} />
+
         </motion.div>
 
 
         {/* =====================================
-                    404
+                    404 NUMBER
                 ===================================== */}
 
         <div className="
-                    mt-2
+                    mt-1
                     flex
                     justify-center
                     items-center
-                    gap-0
                 ">
 
+
+          {/* FIRST 4 */}
+
           <motion.span
+
             initial={{
               opacity: 0,
               y: -35,
             }}
+
             animate={{
               opacity: 1,
               y: 0,
             }}
+
             transition={{
               delay: 0.2,
               type: "spring",
               stiffness: 150,
             }}
+
             whileHover={{
               y: -8,
               rotate: -5,
             }}
+
             className="
                             text-6xl
                             sm:text-8xl
@@ -260,28 +326,38 @@ function NotFound() {
                             text-blue-600
                             cursor-default
                         "
+
           >
             4
+
           </motion.span>
 
 
+          {/* ZERO */}
+
           <motion.span
+
             initial={{
               opacity: 0,
               scale: 0,
             }}
+
             animate={{
               opacity: 1,
               scale: 1,
             }}
+
             transition={{
               delay: 0.35,
               type: "spring",
               stiffness: 150,
             }}
+
             whileHover={{
               scale: 1.12,
+              rotate: 5,
             }}
+
             className="
                             text-6xl
                             sm:text-8xl
@@ -289,29 +365,38 @@ function NotFound() {
                             text-indigo-500
                             cursor-default
                         "
+
           >
             0
+
           </motion.span>
 
 
+          {/* SECOND 4 */}
+
           <motion.span
+
             initial={{
               opacity: 0,
               y: 35,
             }}
+
             animate={{
               opacity: 1,
               y: 0,
             }}
+
             transition={{
               delay: 0.5,
               type: "spring",
               stiffness: 150,
             }}
+
             whileHover={{
               y: -8,
               rotate: 5,
             }}
+
             className="
                             text-6xl
                             sm:text-8xl
@@ -319,8 +404,10 @@ function NotFound() {
                             text-blue-600
                             cursor-default
                         "
+
           >
             4
+
           </motion.span>
 
         </div>
@@ -331,25 +418,32 @@ function NotFound() {
                 ===================================== */}
 
         <motion.h1
+
           initial={{
             opacity: 0,
             y: 15,
           }}
+
           animate={{
             opacity: 1,
             y: 0,
           }}
+
           transition={{
             delay: 0.6,
           }}
+
           className="
                         text-xl
                         sm:text-2xl
                         font-bold
                         text-gray-900
                     "
+
         >
+
           Page Not Found
+
         </motion.h1>
 
 
@@ -358,15 +452,19 @@ function NotFound() {
                 ===================================== */}
 
         <motion.p
+
           initial={{
             opacity: 0,
           }}
+
           animate={{
             opacity: 1,
           }}
+
           transition={{
             delay: 0.75,
           }}
+
           className="
                         mt-2
                         text-xs
@@ -376,10 +474,13 @@ function NotFound() {
                         max-w-md
                         mx-auto
                     "
+
         >
+
           Looks like you've taken a wrong turn.
-          The page you're looking for doesn't exist
-          or has been moved.
+          The page you're looking for doesn't
+          exist or has been moved.
+
         </motion.p>
 
 
@@ -388,17 +489,21 @@ function NotFound() {
                 ===================================== */}
 
         <motion.div
+
           initial={{
             opacity: 0,
             y: 15,
           }}
+
           animate={{
             opacity: 1,
             y: 0,
           }}
+
           transition={{
             delay: 0.9,
           }}
+
           className="
                         flex
                         flex-col
@@ -407,19 +512,27 @@ function NotFound() {
                         gap-2
                         mt-5
                     "
+
         >
 
-          {/* HOME */}
+
+          {/* =================================
+                        HOME BUTTON
+                    ================================= */}
 
           <motion.button
+
             onClick={() => navigate("/")}
+
             whileHover={{
               scale: 1.04,
               y: -2,
             }}
+
             whileTap={{
               scale: 0.95,
             }}
+
             className="
                             w-full
                             sm:w-auto
@@ -438,6 +551,7 @@ function NotFound() {
                             hover:shadow-md
                             transition
                         "
+
           >
 
             <FiHome size={17} />
@@ -447,17 +561,23 @@ function NotFound() {
           </motion.button>
 
 
-          {/* BACK */}
+          {/* =================================
+                        BACK BUTTON
+                    ================================= */}
 
           <motion.button
+
             onClick={() => navigate(-1)}
+
             whileHover={{
               scale: 1.04,
               y: -2,
             }}
+
             whileTap={{
               scale: 0.95,
             }}
+
             className="
                             w-full
                             sm:w-auto
@@ -477,6 +597,7 @@ function NotFound() {
                             hover:bg-gray-50
                             transition
                         "
+
           >
 
             <FiArrowLeft size={17} />
@@ -486,17 +607,23 @@ function NotFound() {
           </motion.button>
 
 
-          {/* RETRY */}
+          {/* =================================
+                        RETRY BUTTON
+                    ================================= */}
 
           <motion.button
+
             onClick={handleReload}
+
             whileHover={{
               scale: 1.04,
               y: -2,
             }}
+
             whileTap={{
               scale: 0.95,
             }}
+
             className="
                             w-full
                             sm:w-auto
@@ -516,6 +643,7 @@ function NotFound() {
                             hover:bg-gray-50
                             transition
                         "
+
           >
 
             <FiRefreshCw size={17} />
@@ -532,23 +660,30 @@ function NotFound() {
                 ===================================== */}
 
         <motion.p
+
           initial={{
             opacity: 0,
           }}
+
           animate={{
             opacity: 1,
           }}
+
           transition={{
             delay: 1.05,
           }}
+
           className="
                         mt-4
                         text-[11px]
                         sm:text-xs
                         text-gray-400
                     "
+
         >
+
           Press{" "}
+
           <kbd className="
                         px-1.5
                         py-0.5
@@ -559,8 +694,13 @@ function NotFound() {
                     ">
             Enter
           </kbd>
+
           {" "}for Home
-          <span className="mx-1.5">•</span>
+
+          <span className="mx-1.5">
+            •
+          </span>
+
           <kbd className="
                         px-1.5
                         py-0.5
@@ -571,7 +711,9 @@ function NotFound() {
                     ">
             Esc
           </kbd>
+
           {" "}for Back
+
         </motion.p>
 
 
@@ -580,28 +722,36 @@ function NotFound() {
                 ===================================== */}
 
         <motion.p
+
           initial={{
             opacity: 0,
           }}
+
           animate={{
             opacity: 1,
           }}
+
           transition={{
             delay: 1.15,
           }}
+
           className="
                         mt-3
                         text-xs
                         font-medium
                         text-gray-400
                     "
+
         >
+
           CareerConnect
+
         </motion.p>
 
       </motion.div>
 
     </div>
+
   );
 }
 

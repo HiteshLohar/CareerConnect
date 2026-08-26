@@ -1,14 +1,17 @@
-import mongoose from "mongoose";
-
 import Job from "../models/Job.js";
 import Company from "../models/Company.js";
 import User from "../models/User.js";
-import Notification from "../models/Notification.js";
+
+import { notifyAdmins } from "../utils/notificationHelper.js";
 
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
+import isValidObjectId from "../utils/validateObjectId.js";
 
-import { getIO, onlineUsers } from "../../socket.js";
+
+// ========================================
+// CREATE JOB
+// ========================================
 
 export const createJob = asyncHandler(async (req, res) => {
 
@@ -25,148 +28,156 @@ export const createJob = asyncHandler(async (req, res) => {
         deadline
     } = req.body;
 
-    const postedBy = req.user.userId;
+    const recruiterId = req.user.userId;
 
-    if (!mongoose.Types.ObjectId.isValid(company)) {
 
-        throw new ApiError(
-            400,
-            "Invalid Company ID"
-        );
-
-    }
-
-    const companyExists =
-        await Company.findById(company);
-
-    if (!companyExists) {
-
-        throw new ApiError(
-            404,
-            "Company not found"
-        );
-
-    }
-
-    if (companyExists.owner.toString() !== postedBy) {
-
-        throw new ApiError(
-            403,
-            "You are not authorized to create jobs for this company"
-        );
-
-    }
+    // =========================
+    // VALIDATION
+    // =========================
 
     if (
-        !title ||
+        !title?.trim() ||
         !company ||
-        !description ||
-        !location ||
+        !description?.trim() ||
+        !location?.trim() ||
         salary === undefined ||
         !jobType ||
         experience === undefined ||
-        !skills ||
+        !Array.isArray(skills) ||
         skills.length === 0 ||
         vacancies === undefined ||
         !deadline
     ) {
-
         throw new ApiError(
             400,
-            "Please fill all required fields."
+            "Please fill all required fields"
         );
-
     }
+
+    if (!isValidObjectId(company)) {
+        throw new ApiError(
+            400,
+            "Invalid Company ID"
+        );
+    }
+
+    if (Number(salary) < 0) {
+        throw new ApiError(
+            400,
+            "Salary cannot be negative"
+        );
+    }
+
+    if (Number(experience) < 0) {
+        throw new ApiError(
+            400,
+            "Experience cannot be negative"
+        );
+    }
+
+    if (!Number.isInteger(Number(vacancies)) || Number(vacancies) < 1) {
+        throw new ApiError(
+            400,
+            "Vacancies must be at least 1"
+        );
+    }
+
+
+    // =========================
+    // FIND COMPANY
+    // =========================
+
+    const companyExists = await Company.findById(company);
+
+    if (!companyExists) {
+        throw new ApiError(
+            404,
+            "Company not found"
+        );
+    }
+
+
+    // =========================
+    // OWNER CHECK
+    // =========================
+
+    if (companyExists.owner.toString() !== recruiterId) {
+        throw new ApiError(
+            403,
+            "You are not authorized to create jobs for this company"
+        );
+    }
+
+
+    // =========================
+    // CREATE JOB
+    // =========================
 
     const job = await Job.create({
 
-        title,
+        title: title.trim(),
 
         company,
 
-        description,
+        description: description.trim(),
 
-        location,
+        location: location.trim(),
 
-        salary,
+        salary: Number(salary),
 
         jobType,
 
-        experience,
+        experience: Number(experience),
 
         skills,
 
-        vacancies,
+        vacancies: Number(vacancies),
 
         deadline,
 
-        postedBy
+        postedBy: recruiterId
 
     });
 
-    const admins = await User.find({
-        role: "admin"
-    }).select("_id");
 
-    if (admins.length > 0) {
+    // =========================
+    // NOTIFY ADMINS
+    // =========================
 
-        const notifications = admins.map((admin) => ({
+    await notifyAdmins({
 
-            recipient: admin._id,
+        sender: recruiterId,
 
-            sender: postedBy,
+        title: "New Job Posted",
 
-            title: "New Job Posted",
+        message:
+            `A new job "${job.title}" has been posted.`,
 
-            message:
-                `A new job "${job.title}" has been posted.`,
+        type: "SYSTEM"
 
-            type: "SYSTEM"
+    });
 
-        }));
 
-        const createdNotifications =
-            await Notification.insertMany(
-                notifications
-            );
-
-        const socketIO = getIO();
-
-        createdNotifications.forEach((notification) => {
-
-            const adminId =
-                notification.recipient.toString();
-
-            const socketId =
-                onlineUsers.get(adminId);
-
-            if (socketId) {
-
-                socketIO
-                    .to(socketId)
-                    .emit(
-                        "new_notification",
-                        notification
-                    );
-
-            }
-
-        });
-
-    }
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(201).json({
 
         success: true,
 
-        message:
-            "Job created successfully",
+        message: "Job created successfully",
 
         job
 
     });
 
 });
+
+
+// ========================================
+// GET RECRUITER JOBS
+// ========================================
 
 export const getRecruiterJobs = asyncHandler(async (req, res) => {
 
@@ -175,43 +186,79 @@ export const getRecruiterJobs = asyncHandler(async (req, res) => {
     const jobs = await Job.find({
         postedBy: recruiterId
     })
-        .populate("company", "name logo")
-        .sort({ createdAt: -1 });
-
-    if (jobs.length === 0) {
-        return res.status(200).json({
-            success: true,
-            message: "No jobs found",
-            count: 0,
-            jobs: []
+        .populate(
+            "company",
+            "name logo"
+        )
+        .sort({
+            createdAt: -1
         });
-    }
 
     return res.status(200).json({
+
         success: true,
-        message: "Jobs fetched successfully",
+
+        message: jobs.length
+            ? "Jobs fetched successfully"
+            : "No jobs found",
+
         count: jobs.length,
+
         jobs
+
     });
 
 });
 
+
+// ========================================
+// UPDATE JOB
+// ========================================
+
 export const updateJob = asyncHandler(async (req, res) => {
+
     const { id: jobId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(jobId)) {
-        throw new ApiError(400, "Invalid Job ID");
+    const recruiterId = req.user.userId;
+
+
+    // =========================
+    // VALIDATE JOB ID
+    // =========================
+
+    if (!isValidObjectId(jobId)) {
+        throw new ApiError(
+            400,
+            "Invalid Job ID"
+        );
     }
+
+
+    // =========================
+    // FIND JOB
+    // =========================
 
     const job = await Job.findById(jobId);
 
     if (!job) {
-        throw new ApiError(404, "Job not found");
+        throw new ApiError(
+            404,
+            "Job not found"
+        );
     }
 
-    if (req.user.userId !== job.postedBy.toString()) {
-        throw new ApiError(403, "You are not authorized to update this job");
+
+    // =========================
+    // OWNER CHECK
+    // =========================
+
+    if (job.postedBy.toString() !== recruiterId) {
+        throw new ApiError(
+            403,
+            "You are not authorized to update this job"
+        );
     }
+
 
     const {
         title,
@@ -226,360 +273,991 @@ export const updateJob = asyncHandler(async (req, res) => {
         deadline
     } = req.body;
 
-    if (req.user.userId !== job.postedBy.toString()) {
-        throw new ApiError(403, "You are not authorized to update this job");
-    }
 
-    // Validate company if recruiter wants to change it
+    // =========================
+    // COMPANY VALIDATION
+    // =========================
+
     if (company !== undefined) {
 
-        if (!mongoose.Types.ObjectId.isValid(company)) {
-            throw new ApiError(400, "Invalid Company ID");
+        if (!isValidObjectId(company)) {
+            throw new ApiError(
+                400,
+                "Invalid Company ID"
+            );
         }
 
-        const companyExists = await Company.findById(company);
+        const companyExists =
+            await Company.findById(company);
 
         if (!companyExists) {
-            throw new ApiError(404, "Company not found");
+            throw new ApiError(
+                404,
+                "Company not found"
+            );
         }
 
-        if (companyExists.owner.toString() !== req.user.userId) {
-            throw new ApiError(403, "You are not authorized to use this company");
+        if (companyExists.owner.toString() !== recruiterId) {
+            throw new ApiError(
+                403,
+                "You are not authorized to use this company"
+            );
         }
     }
 
-    // Only update fields that are provided
+
+    // =========================
+    // BUILD UPDATE DATA
+    // =========================
+
     const updateData = {};
 
-    if (title !== undefined) updateData.title = title;
-    if (company !== undefined) updateData.company = company;
-    if (description !== undefined) updateData.description = description;
-    if (location !== undefined) updateData.location = location;
-    if (salary !== undefined) updateData.salary = salary;
-    if (jobType !== undefined) updateData.jobType = jobType;
-    if (experience !== undefined) updateData.experience = experience;
-    if (skills !== undefined) updateData.skills = skills;
-    if (vacancies !== undefined) updateData.vacancies = vacancies;
-    if (deadline !== undefined) updateData.deadline = deadline;
 
-    const updatedJob = await Job.findByIdAndUpdate(
-        jobId,
-        updateData,
-        {
-            new: true,
-            runValidators: true
+    if (title !== undefined) {
+
+        if (!title.trim()) {
+            throw new ApiError(
+                400,
+                "Job title cannot be empty"
+            );
         }
-    );
+
+        updateData.title = title.trim();
+    }
+
+
+    if (company !== undefined) {
+        updateData.company = company;
+    }
+
+
+    if (description !== undefined) {
+
+        if (!description.trim()) {
+            throw new ApiError(
+                400,
+                "Job description cannot be empty"
+            );
+        }
+
+        updateData.description = description.trim();
+    }
+
+
+    if (location !== undefined) {
+
+        if (!location.trim()) {
+            throw new ApiError(
+                400,
+                "Job location cannot be empty"
+            );
+        }
+
+        updateData.location = location.trim();
+    }
+
+
+    if (salary !== undefined) {
+
+        if (Number.isNaN(Number(salary)) || Number(salary) < 0) {
+            throw new ApiError(
+                400,
+                "Invalid salary"
+            );
+        }
+
+        updateData.salary = Number(salary);
+    }
+
+
+    if (jobType !== undefined) {
+        updateData.jobType = jobType;
+    }
+
+
+    if (experience !== undefined) {
+
+        if (
+            Number.isNaN(Number(experience)) ||
+            Number(experience) < 0
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid experience"
+            );
+        }
+
+        updateData.experience = Number(experience);
+    }
+
+
+    if (skills !== undefined) {
+
+        if (
+            !Array.isArray(skills) ||
+            skills.length === 0
+        ) {
+            throw new ApiError(
+                400,
+                "Skills must contain at least one skill"
+            );
+        }
+
+        updateData.skills = skills;
+    }
+
+
+    if (vacancies !== undefined) {
+
+        if (
+            !Number.isInteger(Number(vacancies)) ||
+            Number(vacancies) < 1
+        ) {
+            throw new ApiError(
+                400,
+                "Vacancies must be at least 1"
+            );
+        }
+
+        updateData.vacancies = Number(vacancies);
+    }
+
+
+    if (deadline !== undefined) {
+        updateData.deadline = deadline;
+    }
+
+
+    // =========================
+    // CHECK EMPTY UPDATE
+    // =========================
+
+    if (Object.keys(updateData).length === 0) {
+        throw new ApiError(
+            400,
+            "No fields provided for update"
+        );
+    }
+
+
+    // =========================
+    // UPDATE JOB
+    // =========================
+
+    const updatedJob =
+        await Job.findByIdAndUpdate(
+            jobId,
+            updateData,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
 
     return res.status(200).json({
+
         success: true,
+
         message: "Job updated successfully",
+
         job: updatedJob
+
     });
+
 });
+
+
+// ========================================
+// DELETE JOB
+// ========================================
 
 export const deleteJob = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(jobId)) {
-        throw new ApiError(400, "Invalid Job Id");
+
+    const recruiterId = req.user.userId;
+
+
+    // =========================
+    // VALIDATE JOB ID
+    // =========================
+
+    if (!isValidObjectId(jobId)) {
+        throw new ApiError(
+            400,
+            "Invalid Job ID"
+        );
     }
-    const job = await Job.findById(jobId)
+
+
+    // =========================
+    // FIND JOB
+    // =========================
+
+    const job = await Job.findById(jobId);
 
     if (!job) {
-        throw new ApiError(404, "Job Not Found");
+        throw new ApiError(
+            404,
+            "Job not found"
+        );
     }
-    if (!(req.user.userId === job.postedBy.toString())) {
-        throw new ApiError(403, "You are not authorized to delete this job");
+
+
+    // =========================
+    // OWNER CHECK
+    // =========================
+
+    if (job.postedBy.toString() !== recruiterId) {
+        throw new ApiError(
+            403,
+            "You are not authorized to delete this job"
+        );
     }
+
+
+    // =========================
+    // ACTIVE CHECK
+    // =========================
 
     if (!job.isActive) {
-        throw new ApiError(400, "Job is already deleted");
+        throw new ApiError(
+            400,
+            "Job is already inactive"
+        );
     }
+
+
+    // =========================
+    // SOFT DELETE
+    // =========================
 
     job.isActive = false;
+
     await job.save();
 
+
     return res.status(200).json({
+
         success: true,
+
         message: "Job deleted successfully"
+
     });
+
 });
 
-//student jobs
+
+// ========================================
+// GET ALL ACTIVE JOBS
+// ========================================
+
 export const getAllJobs = asyncHandler(async (req, res) => {
 
-    const { keyword, location, jobType, page = 1, limit = 5, sort, experience, minSalary, maxSalary, company } = req.query;
-    const filter = { isActive: true };
+    const {
+        keyword,
+        location,
+        jobType,
+        page = 1,
+        limit = 5,
+        sort,
+        experience,
+        minSalary,
+        maxSalary,
+        company
+    } = req.query;
 
-    if (keyword) {
+
+    // =========================
+    // PAGINATION
+    // =========================
+
+    const currentPage = Number(page);
+
+    const pageLimit = Number(limit);
+
+
+    if (
+        !Number.isInteger(currentPage) ||
+        currentPage < 1
+    ) {
+        throw new ApiError(
+            400,
+            "Invalid page number"
+        );
+    }
+
+
+    if (
+        !Number.isInteger(pageLimit) ||
+        pageLimit < 1 ||
+        pageLimit > 100
+    ) {
+        throw new ApiError(
+            400,
+            "Invalid limit"
+        );
+    }
+
+
+    // =========================
+    // BASE FILTER
+    // =========================
+
+    const filter = {
+        isActive: true
+    };
+
+
+    // =========================
+    // KEYWORD
+    // =========================
+
+    if (keyword?.trim()) {
+
         filter.title = {
-            $regex: keyword,
+            $regex: keyword.trim(),
             $options: "i"
-        }
+        };
+
     }
 
-    if (location) {
+
+    // =========================
+    // LOCATION
+    // =========================
+
+    if (location?.trim()) {
+
         filter.location = {
-            $regex: location,
+            $regex: location.trim(),
             $options: "i"
-        }
+        };
+
     }
+
+
+    // =========================
+    // JOB TYPE
+    // =========================
 
     if (jobType) {
-        filter.jobType = {
-            $regex: jobType,
-        }
+        filter.jobType = jobType;
     }
 
-    if (experience) {
+
+    // =========================
+    // EXPERIENCE
+    // =========================
+
+    if (experience !== undefined) {
+
+        const experienceValue =
+            Number(experience);
+
+        if (
+            Number.isNaN(experienceValue) ||
+            experienceValue < 0
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid experience value"
+            );
+        }
+
         filter.experience = {
-            $gte: Number(experience)
+            $gte: experienceValue
         };
     }
 
-    if (minSalary || maxSalary) {
+
+    // =========================
+    // SALARY
+    // =========================
+
+    if (
+        minSalary !== undefined ||
+        maxSalary !== undefined
+    ) {
+
         filter.salary = {};
 
-        if (minSalary) {
-            filter.salary.$gte = Number(minSalary);
+
+        if (minSalary !== undefined) {
+
+            const minimumSalary =
+                Number(minSalary);
+
+            if (
+                Number.isNaN(minimumSalary) ||
+                minimumSalary < 0
+            ) {
+                throw new ApiError(
+                    400,
+                    "Invalid minimum salary"
+                );
+            }
+
+            filter.salary.$gte = minimumSalary;
         }
 
-        if (maxSalary) {
-            filter.salary.$lte = Number(maxSalary);
+
+        if (maxSalary !== undefined) {
+
+            const maximumSalary =
+                Number(maxSalary);
+
+            if (
+                Number.isNaN(maximumSalary) ||
+                maximumSalary < 0
+            ) {
+                throw new ApiError(
+                    400,
+                    "Invalid maximum salary"
+                );
+            }
+
+            filter.salary.$lte = maximumSalary;
+        }
+
+
+        if (
+            minSalary !== undefined &&
+            maxSalary !== undefined &&
+            Number(minSalary) > Number(maxSalary)
+        ) {
+            throw new ApiError(
+                400,
+                "Minimum salary cannot be greater than maximum salary"
+            );
         }
     }
 
+
+    // =========================
+    // COMPANY
+    // =========================
+
     if (company) {
-        if (!mongoose.Types.ObjectId.isValid(company)) {
-            throw new ApiError(400, "Invalid Company ID");
+
+        if (!isValidObjectId(company)) {
+            throw new ApiError(
+                400,
+                "Invalid Company ID"
+            );
         }
+
         filter.company = company;
     }
 
-    const sortOption = {};
-    if (sort === "latest") {
-        sortOption.createdAt = -1;
-    } else if (sort === "oldest") {
+
+    // =========================
+    // SORT
+    // =========================
+
+    const sortOption = {
+        createdAt: -1
+    };
+
+
+    if (sort === "oldest") {
+
         sortOption.createdAt = 1;
+
     } else if (sort === "salary_asc") {
+
+        delete sortOption.createdAt;
+
         sortOption.salary = 1;
+
     } else if (sort === "salary_desc") {
+
+        delete sortOption.createdAt;
+
         sortOption.salary = -1;
-    } else {
-        sortOption.createdAt = -1;
+
     }
 
-    const skip = (Number(page) - 1) * Number(limit);
 
-    const totalJobs = await Job.countDocuments(filter);
+    // =========================
+    // PAGINATION CALCULATION
+    // =========================
 
-    const totalPages = Math.ceil(totalJobs / Number(limit));
+    const skip =
+        (currentPage - 1) * pageLimit;
 
+
+    const totalJobs =
+        await Job.countDocuments(filter);
+
+
+    const totalPages =
+        Math.ceil(totalJobs / pageLimit);
+
+
+    // =========================
+    // FETCH JOBS
+    // =========================
 
     const jobs = await Job.find(filter)
-        .select("title company location salary jobType experience vacancies deadline isActive createdAt")
-        .populate("company", "name logo location")
-        .populate("postedBy", "fullName email")
+
+        .select(
+            "title company location salary jobType experience vacancies deadline isActive createdAt"
+        )
+
+        .populate(
+            "company",
+            "name logo location"
+        )
+
+        .populate(
+            "postedBy",
+            "fullName email"
+        )
+
         .sort(sortOption)
+
         .skip(skip)
-        .limit(Number(limit))
+
+        .limit(pageLimit)
+
         .lean();
 
-    if (jobs.length === 0) {
-        return res.status(200).json({
-            success: true,
-            message: "No jobs found",
-            count: 0,
-            currantPage: Number(page),
-            totalPages,
-            totalJobs,
-            jobs: []
-        });
-    }
+
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(200).json({
-        "success": true,
-        "message": "Jobs fetched successfully",
-        "count": jobs.length,
-        currentPage: Number(page),
+
+        success: true,
+
+        message: jobs.length
+            ? "Jobs fetched successfully"
+            : "No jobs found",
+
+        count: jobs.length,
+
+        currentPage,
+
         totalPages,
+
         totalJobs,
+
         jobs
+
     });
 
 });
+
+
+// ========================================
+// GET JOB BY ID
+// ========================================
 
 export const getJobById = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(jobId)) {
-        throw new ApiError(400, "Invalid Job ID");
+
+    if (!isValidObjectId(jobId)) {
+        throw new ApiError(
+            400,
+            "Invalid Job ID"
+        );
     }
 
-    const job = await Job.findOne({ _id: jobId, isActive: true })
-        .select("title company description location salary jobType experience skills vacancies deadline createdAt")
-        .populate("postedBy", "fullName email")
-        .populate("company", "name description website location logo");
+
+    const job = await Job.findOne({
+        _id: jobId,
+        isActive: true
+    })
+
+        .select(
+            "title company description location salary jobType experience skills vacancies deadline createdAt"
+        )
+
+        .populate(
+            "postedBy",
+            "fullName email"
+        )
+
+        .populate(
+            "company",
+            "name description website location logo"
+        );
+
 
     if (!job) {
-        throw new ApiError(404, "Job not found");
+        throw new ApiError(
+            404,
+            "Job not found"
+        );
     }
 
+
     return res.status(200).json({
+
         success: true,
-        "message": "Job fetched successfully",
+
+        message: "Job fetched successfully",
+
         job
+
     });
+
 });
 
 
-//student saved jobs
+// ========================================
+// SAVE JOB
+// ========================================
+
 export const saveJob = asyncHandler(async (req, res) => {
 
-    const { id: jobID } = req.params;
+    const { id: jobId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(jobID)) {
-        throw new ApiError(400, "Invalid Job ID");
+    const studentId = req.user.userId;
+
+
+    // =========================
+    // VALIDATE JOB ID
+    // =========================
+
+    if (!isValidObjectId(jobId)) {
+        throw new ApiError(
+            400,
+            "Invalid Job ID"
+        );
     }
 
-    const job = await Job.findById(jobID);
 
-    if (!job) {
-        throw new ApiError(404, "Job Not Found");
+    // =========================
+    // FIND USER
+    // =========================
+
+    const user = await User.findById(studentId);
+
+    if (!user) {
+        throw new ApiError(
+            404,
+            "User not found"
+        );
     }
 
-    const user = await User.findById(req.user.userId);
 
-    const alreadySaved = user.savedJobs.some(
-        id => id.toString() === jobID
-    );
+    // =========================
+    // CHECK JOB
+    // =========================
+
+    const jobExists =
+        await Job.exists({
+            _id: jobId,
+            isActive: true
+        });
+
+
+    if (!jobExists) {
+        throw new ApiError(
+            404,
+            "Job not found"
+        );
+    }
+
+
+    // =========================
+    // CHECK DUPLICATE
+    // =========================
+
+    const alreadySaved =
+        user.savedJobs.some(
+            id => id.toString() === jobId
+        );
+
 
     if (alreadySaved) {
-        throw new ApiError(400, "Job already saved");
+        throw new ApiError(
+            409,
+            "Job already saved"
+        );
     }
 
-    user.savedJobs.push(jobID);
+
+    // =========================
+    // SAVE JOB
+    // =========================
+
+    user.savedJobs.push(jobId);
+
     await user.save();
 
+
     return res.status(200).json({
+
         success: true,
-        message: "Job saved succesfully",
-        savedJob: jobID
+
+        message: "Job saved successfully",
+
+        savedJob: jobId
+
     });
+
 });
+
+
+// ========================================
+// REMOVE SAVED JOB
+// ========================================
 
 export const removeSavedJob = asyncHandler(async (req, res) => {
 
-    const { id: jobID } = req.params;
+    const { id: jobId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(jobID)) {
-        throw new ApiError(400, "Invalid Job ID");
+    const studentId = req.user.userId;
+
+
+    // =========================
+    // VALIDATE JOB ID
+    // =========================
+
+    if (!isValidObjectId(jobId)) {
+        throw new ApiError(
+            400,
+            "Invalid Job ID"
+        );
     }
 
-    const job = await Job.findById(jobID);
 
-    if (!job) {
-        throw new ApiError(404, "Job not found");
+    // =========================
+    // FIND USER
+    // =========================
+
+    const user = await User.findById(studentId);
+
+    if (!user) {
+        throw new ApiError(
+            404,
+            "User not found"
+        );
     }
 
-    const user = await User.findById(req.user.userId);
 
-    const isSaved = user.savedJobs.some(
-        id => id.toString() === jobID
-    );
+    // =========================
+    // CHECK SAVED JOB
+    // =========================
+
+    const isSaved =
+        user.savedJobs.some(
+            id => id.toString() === jobId
+        );
+
 
     if (!isSaved) {
-        throw new ApiError(400, "Job is not saved");
+        throw new ApiError(
+            409,
+            "Job is not saved"
+        );
     }
 
-    user.savedJobs = user.savedJobs.filter(
-        id => id.toString() !== jobID
-    );
+
+    // =========================
+    // REMOVE JOB
+    // =========================
+
+    user.savedJobs =
+        user.savedJobs.filter(
+            id => id.toString() !== jobId
+        );
+
 
     await user.save();
 
+
     return res.status(200).json({
+
         success: true,
+
         message: "Saved job removed successfully"
+
     });
+
 });
+
+
+// ========================================
+// GET SAVED JOBS
+// ========================================
 
 export const getSavedJobs = asyncHandler(async (req, res) => {
 
-    const user = await User.findById(req.user.userId)
+    const studentId = req.user.userId;
+
+
+    const user = await User.findById(studentId)
+
         .populate({
             path: "savedJobs",
-            select: "title company location salary jobType isActive createdAt",
+
+            select:
+                "title company location salary jobType isActive createdAt",
+
             populate: {
                 path: "company",
-                select: "name logo location"
+
+                select:
+                    "name logo location"
             }
         });
 
+
+    if (!user) {
+        throw new ApiError(
+            404,
+            "User not found"
+        );
+    }
+
+
     return res.status(200).json({
+
         success: true,
-        message: "Saved jobs fetched successfully",
+
+        message: user.savedJobs.length
+            ? "Saved jobs fetched successfully"
+            : "No saved jobs found",
+
         count: user.savedJobs.length,
+
         savedJobs: user.savedJobs
+
     });
+
 });
+
+
+// ========================================
+// GET RECRUITER JOB
+// ========================================
 
 export const getRecruiterJob = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(jobId)) {
-        throw new ApiError(400, "Invalid Job ID");
+    const recruiterId = req.user.userId;
+
+
+    if (!isValidObjectId(jobId)) {
+        throw new ApiError(
+            400,
+            "Invalid Job ID"
+        );
     }
+
 
     const job = await Job.findById(jobId)
-        .populate("company", "name logo");
+
+        .populate(
+            "company",
+            "name logo"
+        );
+
 
     if (!job) {
-        throw new ApiError(404, "Job not found");
+        throw new ApiError(
+            404,
+            "Job not found"
+        );
     }
 
-    if (job.postedBy.toString() !== req.user.userId) {
+
+    if (job.postedBy.toString() !== recruiterId) {
         throw new ApiError(
             403,
             "You are not authorized to view this job"
         );
     }
 
+
     return res.status(200).json({
+
         success: true,
+
         message: "Job fetched successfully",
+
         job
+
     });
 
 });
+
+
+// ========================================
+// GET ADMIN JOBS
+// ========================================
 
 export const getAdminJobs = asyncHandler(async (req, res) => {
 
     const jobs = await Job.find()
-        .populate("company", "name logo location")
-        .populate("postedBy", "fullName email")
-        .sort({ createdAt: -1 });
+
+        .populate(
+            "company",
+            "name logo location"
+        )
+
+        .populate(
+            "postedBy",
+            "fullName email"
+        )
+
+        .sort({
+            createdAt: -1
+        });
+
 
     return res.status(200).json({
+
         success: true,
-        message: "Jobs fetched successfully",
+
+        message: jobs.length
+            ? "Jobs fetched successfully"
+            : "No jobs found",
+
         count: jobs.length,
+
         jobs
+
     });
 
 });
 
+
+// ========================================
+// UPDATE JOB STATUS
+// ========================================
+
 export const updateJobStatus = asyncHandler(async (req, res) => {
 
     const { id: jobId } = req.params;
+
     const { isActive } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(jobId)) {
-        throw new ApiError(400, "Invalid Job ID");
+
+    // =========================
+    // VALIDATE JOB ID
+    // =========================
+
+    if (!isValidObjectId(jobId)) {
+        throw new ApiError(
+            400,
+            "Invalid Job ID"
+        );
     }
+
+
+    // =========================
+    // VALIDATE STATUS
+    // =========================
 
     if (typeof isActive !== "boolean") {
         throw new ApiError(
@@ -588,22 +1266,40 @@ export const updateJobStatus = asyncHandler(async (req, res) => {
         );
     }
 
+
+    // =========================
+    // FIND JOB
+    // =========================
+
     const job = await Job.findById(jobId);
 
     if (!job) {
-        throw new ApiError(404, "Job not found");
+        throw new ApiError(
+            404,
+            "Job not found"
+        );
     }
+
+
+    // =========================
+    // UPDATE STATUS
+    // =========================
 
     job.isActive = isActive;
 
     await job.save();
 
+
     return res.status(200).json({
+
         success: true,
+
         message: isActive
             ? "Job activated successfully"
             : "Job deactivated successfully",
+
         job
+
     });
 
 });

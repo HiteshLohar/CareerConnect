@@ -1,13 +1,11 @@
 import User from "../models/User.js";
 import Notification from "../models/Notification.js";
-import Job from "../models/Job.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import asyncHandler from '../utils/asyncHandler.js';
-import ApiError from '../utils/ApiError.js';
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
 
 export const register = asyncHandler(async (req, res) => {
-
     const {
         fullName,
         email,
@@ -19,118 +17,80 @@ export const register = asyncHandler(async (req, res) => {
         skills,
         education,
         resumeUrl,
-        location
+        location,
     } = req.body;
-
 
     // =========================
     // VALIDATION
     // =========================
 
-    if (
-        !fullName ||
-        !email ||
-        !password ||
-        !location
-    ) {
+    if (!fullName || !email || !password || !location) {
         throw new ApiError(
             400,
             "Please fill all required fields"
         );
     }
 
-
     // =========================
     // CHECK EXISTING USER
     // =========================
 
-    const existingUser =
-        await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
         throw new ApiError(
             409,
-            "Email already Exists"
+            "Email already exists"
         );
     }
-
 
     // =========================
     // HASH PASSWORD
     // =========================
 
-    const hashedPassword =
-        await bcrypt.hash(password, 12);
-
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // =========================
     // CREATE USER
     // =========================
 
     const user = await User.create({
-
         fullName,
-
         email,
-
         password: hashedPassword,
-
         role,
-
         phone,
-
         profilePhoto,
-
         headline,
-
         skills,
-
         education,
-
         resumeUrl,
-
-        location
-
+        location,
     });
-
 
     // =========================
     // FIND ADMINS
     // =========================
 
     const admins = await User.find({
-        role: "admin"
+        role: "admin",
     }).select("_id");
-
 
     // =========================
     // CREATE ADMIN NOTIFICATIONS
     // =========================
 
     if (admins.length > 0) {
+        const notifications = admins.map((admin) => ({
+            recipient: admin._id,
+            sender: user._id,
+            title: "New User Registered",
+            message: `${user.fullName} registered as a ${user.role}.`,
+            type: "SYSTEM",
+        }));
 
-        const notifications =
-            admins.map((admin) => ({
-
-                recipient: admin._id,
-
-                sender: user._id,
-
-                title: "New User Registered",
-
-                message:
-                    `${user.fullName} registered as a ${user.role}.`,
-
-                type: "SYSTEM"
-
-            }));
-
-        await Notification.insertMany(
-            notifications
-        );
-
+        await Notification.insertMany(notifications);
     }
-
 
     // =========================
     // REMOVE PASSWORD
@@ -138,41 +98,67 @@ export const register = asyncHandler(async (req, res) => {
 
     user.password = undefined;
 
-
     // =========================
     // RESPONSE
     // =========================
 
     return res.status(201).json({
-
         success: true,
-
-        message:
-            "User registered successfully",
-
-        user
-
+        message: "User registered successfully",
+        user,
     });
-
 });
 
 
 export const login = asyncHandler(async (req, res) => {
-
     const { email, password } = req.body;
 
+    // =========================
+    // VALIDATION
+    // =========================
+
+    if (!email || !password) {
+        throw new ApiError(
+            400,
+            "Email and password are required"
+        );
+    }
+
+    // =========================
+    // FIND USER
+    // =========================
+
     const user = await User.findOne({ email })
-        .select("_id fullName email role password accountStatus");
+        .select(
+            "_id fullName email role password accountStatus"
+        );
 
     if (!user) {
-        throw new ApiError(404, "User not found");
+        throw new ApiError(
+            401,
+            "Invalid credentials"
+        );
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // =========================
+    // VERIFY PASSWORD
+    // =========================
+
+    const isMatch = await bcrypt.compare(
+        password,
+        user.password
+    );
 
     if (!isMatch) {
-        throw new ApiError(401, "Invalid credentials");
+        throw new ApiError(
+            401,
+            "Invalid credentials"
+        );
     }
+
+    // =========================
+    // CHECK ACCOUNT STATUS
+    // =========================
 
     if (user.accountStatus === "suspended") {
         throw new ApiError(
@@ -181,59 +167,93 @@ export const login = asyncHandler(async (req, res) => {
         );
     }
 
+    // =========================
+    // GENERATE JWT
+    // =========================
+
     const token = jwt.sign(
         {
             userId: user._id,
-            role: user.role
+            role: user.role,
         },
         process.env.JWT_SECRET,
         {
-            expiresIn: "7d"
+            expiresIn: "7d",
         }
     );
+
+    // =========================
+    // SET COOKIE
+    // =========================
 
     res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    // =========================
+    // REMOVE PASSWORD
+    // =========================
+
     user.password = undefined;
+
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(200).json({
         success: true,
         message: "Login successful",
-        user
+        user,
     });
 });
 
 
 export const logout = asyncHandler(async (req, res) => {
+    // =========================
+    // CLEAR AUTH COOKIE
+    // =========================
+
     res.clearCookie("token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax"
+        sameSite: "lax",
     });
+
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(200).json({
         success: true,
-        message: "Logout Successful"
+        message: "Logout successful",
     });
 });
 
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
+    // =========================
+    // FIND CURRENT USER
+    // =========================
 
     const user = await User.findById(req.user.userId)
         .select("_id fullName email role");
 
     if (!user) {
-        throw new ApiError(404, "User not found");
+        throw new ApiError(
+            404,
+            "User not found"
+        );
     }
+
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(200).json({
         success: true,
-        user
+        user,
     });
 });
