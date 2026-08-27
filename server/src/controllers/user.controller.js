@@ -372,82 +372,53 @@ export const forgetPassword = asyncHandler(
         const { email } = req.body;
 
         if (!email?.trim()) {
-
             throw new ApiError(
                 400,
                 "Email is required"
             );
         }
 
-
         const normalizedEmail =
             email.trim().toLowerCase();
-
-
-        // =========================
-        // FIND USER
-        // =========================
 
         const user = await User.findOne({
             email: normalizedEmail
         });
 
         if (!user) {
-
             throw new ApiError(
                 404,
                 "User not found"
             );
         }
 
+        // Generate 6 digit OTP
+        const otp = crypto
+            .randomInt(100000, 1000000)
+            .toString();
 
-        // =========================
-        // GENERATE OTP
-        // =========================
+        // Hash OTP before storing
+        const hashedOTP =
+            await bcrypt.hash(otp, 10);
 
-        const otp =
-            crypto
-                .randomInt(
-                    100000,
-                    1000000
-                )
-                .toString();
-
-
-        user.resetOTP = otp;
+        user.resetOTP = hashedOTP;
 
         user.resetOTPExpires =
-            Date.now() +
-            10 * 60 * 1000;
-
+            Date.now() + 10 * 60 * 1000;
 
         await user.save();
 
-
-        // =========================
-        // SEND EMAIL
-        // =========================
-
         await sendEmail({
-
             to: user.email,
-
             subject:
                 "CareerConnect Password Reset OTP",
-
             text:
                 `Your OTP is ${otp}. It will expire in 10 minutes.`
-
         });
 
-
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "OTP sent successfully"
-
+            message: "OTP sent successfully"
         });
     }
 );
@@ -460,95 +431,64 @@ export const forgetPassword = asyncHandler(
 export const verifyOTP = asyncHandler(
     async (req, res) => {
 
-        const {
-            email,
-            otp
-        } = req.body;
+        const { email, otp } = req.body;
 
-
-        if (
-            !email?.trim() ||
-            !otp
-        ) {
-
+        if (!email?.trim() || !otp) {
             throw new ApiError(
                 400,
                 "Email and OTP are required"
             );
         }
 
+        const normalizedEmail =
+            email.trim().toLowerCase();
 
-        const user =
-            await User.findOne({
-                email:
-                    email.trim().toLowerCase()
-            });
-
+        const user = await User.findOne({
+            email: normalizedEmail
+        });
 
         if (!user) {
-
             throw new ApiError(
                 404,
                 "User not found"
             );
         }
 
-
-        // =========================
-        // CHECK OTP EXISTS
-        // =========================
-
         if (
             !user.resetOTP ||
             !user.resetOTPExpires
         ) {
-
             throw new ApiError(
                 400,
                 "No OTP found. Please request a new OTP."
             );
         }
 
-
-        // =========================
-        // CHECK OTP
-        // =========================
-
-        if (
-            user.resetOTP !==
-            otp.toString()
-        ) {
-
-            throw new ApiError(
-                400,
-                "Invalid OTP"
-            );
-        }
-
-
-        // =========================
-        // CHECK EXPIRY
-        // =========================
-
-        if (
-            user.resetOTPExpires <
-            Date.now()
-        ) {
-
+        // Check expiry first
+        if (user.resetOTPExpires < Date.now()) {
             throw new ApiError(
                 400,
                 "OTP has expired"
             );
         }
 
+        // Compare entered OTP with hashed OTP
+        const isOTPValid =
+            await bcrypt.compare(
+                otp.toString(),
+                user.resetOTP
+            );
+
+        if (!isOTPValid) {
+            throw new ApiError(
+                400,
+                "Invalid OTP"
+            );
+        }
 
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "OTP verified successfully"
-
+            message: "OTP verified successfully"
         });
     }
 );
@@ -567,83 +507,67 @@ export const resetPassword = asyncHandler(
             newPassword
         } = req.body;
 
-
         if (
             !email?.trim() ||
             !otp ||
             !newPassword
         ) {
-
             throw new ApiError(
                 400,
                 "Email, OTP and new password are required"
             );
         }
 
+        if (newPassword.length < 6) {
+            throw new ApiError(
+                400,
+                "Password must be at least 6 characters long"
+            );
+        }
 
-        const user =
-            await User.findOne({
-                email:
-                    email.trim().toLowerCase()
-            });
+        const normalizedEmail =
+            email.trim().toLowerCase();
 
+        const user = await User.findOne({
+            email: normalizedEmail
+        });
 
         if (!user) {
-
             throw new ApiError(
                 404,
                 "User not found"
             );
         }
 
-
-        // =========================
-        // CHECK OTP
-        // =========================
-
         if (
             !user.resetOTP ||
             !user.resetOTPExpires
         ) {
-
             throw new ApiError(
                 400,
                 "No OTP found. Please request a new OTP."
             );
         }
 
-
-        if (
-            user.resetOTP !==
-            otp.toString()
-        ) {
-
-            throw new ApiError(
-                400,
-                "Invalid OTP"
-            );
-        }
-
-
-        // =========================
-        // CHECK OTP EXPIRY
-        // =========================
-
-        if (
-            user.resetOTPExpires <
-            Date.now()
-        ) {
-
+        if (user.resetOTPExpires < Date.now()) {
             throw new ApiError(
                 400,
                 "OTP has expired"
             );
         }
 
+        const isOTPValid =
+            await bcrypt.compare(
+                otp.toString(),
+                user.resetOTP
+            );
 
-        // =========================
-        // HASH NEW PASSWORD
-        // =========================
+        if (!isOTPValid) {
+            throw new ApiError(
+                400,
+                "Invalid OTP"
+            );
+        }
 
         const hashedPassword =
             await bcrypt.hash(
@@ -651,31 +575,17 @@ export const resetPassword = asyncHandler(
                 12
             );
 
+        user.password = hashedPassword;
 
-        user.password =
-            hashedPassword;
-
-
-        // =========================
-        // CLEAR OTP
-        // =========================
-
+        // OTP becomes invalid after successful reset
         user.resetOTP = undefined;
-
-        user.resetOTPExpires =
-            undefined;
-
+        user.resetOTPExpires = undefined;
 
         await user.save();
 
-
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "Password reset successfully"
-
+            message: "Password reset successfully"
         });
     }
 );

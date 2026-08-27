@@ -6,6 +6,11 @@ import {
 } from "../middleware/authMiddleware.js";
 
 import {
+    apiLimiter,
+    passwordLimiter
+} from "../middleware/rateLimiter.js";
+
+import {
     getMyProfile,
     updateProfile,
     updatePassword,
@@ -60,16 +65,19 @@ router.patch(
 
 router.post(
     "/forget-password",
+    passwordLimiter,
     forgetPassword
 );
 
 router.post(
     "/verify-otp",
+    passwordLimiter,
     verifyOTP
 );
 
 router.patch(
     "/reset-password",
+    passwordLimiter,
     resetPassword
 );
 

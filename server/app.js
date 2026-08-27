@@ -19,11 +19,15 @@ import dashboardRoutes from "./src/routes/dashboard.routes.js";
 import userRoutes from "./src/routes/user.route.js";
 import notificationRoutes from "./src/routes/notification.route.js";
 
+import helmet from "helmet";
+import { apiLimiter } from "./src/middleware/rateLimiter.js";
+
 connectDB();
 
 const app = express();
 
 app.use(express.json());
+app.use(helmet());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
@@ -31,6 +35,8 @@ app.use(cors({
     credentials: true,
 }));
 
+
+app.use("/api", apiLimiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
