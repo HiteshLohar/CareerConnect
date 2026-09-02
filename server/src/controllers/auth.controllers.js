@@ -68,7 +68,8 @@ export const register = asyncHandler(async (req, res) => {
         "recruiter"
     ];
 
-    const userRole = role || "student";
+    const userRole =
+        role || "student";
 
     if (!allowedRoles.includes(userRole)) {
         throw new ApiError(
@@ -79,7 +80,7 @@ export const register = asyncHandler(async (req, res) => {
 
 
     // ========================================
-    // BASIC PASSWORD VALIDATION
+    // PASSWORD VALIDATION
     // ========================================
 
     if (password.length < 6) {
@@ -122,31 +123,54 @@ export const register = asyncHandler(async (req, res) => {
     // CREATE USER
     // ========================================
 
-    const user = await User.create({
+    let user;
 
-        fullName: normalizedFullName,
+    try {
 
-        email: normalizedEmail,
+        user = await User.create({
 
-        password: hashedPassword,
+            fullName:
+                normalizedFullName,
 
-        role: userRole,
+            email:
+                normalizedEmail,
 
-        phone,
+            password:
+                hashedPassword,
 
-        profilePhoto,
+            role:
+                userRole,
 
-        headline,
+            phone,
 
-        skills,
+            profilePhoto,
 
-        education,
+            headline,
 
-        resumeUrl,
+            skills,
 
-        location: normalizedLocation,
+            education,
 
-    });
+            resumeUrl,
+
+            location:
+                normalizedLocation,
+
+        });
+
+    } catch (error) {
+
+        // MongoDB duplicate key error
+        if (error.code === 11000) {
+
+            throw new ApiError(
+                409,
+                "Email already exists"
+            );
+        }
+
+        throw error;
+    }
 
 
     // ========================================
@@ -168,16 +192,20 @@ export const register = asyncHandler(async (req, res) => {
         const notifications =
             admins.map((admin) => ({
 
-                recipient: admin._id,
+                recipient:
+                    admin._id,
 
-                sender: user._id,
+                sender:
+                    user._id,
 
-                title: "New User Registered",
+                title:
+                    "New User Registered",
 
                 message:
                     `${user.fullName} registered as a ${user.role}.`,
 
-                type: "SYSTEM",
+                type:
+                    "SYSTEM",
 
             }));
 
@@ -295,9 +323,7 @@ export const login = asyncHandler(async (req, res) => {
     // CHECK ACCOUNT STATUS
     // ========================================
 
-    if (
-        user.accountStatus === "suspended"
-    ) {
+    if (user.accountStatus === "suspended") {
 
         throw new ApiError(
             403,
@@ -307,13 +333,25 @@ export const login = asyncHandler(async (req, res) => {
     }
 
 
-    if (
-        user.accountStatus === "deleted"
-    ) {
+    if (user.accountStatus === "deleted") {
 
         throw new ApiError(
             403,
             "Your account is no longer active"
+        );
+
+    }
+
+
+    // ========================================
+    // JWT SECRET VALIDATION
+    // ========================================
+
+    if (!process.env.JWT_SECRET) {
+
+        throw new ApiError(
+            500,
+            "JWT secret is not configured"
         );
 
     }
@@ -341,7 +379,7 @@ export const login = asyncHandler(async (req, res) => {
 
 
     // ========================================
-    // SET COOKIE
+    // SET AUTH COOKIE
     // ========================================
 
     res.cookie(

@@ -4,14 +4,13 @@ import store from "../redux/store.js";
 import { logout } from "../redux/slices/authSlice.js";
 
 const api = axios.create({
-    baseURL: "http://localhost:5000/api",
+    baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true,
 });
 
 api.interceptors.response.use(
-    (response) => {
-        return response;
-    },
+    (response) => response,
+
     (error) => {
 
         if (
@@ -19,8 +18,6 @@ api.interceptors.response.use(
             error.config?.url === "/auth/me"
         ) {
             store.dispatch(logout());
-
-            console.log("Session expired");
         }
 
         return Promise.reject(error);

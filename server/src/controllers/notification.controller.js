@@ -1,12 +1,9 @@
 import Notification from "../models/Notification.js";
-import Application from "../models/Application.js";
-import Job from "../models/Job.js";
 
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import isValidObjectId from "../utils/validateObjectId.js";
 
-import { notifyUser } from "../utils/notificationHelper.js";
 
 
 // ========================================

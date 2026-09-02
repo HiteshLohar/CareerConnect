@@ -28,7 +28,13 @@ export const createJob = asyncHandler(async (req, res) => {
         deadline
     } = req.body;
 
+
     const recruiterId = req.user.userId;
+
+
+    // =========================
+    // REQUIRED FIELDS
+    // =========================
 
     if (
         !title?.trim() ||
@@ -49,20 +55,52 @@ export const createJob = asyncHandler(async (req, res) => {
         );
     }
 
+
+    // =========================
+    // VALIDATE COMPANY ID
+    // =========================
+
     if (!isValidObjectId(company)) {
-        throw new ApiError(400, "Invalid Company ID");
+        throw new ApiError(
+            400,
+            "Invalid Company ID"
+        );
     }
 
-    if (Number.isNaN(Number(salary)) || Number(salary) < 0) {
-        throw new ApiError(400, "Invalid salary");
+
+    // =========================
+    // VALIDATE SALARY
+    // =========================
+
+    if (
+        Number.isNaN(Number(salary)) ||
+        Number(salary) < 0
+    ) {
+        throw new ApiError(
+            400,
+            "Invalid salary"
+        );
     }
+
+
+    // =========================
+    // VALIDATE EXPERIENCE
+    // =========================
 
     if (
         Number.isNaN(Number(experience)) ||
         Number(experience) < 0
     ) {
-        throw new ApiError(400, "Invalid experience");
+        throw new ApiError(
+            400,
+            "Invalid experience"
+        );
     }
+
+
+    // =========================
+    // VALIDATE VACANCIES
+    // =========================
 
     if (
         !Number.isInteger(Number(vacancies)) ||
@@ -74,44 +112,134 @@ export const createJob = asyncHandler(async (req, res) => {
         );
     }
 
-    const companyExists = await Company.findById(company);
 
-    if (!companyExists) {
-        throw new ApiError(404, "Company not found");
+    // =========================
+    // VALIDATE DEADLINE
+    // =========================
+
+    const deadlineDate =
+        new Date(deadline);
+
+    if (
+        Number.isNaN(
+            deadlineDate.getTime()
+        )
+    ) {
+        throw new ApiError(
+            400,
+            "Invalid deadline"
+        );
     }
 
-    if (companyExists.owner.toString() !== recruiterId) {
+    if (
+        deadlineDate <= new Date()
+    ) {
+        throw new ApiError(
+            400,
+            "Deadline must be a future date"
+        );
+    }
+
+
+    // =========================
+    // CHECK COMPANY
+    // =========================
+
+    const companyExists =
+        await Company.findById(company);
+
+    if (!companyExists) {
+        throw new ApiError(
+            404,
+            "Company not found"
+        );
+    }
+
+
+    // =========================
+    // CHECK COMPANY OWNERSHIP
+    // =========================
+
+    if (
+        companyExists.owner.toString() !==
+        recruiterId
+    ) {
         throw new ApiError(
             403,
             "You are not authorized to create jobs for this company"
         );
     }
 
+
+    // =========================
+    // CREATE JOB
+    // =========================
+
     const job = await Job.create({
+
         title: title.trim(),
+
         company,
-        description: description.trim(),
-        location: location.trim(),
-        salary: Number(salary),
+
+        description:
+            description.trim(),
+
+        location:
+            location.trim(),
+
+        salary:
+            Number(salary),
+
         jobType,
-        experience: Number(experience),
+
+        experience:
+            Number(experience),
+
         skills,
-        vacancies: Number(vacancies),
-        deadline,
-        postedBy: recruiterId
+
+        vacancies:
+            Number(vacancies),
+
+        deadline:
+            deadlineDate,
+
+        postedBy:
+            recruiterId
+
     });
+
+
+    // =========================
+    // NOTIFY ADMINS
+    // =========================
 
     await notifyAdmins({
+
         sender: recruiterId,
+
         title: "New Job Posted",
-        message: `A new job "${job.title}" has been posted.`,
+
+        message:
+            `A new job "${job.title}" has been posted.`,
+
         type: "SYSTEM"
+
     });
 
+
+    // =========================
+    // RESPONSE
+    // =========================
+
     return res.status(201).json({
+
         success: true,
-        message: "Job created successfully",
+
+        message:
+            "Job created successfully",
+
         job
+
     });
 });
 
@@ -122,19 +250,45 @@ export const createJob = asyncHandler(async (req, res) => {
 
 export const getRecruiterJobs = asyncHandler(async (req, res) => {
 
-    const jobs = await Job.find({
-        postedBy: req.user.userId
-    })
-        .populate("company", "name logo")
-        .sort({ createdAt: -1 });
+    const recruiterId =
+        req.user.userId;
+
+
+    // =========================
+    // FETCH RECRUITER JOBS
+    // =========================
+
+    const jobs =
+        await Job.find({
+            postedBy: recruiterId
+        })
+            .populate(
+                "company",
+                "name logo"
+            )
+            .sort({
+                createdAt: -1
+            });
+
+
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(200).json({
+
         success: true,
-        message: jobs.length
-            ? "Jobs fetched successfully"
-            : "No jobs found",
-        count: jobs.length,
+
+        message:
+            jobs.length
+                ? "Jobs fetched successfully"
+                : "No jobs found",
+
+        count:
+            jobs.length,
+
         jobs
+
     });
 });
 
@@ -148,22 +302,48 @@ export const updateJob = asyncHandler(async (req, res) => {
     const { id: jobId } = req.params;
     const recruiterId = req.user.userId;
 
+
+    // =========================
+    // VALIDATE JOB ID
+    // =========================
+
     if (!isValidObjectId(jobId)) {
-        throw new ApiError(400, "Invalid Job ID");
+        throw new ApiError(
+            400,
+            "Invalid Job ID"
+        );
     }
 
-    const job = await Job.findById(jobId);
+
+    // =========================
+    // FIND JOB
+    // =========================
+
+    const job =
+        await Job.findById(jobId);
 
     if (!job) {
-        throw new ApiError(404, "Job not found");
+        throw new ApiError(
+            404,
+            "Job not found"
+        );
     }
 
-    if (job.postedBy.toString() !== recruiterId) {
+
+    // =========================
+    // OWNERSHIP CHECK
+    // =========================
+
+    if (
+        job.postedBy.toString() !==
+        recruiterId
+    ) {
         throw new ApiError(
             403,
             "You are not authorized to update this job"
         );
     }
+
 
     const {
         title,
@@ -178,18 +358,31 @@ export const updateJob = asyncHandler(async (req, res) => {
         deadline
     } = req.body;
 
+
     const updateData = {};
 
+
+    // =========================
+    // TITLE
+    // =========================
+
     if (title !== undefined) {
-        if (!title.trim()) {
+
+        if (!title?.trim()) {
             throw new ApiError(
                 400,
                 "Job title cannot be empty"
             );
         }
 
-        updateData.title = title.trim();
+        updateData.title =
+            title.trim();
     }
+
+
+    // =========================
+    // COMPANY
+    // =========================
 
     if (company !== undefined) {
 
@@ -210,39 +403,60 @@ export const updateJob = asyncHandler(async (req, res) => {
             );
         }
 
-        if (companyExists.owner.toString() !== recruiterId) {
+        if (
+            companyExists.owner.toString() !==
+            recruiterId
+        ) {
             throw new ApiError(
                 403,
                 "You are not authorized to use this company"
             );
         }
 
-        updateData.company = company;
+        updateData.company =
+            company;
     }
+
+
+    // =========================
+    // DESCRIPTION
+    // =========================
 
     if (description !== undefined) {
 
-        if (!description.trim()) {
+        if (!description?.trim()) {
             throw new ApiError(
                 400,
                 "Job description cannot be empty"
             );
         }
 
-        updateData.description = description.trim();
+        updateData.description =
+            description.trim();
     }
+
+
+    // =========================
+    // LOCATION
+    // =========================
 
     if (location !== undefined) {
 
-        if (!location.trim()) {
+        if (!location?.trim()) {
             throw new ApiError(
                 400,
                 "Job location cannot be empty"
             );
         }
 
-        updateData.location = location.trim();
+        updateData.location =
+            location.trim();
     }
+
+
+    // =========================
+    // SALARY
+    // =========================
 
     if (salary !== undefined) {
 
@@ -256,12 +470,41 @@ export const updateJob = asyncHandler(async (req, res) => {
             );
         }
 
-        updateData.salary = Number(salary);
+        updateData.salary =
+            Number(salary);
     }
 
+
+    // =========================
+    // JOB TYPE
+    // =========================
+
     if (jobType !== undefined) {
-        updateData.jobType = jobType;
+
+        const allowedJobTypes = [
+            "Full-time",
+            "Part-time",
+            "Internship",
+            "Contract"
+        ];
+
+        if (
+            !allowedJobTypes.includes(jobType)
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid job type"
+            );
+        }
+
+        updateData.jobType =
+            jobType;
     }
+
+
+    // =========================
+    // EXPERIENCE
+    // =========================
 
     if (experience !== undefined) {
 
@@ -275,8 +518,14 @@ export const updateJob = asyncHandler(async (req, res) => {
             );
         }
 
-        updateData.experience = Number(experience);
+        updateData.experience =
+            Number(experience);
     }
+
+
+    // =========================
+    // SKILLS
+    // =========================
 
     if (skills !== undefined) {
 
@@ -290,13 +539,21 @@ export const updateJob = asyncHandler(async (req, res) => {
             );
         }
 
-        updateData.skills = skills;
+        updateData.skills =
+            skills;
     }
+
+
+    // =========================
+    // VACANCIES
+    // =========================
 
     if (vacancies !== undefined) {
 
         if (
-            !Number.isInteger(Number(vacancies)) ||
+            !Number.isInteger(
+                Number(vacancies)
+            ) ||
             Number(vacancies) < 1
         ) {
             throw new ApiError(
@@ -305,19 +562,62 @@ export const updateJob = asyncHandler(async (req, res) => {
             );
         }
 
-        updateData.vacancies = Number(vacancies);
+        updateData.vacancies =
+            Number(vacancies);
     }
+
+
+    // =========================
+    // DEADLINE
+    // =========================
 
     if (deadline !== undefined) {
-        updateData.deadline = deadline;
+
+        const deadlineDate =
+            new Date(deadline);
+
+        if (
+            Number.isNaN(
+                deadlineDate.getTime()
+            )
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid deadline"
+            );
+        }
+
+        if (
+            deadlineDate <= new Date()
+        ) {
+            throw new ApiError(
+                400,
+                "Deadline must be a future date"
+            );
+        }
+
+        updateData.deadline =
+            deadlineDate;
     }
 
-    if (Object.keys(updateData).length === 0) {
+
+    // =========================
+    // CHECK UPDATE DATA
+    // =========================
+
+    if (
+        Object.keys(updateData).length === 0
+    ) {
         throw new ApiError(
             400,
             "No fields provided for update"
         );
     }
+
+
+    // =========================
+    // UPDATE JOB
+    // =========================
 
     const updatedJob =
         await Job.findByIdAndUpdate(
@@ -329,10 +629,21 @@ export const updateJob = asyncHandler(async (req, res) => {
             }
         );
 
+
+    // =========================
+    // RESPONSE
+    // =========================
+
     return res.status(200).json({
+
         success: true,
-        message: "Job updated successfully",
-        job: updatedJob
+
+        message:
+            "Job updated successfully",
+
+        job:
+            updatedJob
+
     });
 });
 
@@ -346,6 +657,11 @@ export const deleteJob = asyncHandler(async (req, res) => {
     const { id: jobId } = req.params;
     const recruiterId = req.user.userId;
 
+
+    // =========================
+    // VALIDATE JOB ID
+    // =========================
+
     if (!isValidObjectId(jobId)) {
         throw new ApiError(
             400,
@@ -353,7 +669,13 @@ export const deleteJob = asyncHandler(async (req, res) => {
         );
     }
 
-    const job = await Job.findById(jobId);
+
+    // =========================
+    // FIND JOB
+    // =========================
+
+    const job =
+        await Job.findById(jobId);
 
     if (!job) {
         throw new ApiError(
@@ -362,12 +684,25 @@ export const deleteJob = asyncHandler(async (req, res) => {
         );
     }
 
-    if (job.postedBy.toString() !== recruiterId) {
+
+    // =========================
+    // OWNERSHIP CHECK
+    // =========================
+
+    if (
+        job.postedBy.toString() !==
+        recruiterId
+    ) {
         throw new ApiError(
             403,
             "You are not authorized to delete this job"
         );
     }
+
+
+    // =========================
+    // CHECK ALREADY INACTIVE
+    // =========================
 
     if (!job.isActive) {
         throw new ApiError(
@@ -376,13 +711,27 @@ export const deleteJob = asyncHandler(async (req, res) => {
         );
     }
 
+
+    // =========================
+    // SOFT DELETE
+    // =========================
+
     job.isActive = false;
 
     await job.save();
 
+
+    // =========================
+    // RESPONSE
+    // =========================
+
     return res.status(200).json({
+
         success: true,
-        message: "Job deleted successfully"
+
+        message:
+            "Job deleted successfully"
+
     });
 });
 
@@ -406,8 +755,17 @@ export const getAllJobs = asyncHandler(async (req, res) => {
         company
     } = req.query;
 
-    const currentPage = Number(page);
-    const pageLimit = Number(limit);
+
+    // =========================
+    // PAGINATION
+    // =========================
+
+    const currentPage =
+        Number(page);
+
+    const pageLimit =
+        Number(limit);
+
 
     if (
         !Number.isInteger(currentPage) ||
@@ -418,6 +776,7 @@ export const getAllJobs = asyncHandler(async (req, res) => {
             "Invalid page number"
         );
     }
+
 
     if (
         !Number.isInteger(pageLimit) ||
@@ -430,34 +789,80 @@ export const getAllJobs = asyncHandler(async (req, res) => {
         );
     }
 
+
+    // =========================
+    // BASE FILTER
+    // =========================
+
     const filter = {
         isActive: true
     };
 
+
+    // =========================
+    // KEYWORD SEARCH
+    // =========================
+
     if (keyword?.trim()) {
+
         filter.title = {
             $regex: keyword.trim(),
             $options: "i"
         };
     }
 
+
+    // =========================
+    // LOCATION FILTER
+    // =========================
+
     if (location?.trim()) {
+
         filter.location = {
             $regex: location.trim(),
             $options: "i"
         };
     }
 
+
+    // =========================
+    // JOB TYPE
+    // =========================
+
     if (jobType) {
-        filter.jobType = jobType;
+
+        const allowedJobTypes = [
+            "Full-time",
+            "Part-time",
+            "Internship",
+            "Contract"
+        ];
+
+        if (
+            !allowedJobTypes.includes(jobType)
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid job type"
+            );
+        }
+
+        filter.jobType =
+            jobType;
     }
+
+
+    // =========================
+    // EXPERIENCE
+    // =========================
 
     if (experience !== undefined) {
 
-        const experienceValue = Number(experience);
+        const experienceValue =
+            Number(experience);
 
         if (
-            Number.isNaN(experienceValue) ||
+            !Number.isFinite(experienceValue) ||
             experienceValue < 0
         ) {
             throw new ApiError(
@@ -471,6 +876,11 @@ export const getAllJobs = asyncHandler(async (req, res) => {
         };
     }
 
+
+    // =========================
+    // SALARY FILTER
+    // =========================
+
     if (
         minSalary !== undefined ||
         maxSalary !== undefined
@@ -478,12 +888,16 @@ export const getAllJobs = asyncHandler(async (req, res) => {
 
         filter.salary = {};
 
+
         if (minSalary !== undefined) {
 
-            const minimumSalary = Number(minSalary);
+            const minimumSalary =
+                Number(minSalary);
 
             if (
-                Number.isNaN(minimumSalary) ||
+                !Number.isFinite(
+                    minimumSalary
+                ) ||
                 minimumSalary < 0
             ) {
                 throw new ApiError(
@@ -492,15 +906,20 @@ export const getAllJobs = asyncHandler(async (req, res) => {
                 );
             }
 
-            filter.salary.$gte = minimumSalary;
+            filter.salary.$gte =
+                minimumSalary;
         }
+
 
         if (maxSalary !== undefined) {
 
-            const maximumSalary = Number(maxSalary);
+            const maximumSalary =
+                Number(maxSalary);
 
             if (
-                Number.isNaN(maximumSalary) ||
+                !Number.isFinite(
+                    maximumSalary
+                ) ||
                 maximumSalary < 0
             ) {
                 throw new ApiError(
@@ -509,13 +928,16 @@ export const getAllJobs = asyncHandler(async (req, res) => {
                 );
             }
 
-            filter.salary.$lte = maximumSalary;
+            filter.salary.$lte =
+                maximumSalary;
         }
+
 
         if (
             minSalary !== undefined &&
             maxSalary !== undefined &&
-            Number(minSalary) > Number(maxSalary)
+            Number(minSalary) >
+            Number(maxSalary)
         ) {
             throw new ApiError(
                 400,
@@ -524,73 +946,130 @@ export const getAllJobs = asyncHandler(async (req, res) => {
         }
     }
 
+
+    // =========================
+    // COMPANY FILTER
+    // =========================
+
     if (company) {
 
-        if (!isValidObjectId(company)) {
+        if (
+            !isValidObjectId(company)
+        ) {
             throw new ApiError(
                 400,
                 "Invalid Company ID"
             );
         }
 
-        filter.company = company;
+        filter.company =
+            company;
     }
+
+
+    // =========================
+    // SORTING
+    // =========================
 
     const sortOption = {
         createdAt: -1
     };
 
+
     if (sort === "oldest") {
 
         sortOption.createdAt = 1;
 
-    } else if (sort === "salary_asc") {
+    } else if (
+        sort === "salary_asc"
+    ) {
 
         delete sortOption.createdAt;
+
         sortOption.salary = 1;
 
-    } else if (sort === "salary_desc") {
+    } else if (
+        sort === "salary_desc"
+    ) {
 
         delete sortOption.createdAt;
+
         sortOption.salary = -1;
     }
 
+
+    // =========================
+    // PAGINATION CALCULATION
+    // =========================
+
     const skip =
-        (currentPage - 1) * pageLimit;
+        (currentPage - 1) *
+        pageLimit;
+
+
+    // =========================
+    // COUNT JOBS
+    // =========================
 
     const totalJobs =
-        await Job.countDocuments(filter);
+        await Job.countDocuments(
+            filter
+        );
+
 
     const totalPages =
-        Math.ceil(totalJobs / pageLimit);
+        Math.ceil(
+            totalJobs / pageLimit
+        );
 
-    const jobs = await Job.find(filter)
-        .select(
-            "title company location salary jobType experience vacancies deadline isActive createdAt"
-        )
-        .populate(
-            "company",
-            "name logo location"
-        )
-        .populate(
-            "postedBy",
-            "fullName email"
-        )
-        .sort(sortOption)
-        .skip(skip)
-        .limit(pageLimit)
-        .lean();
+
+    // =========================
+    // FETCH JOBS
+    // =========================
+
+    const jobs =
+        await Job.find(filter)
+            .select(
+                "title company location salary jobType experience vacancies deadline isActive createdAt"
+            )
+            .populate(
+                "company",
+                "name logo location"
+            )
+            .populate(
+                "postedBy",
+                "fullName email"
+            )
+            .sort(sortOption)
+            .skip(skip)
+            .limit(pageLimit)
+            .lean();
+
+
+    // =========================
+    // RESPONSE
+    // =========================
 
     return res.status(200).json({
+
         success: true,
-        message: jobs.length
-            ? "Jobs fetched successfully"
-            : "No jobs found",
-        count: jobs.length,
+
+        message:
+            jobs.length
+                ? "Jobs fetched successfully"
+                : "No jobs found",
+
+        count:
+            jobs.length,
+
         currentPage,
+
         totalPages,
+
         totalJobs,
+
         jobs
+
     });
 });
 

@@ -244,121 +244,137 @@ export const updateProfile = asyncHandler(async (req, res) => {
 // UPDATE PASSWORD
 // ========================================
 
-export const updatePassword = asyncHandler(
-    async (req, res) => {
+export const updatePassword = asyncHandler(async (req, res) => {
 
-        const {
+    const {
+        currentPassword,
+        newPassword,
+        confirmPassword
+    } = req.body;
+
+
+    // =========================
+    // REQUIRED FIELDS
+    // =========================
+
+    if (
+        !currentPassword ||
+        !newPassword ||
+        !confirmPassword
+    ) {
+        throw new ApiError(
+            400,
+            "All fields are required"
+        );
+    }
+
+
+    // =========================
+    // NEW PASSWORD LENGTH
+    // =========================
+
+    if (newPassword.length < 6) {
+        throw new ApiError(
+            400,
+            "New password must be at least 6 characters long"
+        );
+    }
+
+
+    // =========================
+    // FIND USER
+    // =========================
+
+    const user = await User.findById(
+        req.user.userId
+    );
+
+    if (!user) {
+        throw new ApiError(
+            404,
+            "User not found"
+        );
+    }
+
+
+    // =========================
+    // VERIFY CURRENT PASSWORD
+    // =========================
+
+    const isPasswordMatch =
+        await bcrypt.compare(
             currentPassword,
-            newPassword,
-            confirmPassword
-        } = req.body;
-
-
-        // =========================
-        // REQUIRED FIELDS
-        // =========================
-
-        if (
-            !currentPassword ||
-            !newPassword ||
-            !confirmPassword
-        ) {
-
-            throw new ApiError(
-                400,
-                "All fields are required"
-            );
-        }
-
-
-        // =========================
-        // FIND USER
-        // =========================
-
-        const user = await User.findById(
-            req.user.userId
+            user.password
         );
 
-        if (!user) {
-            throw new ApiError(
-                404,
-                "User not found"
-            );
-        }
-
-
-        // =========================
-        // VERIFY CURRENT PASSWORD
-        // =========================
-
-        const isPasswordMatch =
-            await bcrypt.compare(
-                currentPassword,
-                user.password
-            );
-
-        if (!isPasswordMatch) {
-
-            throw new ApiError(
-                400,
-                "Current password is incorrect"
-            );
-        }
-
-
-        // =========================
-        // CONFIRM NEW PASSWORD
-        // =========================
-
-        if (
-            newPassword !==
-            confirmPassword
-        ) {
-
-            throw new ApiError(
-                400,
-                "New password and confirm password do not match"
-            );
-        }
-
-
-        // =========================
-        // SAME PASSWORD CHECK
-        // =========================
-
-        if (
-            currentPassword ===
-            newPassword
-        ) {
-
-            throw new ApiError(
-                400,
-                "New password cannot be same as current password"
-            );
-        }
-
-
-        // =========================
-        // HASH PASSWORD
-        // =========================
-
-        const hashedPassword =
-            await bcrypt.hash(
-                newPassword,
-                12
-            );
-
-        user.password =
-            hashedPassword;
-
-        await user.save();
-
-
-        return res.status(200).json({
-            success: true,
-            message: "Password updated successfully"
-        });
+    if (!isPasswordMatch) {
+        throw new ApiError(
+            400,
+            "Current password is incorrect"
+        );
     }
+
+
+    // =========================
+    // CONFIRM NEW PASSWORD
+    // =========================
+
+    if (
+        newPassword !==
+        confirmPassword
+    ) {
+        throw new ApiError(
+            400,
+            "New password and confirm password do not match"
+        );
+    }
+
+
+    // =========================
+    // SAME PASSWORD CHECK
+    // =========================
+
+    if (
+        currentPassword ===
+        newPassword
+    ) {
+        throw new ApiError(
+            400,
+            "New password cannot be same as current password"
+        );
+    }
+
+
+    // =========================
+    // HASH NEW PASSWORD
+    // =========================
+
+    const hashedPassword =
+        await bcrypt.hash(
+            newPassword,
+            12
+        );
+
+
+    // =========================
+    // UPDATE PASSWORD
+    // =========================
+
+    user.password =
+        hashedPassword;
+
+    await user.save();
+
+
+    // =========================
+    // RESPONSE
+    // =========================
+
+    return res.status(200).json({
+        success: true,
+        message: "Password updated successfully"
+    });
+}
 );
 
 

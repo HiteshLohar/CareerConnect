@@ -35,7 +35,6 @@ router.get(
 
 router.post(
     "/logout",
-    verifyToken,
     logout
 );
 
