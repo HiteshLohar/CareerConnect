@@ -1,5 +1,11 @@
 {
   "type": "module",
+
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cloudinary": "^1.41.3",
