@@ -46,7 +46,9 @@ function NotificationBell() {
 
     useEffect(() => {
         fetchNotifications();
-        const socket = io("http://localhost:5000", { withCredentials: true });
+        const socket = io(import.meta.env.VITE_API_URL.replace(/\/api\/?$/, ""), {
+            withCredentials: true,
+        });
         socket.on("connect", () => { if (user?._id) socket.emit("register", user._id); });
         socket.on("new_notification", (notification) => {
             setNotifications((prev) => [notification, ...prev]);
